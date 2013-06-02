@@ -38,6 +38,7 @@ echo "Virtual Memory:" >> $filename
 sysctl -n vm.vmtotal >> $filename
 echo >> $filename
 
+# Wenn -F als Parameter verwendet wird, werden die Festplatten ausgelesen! Aber: smartcrl weckt festplatten aus Standby
 if [ "$2" = "-F" ];
 then
 
