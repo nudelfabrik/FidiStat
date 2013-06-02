@@ -1,0 +1,96 @@
+{
+    "graph" : {
+        "title" : "Server load averages",
+        "type" : "line",
+        "datasequences" : [
+            {
+                "title": "1min",
+                "datapoints" : [
+                    { "title" : "13:00", "value" : 0.80},
+                    { "title" : "14:00", "value" : 0.80},
+                    { "title" : "15:00", "value" : 0.80},
+                    { "title" : "16:00", "value" : 0.80},
+                    { "title" : "17:00", "value" : 0.80},
+                    { "title" : "18:00", "value" : 0.80},
+                    { "title" : "19:00", "value" : 0.80},
+                    { "title" : "20:00", "value" : 0.80},
+                    { "title" : "21:00", "value" : 0.80},
+                    { "title" : "22:00", "value" : 0.80},
+                    { "title" : "23:00", "value" : 0.80},
+                    { "title" : "23:58", "value" : 0.80},
+                    { "title" : "23:58", "value" : 0.70},
+                    { "title" : "23:59", "value" : 0.75},
+                    { "title" : "00:00", "value" : 0.80},
+                    { "title" : "00:00", "value" : 0.79},
+                    { "title" : "00:00", "value" : 0.79},
+                    { "title" : "00:00", "value" : 0.79},
+                    { "title" : "00:00", "value" : 0.79},
+                    { "title" : "00:00", "value" : 0.79},
+                    { "title" : "00:00", "value" : 0.79},
+                    { "title" : "00:00", "value" : 0.79},
+                    { "title" : "00:00", "value" : 0.79},
+                    { "title" : "00:00", "value" : 0.79},
+                ]
+            },
+            {
+                "title": "5min",
+                "datapoints" : [
+                    { "title" : "13:00", "value" : 0.80},
+                    { "title" : "14:00", "value" : 0.80},
+                    { "title" : "15:00", "value" : 0.80},
+                    { "title" : "16:00", "value" : 0.80},
+                    { "title" : "17:00", "value" : 0.80},
+                    { "title" : "18:00", "value" : 0.80},
+                    { "title" : "19:00", "value" : 0.80},
+                    { "title" : "20:00", "value" : 0.80},
+                    { "title" : "21:00", "value" : 0.80},
+                    { "title" : "22:00", "value" : 0.80},
+                    { "title" : "23:00", "value" : 0.80},
+                    { "title" : "23:58", "value" : 0.80},
+                    { "title" : "23:58", "value" : 0.64},
+                    { "title" : "23:59", "value" : 0.66},
+                    { "title" : "00:00", "value" : 0.69},
+                    { "title" : "00:00", "value" : 0.68},
+                    { "title" : "00:00", "value" : 0.68},
+                    { "title" : "00:00", "value" : 0.68},
+                    { "title" : "00:00", "value" : 0.68},
+                    { "title" : "00:00", "value" : 0.68},
+                    { "title" : "00:00", "value" : 0.68},
+                    { "title" : "00:00", "value" : 0.68},
+                    { "title" : "00:00", "value" : 0.68},
+                    { "title" : "00:00", "value" : 0.68},
+                ]
+            },
+            {
+                "title": "15min",
+                "datapoints" : [
+                    { "title" : "13:00", "value" : 0.80},
+                    { "title" : "14:00", "value" : 0.80},
+                    { "title" : "15:00", "value" : 0.80},
+                    { "title" : "16:00", "value" : 0.80},
+                    { "title" : "17:00", "value" : 0.80},
+                    { "title" : "18:00", "value" : 0.80},
+                    { "title" : "19:00", "value" : 0.80},
+                    { "title" : "20:00", "value" : 0.80},
+                    { "title" : "21:00", "value" : 0.80},
+                    { "title" : "22:00", "value" : 0.80},
+                    { "title" : "23:00", "value" : 0.80},
+
+
+
+
+
+
+
+
+
+
+
+
+
+                ]
+            }
+        ]
+    }
+}
+
