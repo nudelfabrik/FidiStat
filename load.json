@@ -2,6 +2,10 @@
     "graph" : {
         "title" : "Server load averages",
         "type" : "line",
+        "yAxis" : {
+            "minValue" : 0,
+            "maxValue" : 3
+        },
         "datasequences" : [
             {
                 "title": "1min",
