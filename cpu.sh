@@ -1,6 +1,6 @@
 #!/bin/sh
-cpu1=`sysctl -n dev.cpu.0.temperature`
-cpu2=`sysctl -n dev.cpu.1.temperature`
+cpu1=`sysctl -n dev.cpu.0.temperature | sed 's/C//g'`
+cpu2=`sysctl -n dev.cpu.1.temperature | sed 's/C//g'`
 time=`date "+%H:%M"`
 new1="                    { \"title\" : \"$time\", \"value\" : $cpu1},"
 new2="                    { \"title\" : \"$time\", \"value\" : $cpu2},"
