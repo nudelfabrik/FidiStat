@@ -7,14 +7,15 @@ FreeNAS monitoring for [Status Board](http://www.panic.com/statusboard/)
 
 TODO
 ----
-* network traffic
-* HDD stats
+* HDD usage
 * automated script which generates a statusboard:// link
 
 Ready
 -----
 * load avg.
 * cpu temperature
+* network traffic
+* HDD temperature
 
 Install
 ------
