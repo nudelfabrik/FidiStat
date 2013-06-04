@@ -5,7 +5,7 @@
 #
 adastat () { echo -n `camcontrol cmd $1 -a "E5 00 00 00 00 00 00 00 00 00 00 00" -r - | awk '{print $10 " " ; }'` " " ; }
 
-filename="../mnt/Log/stats.txt"
+filename="/mnt/Log/stats.txt"
 
 echo "==================================================" >> $filename
 echo "==================================================" >> $filename
@@ -16,8 +16,8 @@ echo >> $filename
 
 echo "Server:" >> $filename
 sysctl -n kern.hostname >> $filename
-../sbin/ifconfig | grep -E 'inet.[0-9]' | grep -v '127.0.0.1' | grep -v '0.0.0.0' | awk '{ print $2}' >> $filename
-cat ../../../etc/version >> $filename
+/sbin/ifconfig | grep -E 'inet.[0-9]' | grep -v '127.0.0.1' | grep -v '0.0.0.0' | awk '{ print $2}' >> $filename
+cat /etc/version >> $filename
 
 uptime | awk '{ print "\nSystem Load:",$(NF-2),$(NF-1),$(NF) }' >> $filename
 echo >> $filename
@@ -38,7 +38,6 @@ echo "Virtual Memory:" >> $filename
 sysctl -n vm.vmtotal >> $filename
 echo >> $filename
 
-# Wenn -F als Parameter verwendet wird, werden die Festplatten ausgelesen! Aber: smartcrl weckt festplatten aus Standby
 if [ "$2" = "-F" ];
 then
 
@@ -62,3 +61,6 @@ then
 	done
 	echo >> $filename
 fi
+sh /mnt/Data/GlobalAccess/cpu.sh
+sh /mnt/Data/GlobalAccess/netTraf.sh
+sh /mnt/Data/GlobalAccess/load.sh
