@@ -21,4 +21,6 @@ Install
 ------
 * put .json files somewhere you can access them from your iPad
 * make a chronjob (or something similar) to execute the .sh files regulairly
-* make a Graph-Panel within statusboard
+* run makeLinks.sh with parameters for Username, Password and Server adress
+    * <code>./makeLinks.sh User Pass my.Server.com</code> 
+* go to statusboardLinks.html and click the links you want to add
