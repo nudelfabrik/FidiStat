@@ -1,10 +1,10 @@
 {
     "graph" : {
-        "title" : "Server CPU Temp",
+        "title" : "Network Traffic",
         "type" : "line",
         "datasequences" : [
             {
-                "title": "CPU 1",
+                "title": "re0 in",
                 "datapoints" : [
                     { "title" : "00:00", "value" : 80},
                     { "title" : "01:00", "value" : 80},
@@ -33,7 +33,7 @@
                 ]
             },
             {
-                "title": "CPU 2",
+                "title": "re0 out",
                 "datapoints" : [
                     { "title" : "00:00", "value" : 80},
                     { "title" : "01:00", "value" : 80},
