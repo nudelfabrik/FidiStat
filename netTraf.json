@@ -6,8 +6,6 @@
             {
                 "title": "re0 in",
                 "datapoints" : [
-                    { "title" : "00:00", "value" : 80},
-                    { "title" : "01:00", "value" : 80},
                     { "title" : "02:00", "value" : 80},
                     { "title" : "03:00", "value" : 80},
                     { "title" : "04:00", "value" : 80},                                                                                                                                             
@@ -30,13 +28,13 @@
                     { "title" : "21:00", "value" : 80},
                     { "title" : "22:00", "value" : 80},
                     { "title" : "23:00", "value" : 80},
+                    { "title" : "12:47", "value" : 0.63},
+                    { "title" : "12:48", "value" : 0.06},
                 ]
             },
             {
                 "title": "re0 out",
                 "datapoints" : [
-                    { "title" : "00:00", "value" : 80},
-                    { "title" : "01:00", "value" : 80},
                     { "title" : "02:00", "value" : 80},
                     { "title" : "03:00", "value" : 80},
                     { "title" : "04:00", "value" : 80},                                                                                                                                             
@@ -59,6 +57,8 @@
                     { "title" : "21:00", "value" : 80},
                     { "title" : "22:00", "value" : 80},
                     { "title" : "23:00", "value" : 80},
+                    { "title" : "12:47", "value" : 0.00},
+                    { "title" : "12:48", "value" : 2.23},
                 ]
             }
         ]
