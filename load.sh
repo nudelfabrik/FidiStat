@@ -5,8 +5,8 @@ ut3=`uptime | awk '{ print $(NF)   }' | sed 's/,/\./g'`
 
 time=`date "+%H:%M"`
 new1="                    { \"title\" : \"$time\", \"value\" : $ut1},"
-new1="                    { \"title\" : \"$time\", \"value\" : $ut2},"
-new2="                    { \"title\" : \"$time\", \"value\" : $ut3},"
+new2="                    { \"title\" : \"$time\", \"value\" : $ut2},"
+new3="                    { \"title\" : \"$time\", \"value\" : $ut3},"
 awk 'NR != 9' load.json > .load.tmp && mv .load.tmp load.json
 awk -v n="$new1" 'NR == 32 {print n} {print}' load.json > .load.tmp && mv .load.tmp load.json
 awk 'NR != 38' load.json > .load.tmp && mv .load.tmp load.json
