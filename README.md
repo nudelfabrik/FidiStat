@@ -8,7 +8,6 @@ FreeNAS monitoring for [Status Board](http://www.panic.com/statusboard/)
 TODO
 ----
 * HDD usage
-* automated script which generates a statusboard:// link
 
 Ready
 -----
@@ -16,6 +15,7 @@ Ready
 * cpu temperature
 * network traffic
 * HDD temperature
+* automated script which generates a statusboard:// link
 
 Install
 ------
