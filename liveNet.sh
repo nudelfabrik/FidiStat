@@ -10,8 +10,8 @@ do
     time=`date "+%H:%M"`
     new1="                    { \"title\" : \"$time\", \"value\" : $in},"
     new2="                    { \"title\" : \"$time\", \"value\" : $out},"
-    awk 'NR != 10' livenet.json > .livenet.tmp && mv .livenet.tmp livenet.json
-    awk -v n="$new1" 'NR == 310 {print n} {print}' livenet.json > .livenet.tmp && mv .livenet.tmp livenet.json
-    awk 'NR != 316' livenet.json > .livenet.tmp && mv .livenet.tmp livenet.json
-    awk -v n="$new2" 'NR == 616 {print n} {print}' livenet.json > .livenet.tmp && mv .livenet.tmp livenet.json
+    awk 'NR != 10' liveNet.json > .liveNet.tmp && mv .liveNet.tmp liveNet.json
+    awk -v n="$new1" 'NR == 310 {print n} {print}' liveNet.json > .liveNet.tmp && mv .liveNet.tmp liveNet.json
+    awk 'NR != 316' liveNet.json > .liveNet.tmp && mv .liveNet.tmp liveNet.json
+    awk -v n="$new2" 'NR == 616 {print n} {print}' liveNet.json > .liveNet.tmp && mv .liveNet.tmp liveNet.json
 done
