@@ -12,13 +12,13 @@ new2="                    { \"title\" : \"$time\", \"value\" : $temps2},"
 new3="                    { \"title\" : \"$time\", \"value\" : $temps3},"
 new4="                    { \"title\" : \"$time\", \"value\" : $temps4},"
 new5="                    { \"title\" : \"$time\", \"value\" : $temps5},"
-awk 'NR != 9' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
-awk -v n="$new1" 'NR == 32 {print n} {print}' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
-awk 'NR != 38' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
-awk -v n="$new2" 'NR == 61 {print n} {print}' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
-awk 'NR != 67' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
-awk -v n="$new3" 'NR == 90 {print n} {print}' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
-awk 'NR != 96' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
-awk -v n="$new4" 'NR == 119 {print n} {print}' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
-awk 'NR != 125' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
-awk -v n="$new5" 'NR == 148 {print n} {print}' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
+awk 'NR != 10' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
+awk -v n="$new1" 'NR == 33 {print n} {print}' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
+awk 'NR != 39' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
+awk -v n="$new2" 'NR == 62 {print n} {print}' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
+awk 'NR != 68' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
+awk -v n="$new3" 'NR == 91 {print n} {print}' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
+awk 'NR != 97' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
+awk -v n="$new4" 'NR == 120 {print n} {print}' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
+awk 'NR != 126' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json
+awk -v n="$new5" 'NR == 149 {print n} {print}' HDDtemp.json > .HDDtemp.tmp && mv .HDDtemp.tmp HDDtemp.json

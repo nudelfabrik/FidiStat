@@ -7,7 +7,7 @@ out=`echo $stat | awk '{print $2}'`
 time=`date "+%H:%M"`
 new1="                    { \"title\" : \"$time\", \"value\" : $in},"
 new2="                    { \"title\" : \"$time\", \"value\" : $out},"
-awk 'NR != 9' netTraf.json > .netTraf.tmp && mv .netTraf.tmp netTraf.json
-awk -v n="$new1" 'NR == 32 {print n} {print}' netTraf.json > .netTraf.tmp && mv .netTraf.tmp netTraf.json
-awk 'NR != 38' netTraf.json > .netTraf.tmp && mv .netTraf.tmp netTraf.json
-awk -v n="$new2" 'NR == 61 {print n} {print}' netTraf.json > .netTraf.tmp && mv .netTraf.tmp netTraf.json
+awk 'NR != 10' netTraf.json > .netTraf.tmp && mv .netTraf.tmp netTraf.json
+awk -v n="$new1" 'NR == 33 {print n} {print}' netTraf.json > .netTraf.tmp && mv .netTraf.tmp netTraf.json
+awk 'NR != 39' netTraf.json > .netTraf.tmp && mv .netTraf.tmp netTraf.json
+awk -v n="$new2" 'NR == 62 {print n} {print}' netTraf.json > .netTraf.tmp && mv .netTraf.tmp netTraf.json
