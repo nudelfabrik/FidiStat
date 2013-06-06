@@ -6,8 +6,6 @@
             {
                 "title": "RUNQ",
                 "datapoints" : [
-                    { "title" : "00:00", "value" : 80},
-                    { "title" : "01:00", "value" : 80},
                     { "title" : "02:00", "value" : 80},
                     { "title" : "03:00", "value" : 80},
                     { "title" : "04:00", "value" : 80},                                                                                                                                             
@@ -30,13 +28,13 @@
                     { "title" : "21:00", "value" : 80},
                     { "title" : "22:00", "value" : 80},
                     { "title" : "23:00", "value" : 80},
+                    { "title" : "23:39", "value" : },
+                    { "title" : "23:42", "value" : },
                 ]
             },
             {
                 "title": "Disk Wait",
                 "datapoints" : [
-                    { "title" : "00:00", "value" : 80},
-                    { "title" : "01:00", "value" : 80},
                     { "title" : "02:00", "value" : 80},
                     { "title" : "03:00", "value" : 80},
                     { "title" : "04:00", "value" : 80},                                                                                                                                             
@@ -59,13 +57,13 @@
                     { "title" : "21:00", "value" : 80},
                     { "title" : "22:00", "value" : 80},
                     { "title" : "23:00", "value" : 80},
+                    { "title" : "23:39", "value" : },
+                    { "title" : "23:42", "value" : },
                 ]
             },
             {
                 "title": "Page Wait",
                 "datapoints" : [
-                    { "title" : "00:00", "value" : 80},
-                    { "title" : "01:00", "value" : 80},
                     { "title" : "02:00", "value" : 80},
                     { "title" : "03:00", "value" : 80},
                     { "title" : "04:00", "value" : 80},                                                                                                                                             
@@ -88,13 +86,13 @@
                     { "title" : "21:00", "value" : 80},
                     { "title" : "22:00", "value" : 80},
                     { "title" : "23:00", "value" : 80},
+                    { "title" : "23:39", "value" : },
+                    { "title" : "23:42", "value" : },
                 ]
             },
             {
                 "title": "Sleep",
                 "datapoints" : [
-                    { "title" : "00:00", "value" : 80},
-                    { "title" : "01:00", "value" : 80},
                     { "title" : "02:00", "value" : 80},
                     { "title" : "03:00", "value" : 80},
                     { "title" : "04:00", "value" : 80},                                                                                                                                             
@@ -117,6 +115,8 @@
                     { "title" : "21:00", "value" : 80},
                     { "title" : "22:00", "value" : 80},
                     { "title" : "23:00", "value" : 80},
+                    { "title" : "23:39", "value" : },
+                    { "title" : "23:42", "value" : },
                 ]
             }
         ]
