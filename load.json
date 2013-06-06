@@ -2,11 +2,12 @@
     "graph" : {
         "title" : "Load Averages",
         "type" : "line",
+        "refreshEveryNSeconds" : 60,
         "yAxis" : {
             "minValue" : 0,
             "maxValue" : 3
         },        
-	"datasequences" : [
+    	"datasequences" : [
             {
                 "title": "1min",
                 "datapoints" : [
