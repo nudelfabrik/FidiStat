@@ -1,40 +1,19 @@
 #!/bin/bash
+filename="HDDusage.csv"
 
-filename="HDDusage.json"
+echo "Size; HDD Usage" > $filename
 
-echo "Size; HDD Usage" >> $filename
-echo "{
-    \"graph\" : {
-        \"title\" : \"HDD usage\",
-        \"type\" : \"bar\",
-        \"datasequences\" : [
-            {
-                \"title\": \"absolute\",
-                \"datapoints\" : [
-" >> HDDusage.json
-tmp=`df -H | grep ^Data/Dokumente | awk '{ gsub("T", "000000000", $3); gsub("G", "000000", $3); gsub("M", "000", $3); gsub("k", "", $3); $3}'`
-echo "                    { \"title\" : \"Dokumente\", \"value\" : $tmp}," >> $filename
+df -H | grep ^Data/Dokumente | awk '{ gsub("T", "000000000", $3); gsub("G", "000000", $3); gsub("M", "000", $3); gsub("k", "", $3);  print "Dokumente;" , $3}' >> $filename
 
-tmp=`f -H | grep ^Data/Filme | awk '{ gsub("T", "000000000", $3); gsub("G", "000000", $3); gsub("M", "000", $3); gsub("k", "", $3); $3}'` 
-echo "                    { \"title\" : \"Filme\", \"value\" : $tmp}," >> $filename
+df -H | grep ^Data/Filme | awk '{ gsub("T", "000000000", $3); gsub("G", "000000", $3); gsub("M", "000", $3); gsub("k", "", $3);  print "Filme;" , $3}' >> $filename 
 
-tmp=`f -H | grep ^Data/Musik | awk '{ gsub("T", "000000000", $3); gsub("G", "000000", $3); gsub("M", "000", $3); gsub("k", "", $3); $3}'`
-echo "                    { \"title\" : \"Musik\", \"value\" : $tmp}," >> $filename
+df -H | grep ^Data/Musik | awk '{ gsub("T", "000000000", $3); gsub("G", "000000", $3); gsub("M", "000", $3); gsub("k", "", $3);  print "Musik;" , $3}' >> $filename
 
-tmp=`f -H | grep ^Data/Programme | awk '{ gsub("T", "000000000", $3); gsub("G", "000000", $3); gsub("M", "000", $3); gsub("k", "", $3); $3}'`
-echo "                    { \"title\" : \"Programme\", \"value\" : $tmp}," >> $filename
+df -H | grep ^Data/Programme | awk '{ gsub("T", "000000000", $3); gsub("G", "000000", $3); gsub("M", "000", $3); gsub("k", "", $3);  print "Programme;" , $3}' >> $filename
 
-tmp=`f -H | grep ^Data/Spiele | awk '{ gsub("T", "000000000", $3); gsub("G", "000000", $3); gsub("M", "000", $3); gsub("k", "", $3); $3}'`
-echo "                    { \"title\" : \"Spiele\", \"value\" : $tmp}," >> $filename
+df -H | grep ^Data/Spiele | awk '{ gsub("T", "000000000", $3); gsub("G", "000000", $3); gsub("M", "000", $3); gsub("k", "", $3);  print "Spiele;" , $3}' >> $filename 
 
-tmp=`f -H | grep ^Data/Filme | awk '{ gsub("T", "000000000", $2); gsub("G", "000000", $2); gsub("M", "000", $2); gsub("k", "", $2); $2}' >> $filename`
-echo "                    { \"title\" : \"Filme\", \"value\" : $tmp}," >> $filename
+df -H | grep ^Data/Filme | awk '{ gsub("T", "000000000", $2); gsub("G", "000000", $2); gsub("M", "000", $2); gsub("k", "", $2);  print "Gesamt;" , $2}' >> $filename 
 
 
-echo "
-                ]
-            }
-        ]
-    }
-}
-" >> HDDusage.json
+
