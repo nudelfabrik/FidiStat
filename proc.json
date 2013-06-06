@@ -2,6 +2,7 @@
     "graph" : {
         "title" : "Process Counts",
         "type" : "line",
+        "refreshEveryNSeconds" : 60,
         "datasequences" : [
             {
                 "title": "RUNQ",
