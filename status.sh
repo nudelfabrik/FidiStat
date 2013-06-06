@@ -11,6 +11,5 @@ else
     sh load.sh
     sh netTraf.sh
 	sh Info.sh
-    sh proc.sh
 fi
 
