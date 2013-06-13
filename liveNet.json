@@ -1,6 +1,6 @@
 {
     "graph" : {
-        "title" : "Network Traffic",
+        "title" : "Live Network Traffic",
         "type" : "line",
         "refreshEveryNSeconds" : 30,
         "datasequences" : [
