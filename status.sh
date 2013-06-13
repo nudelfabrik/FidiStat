@@ -10,6 +10,6 @@ else
     sh cpu.sh
     sh load.sh
     sh Info.sh
-    sh liveTraf.sh
+    sh liveNet.sh
 fi
 
