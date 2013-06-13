@@ -9,7 +9,7 @@ else
     cd $1
     sh cpu.sh
     sh load.sh
-    sh netTraf.sh
-	sh Info.sh
+    sh Info.sh
+    sh liveTraf.sh
 fi
 
