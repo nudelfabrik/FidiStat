@@ -27,7 +27,7 @@ echo "                    { \"title\" : \"Programme\", \"value\" : $tmp}," >> $f
 tmp=`df | grep ^Data/Spiele | awk '{print $3}'`
 echo "                    { \"title\" : \"Spiele\", \"value\" : $tmp}," >> $filename
 
-tmp=`df | grep ^Data/Filme | awk '{print $3}'`
+tmp=`df | grep ^Data/Filme | awk '{print $2}'`
 echo "                    { \"title\" : \"Gesamt\", \"value\" : $tmp}," >> $filename
 
 echo "
