@@ -8,6 +8,7 @@ FreeNAS monitoring for [Status Board](http://www.panic.com/statusboard/)
 TODO
 ----
 * HDD usage
+live network traffic
 
 Ready
 -----

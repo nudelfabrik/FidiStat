@@ -30,11 +30,3 @@ echo "                    { \"title\" : \"Spiele\", \"value\" : $tmp}," >> $file
 tmp=`df | grep ^Data/Filme | awk '{print $3}'`
 echo "                    { \"title\" : \"Gesamt\", \"value\" : $tmp}," >> $filename
 
-
-echo "
-                ]
-            }
-        ]
-    }
-}
-" >> HDDusage.json
