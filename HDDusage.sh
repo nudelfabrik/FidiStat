@@ -11,7 +11,7 @@ echo "{
             {
                 \"title\": \"absolute\",
                 \"datapoints\" : [
-" >> HDDusage.json
+" >> $filename 
 tmp=`df | grep ^Data/Dokumente | awk '{print $3}'`
 echo "                    { \"title\" : \"Dokumente\", \"value\" : $tmp}," >> $filename
 
@@ -30,3 +30,9 @@ echo "                    { \"title\" : \"Spiele\", \"value\" : $tmp}," >> $file
 tmp=`df | grep ^Data/Filme | awk '{print $3}'`
 echo "                    { \"title\" : \"Gesamt\", \"value\" : $tmp}," >> $filename
 
+echo "
+                ]
+            }
+        ]
+    }
+}" >> $filename
