@@ -25,3 +25,5 @@ Install
 * run makeLink.sh with parameters for Username, Password and Server adress
     * <code>./makeLink.sh User Pass my.Server.com</code> 
 * go to statusboardLinks.html and click the links you want to add
+* when .json stay in git, ignore those changes with
+    * <code>git update-index --assume-unchanged *.json info.html</code>
