@@ -6,6 +6,7 @@
         "datasequences" : [
             {
                 "title": "In",
+                "color": "yellow",
                 "datapoints" : [
                     { "title" : "23:22", "value" : 0.65},
                     { "title" : "23:23", "value" : 1.81},
@@ -312,6 +313,7 @@
             },
             {
                 "title": "Out",
+                "color": "blue",
                 "datapoints" : [
                     { "title" : "23:22", "value" : 0.00},
                     { "title" : "23:23", "value" : 0.00},
