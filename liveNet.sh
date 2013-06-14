@@ -16,9 +16,9 @@ do
     new1="                    { \"title\" : \"$time\", \"value\" : $in},"
     new2="                    { \"title\" : \"$time\", \"value\" : $out},"
     awk 'NR != 11' liveNet.json > .liveNet.tmp && mv .liveNet.tmp liveNet.json
-    awk -v n="$new1" 'NR == 311 {print n} {print}' liveNet.json > .liveNet.tmp && mv .liveNet.tmp liveNet.json
-    awk 'NR != 318' liveNet.json > .liveNet.tmp && mv .liveNet.tmp liveNet.json
-    awk -v n="$new2" 'NR == 618 {print n} {print}' liveNet.json > .liveNet.tmp && mv .liveNet.tmp liveNet.json
+    awk -v n="$new1" 'NR == 71 {print n} {print}' liveNet.json > .liveNet.tmp && mv .liveNet.tmp liveNet.json
+    awk 'NR != 78' liveNet.json > .liveNet.tmp && mv .liveNet.tmp liveNet.json
+    awk -v n="$new2" 'NR == 138 {print n} {print}' liveNet.json > .liveNet.tmp && mv .liveNet.tmp liveNet.json
 done
 
 totin=`echo "                    { \"title\" : \"$time\", \"value\" : $totalIn}," | sed "s/ \./ 0./g"`
