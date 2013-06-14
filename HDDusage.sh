@@ -5,10 +5,11 @@ touch $filename
 #echo "Size; HDD Usage" >> $filename
 echo "{
     \"graph\" : {
-        \"title\" : \"HDD usage\",
+        \"title\" : \"Usage\",
         \"type\" : \"bar\",
         \"datasequences\" : [
             {
+                \"title\" : \"HDD\",
                 \"datapoints\" : [
 " >> $filename 
 tmp=`df | grep ^Data/Dokumente | awk '{print $3}'`
