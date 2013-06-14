@@ -9,7 +9,6 @@ echo "{
         \"type\" : \"bar\",
         \"datasequences\" : [
             {
-                \"title\": \"absolute\",
                 \"datapoints\" : [
 " >> $filename 
 tmp=`df | grep ^Data/Dokumente | awk '{print $3}'`
