@@ -70,7 +70,7 @@
                     { "title" : "14:33", "value" : 0.06},
                     { "title" : "14:34", "value" : 0.16},
                 ]
-            }
+            },
             {
                 "title": "Out",
                 "color": "blue",
