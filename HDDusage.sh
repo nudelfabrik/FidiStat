@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 filename="HDDusage.json"
 rm $filename
 touch $filename

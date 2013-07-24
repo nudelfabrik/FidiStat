@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
    
 temps1=`smartctl -a /dev/ada0 | awk '/Temperature_Celsius/{print $0}' | awk '{print $10}'`
 temps2=`smartctl -a /dev/ada1 | awk '/Temperature_Celsius/{print $0}' | awk '{print $10}'`
