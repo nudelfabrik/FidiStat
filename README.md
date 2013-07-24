@@ -7,8 +7,7 @@ FreeNAS monitoring for [Status Board](http://www.panic.com/statusboard/)
 
 TODO
 ----
-* HDD usage
-live network traffic
+Better scripts
 
 Ready
 -----
@@ -17,10 +16,13 @@ Ready
 * network traffic
 * HDD temperature
 * automated script which generates a statusboard:// link
+* HDD usage
+* live network traffic
 
 Install
 ------
 * put .json files somewhere you can access them from your iPad
+* modify the .sh to your needs (number/name of partitions for HDDusage etc.)
 * make a chronjob (or something similar) to execute the .sh files regulairly
 * run makeLink.sh with parameters for Username, Password and Server adress
     * <code>./makeLink.sh User Pass my.Server.com</code> 
