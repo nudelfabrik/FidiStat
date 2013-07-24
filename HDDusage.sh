@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 filename="HDDusage.json"
 rm $filename
 touch $filename
@@ -12,23 +12,9 @@ echo "{
                 \"title\" : \"HDD\",
                 \"datapoints\" : [
 " >> $filename 
-tmp=`df | grep ^Data/Dokumente | awk '{print $3}'`
+tmp=`df | grep ^/dev/ada0s2a| awk '{print $3}'`
 echo "                    { \"title\" : \"Dokumente\", \"value\" : $tmp}," >> $filename
 
-tmp=`df | grep ^Data/Filme | awk '{print $3}'` 
-echo "                    { \"title\" : \"Filme\", \"value\" : $tmp}," >> $filename
-
-tmp=`df | grep ^Data/Audio | awk '{print $3}'`
-echo "                    { \"title\" : \"Audio\", \"value\" : $tmp}," >> $filename
-
-tmp=`df | grep ^Data/Programme | awk '{print $3}'`
-echo "                    { \"title\" : \"Programme\", \"value\" : $tmp}," >> $filename
-
-tmp=`df | grep ^Data/Spiele | awk '{print $3}'`
-echo "                    { \"title\" : \"Spiele\", \"value\" : $tmp}," >> $filename
-
-tmp=`df | grep ^Data/Filme | awk '{print $2}'`
-echo "                    { \"title\" : \"Gesamt\", \"value\" : $tmp}," >> $filename
 
 echo "
                 ]

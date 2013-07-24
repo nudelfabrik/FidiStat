@@ -1,7 +1,7 @@
 #!/bin/sh
-ut1=`uptime | awk '{ print $(NF-2) }' | sed 's/,//g'`
-ut2=`uptime | awk '{ print $(NF-1) }' | sed 's/,//g'`
-ut3=`uptime | awk '{ print $(NF)   }' | sed 's/,//g'`
+ut1=`uptime | awk '{ print $(NF-2) }' | sed 's/,/./g'`
+ut2=`uptime | awk '{ print $(NF-1) }' | sed 's/,/./g'`
+ut3=`uptime | awk '{ print $(NF)   }' | sed 's/,/./g'`
 
 time=`date "+%H:%M"`
 new1="                    { \"title\" : \"$time\", \"value\" : $ut1},"
