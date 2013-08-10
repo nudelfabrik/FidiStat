@@ -8,26 +8,41 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <libconfig.h>
 #include "regex.h"
+#include "config.h"
+#include "main.h"
 
-//uptime:"( [0-9]?[0-9],[0-9][0-9]){3,3}"
-#define PATH    "~/"
+struct statStruct stats[10];
 
 int main(int argc, const char *argv[])
 {
     FILE *fp;
-    int status;
     char source[1024];
     char *srcPnt = source;
-
-    //char *cmmd = malloc(256);
-    //sprintf(cmmd, "uptime %s", PATH);
-    fp = popen("uptime", "r");
-    //free(cmmd);
-    fgets(source, sizeof(source)-1, fp);
-    regexing("( [0-9]?[0-9],[0-9][0-9]){3,3}", srcPnt);
-            
-    printf("%s", source);
     
+    initConf();
+    int statNum = getStatNum(); 
+ 
+    //import the config file
+    int i = 0;
+    for (i = 0; i < statNum; i++) {
+        getConfList(i);
+        getConfEnable(i);
+        if (stats[i].enabled) {
+            getConfRegex(i);
+            getConfCmmd(i);
+        }
+    }
+
+    for (i = 0; i < statNum; i++) {
+        if (stats[i].enabled) {
+            fp = popen(stats[i].cmmd, "r");  
+            fgets(source, sizeof(source)-1, fp);
+            regexing(stats[i].regex, srcPnt);
+            printf("%s", source);
+        }
+    }
+    destroyConf(); 
     return 0;
 }
