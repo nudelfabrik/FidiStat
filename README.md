@@ -7,8 +7,9 @@ FreeNAS monitoring for [Status Board](http://www.panic.com/statusboard/)
 
 TODO
 ----
-* HDD usage
-live network traffic
+* Implement the rest of the Stats
+* Automate the systemcommands
+* Makefile
 
 Ready
 -----
@@ -16,14 +17,11 @@ Ready
 * cpu temperature
 * network traffic
 * HDD temperature
-* automated script which generates a statusboard:// link
 
 Install
 ------
-* put .json files somewhere you can access them from your iPad
-* make a chronjob (or something similar) to execute the .sh files regulairly
-* run makeLink.sh with parameters for Username, Password and Server adress
-    * <code>./makeLink.sh User Pass my.Server.com</code> 
-* go to statusboardLinks.html and click the links you want to add
-* when .json stay in git, ignore those changes with
-    * <code>git update-index --assume-unchanged *.json info.html</code>
+* You need [Jansson](http://www.digip.org/jansson/) and [Libconfig](http://www.hyperrealm.com/libconfig/)
+* <code>gcc -lconfig -ljansson main.c regex.c config.c jansson.c -o status</code>
+    * makefile will be provided later
+* make a cronjob with status
+* point StatusBoard to the .json Files
