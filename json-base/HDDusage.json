@@ -1,0 +1,19 @@
+{
+    "graph" : {
+        "title" : "HDD usage",
+        "type" : "bar",
+        "datasequences" : [
+            {
+                "title": "absolute",
+                "datapoints" : [
+                ]
+            },
+            {
+                "title": "relative",
+                "datapoints" : [
+                ]
+            }
+        ]
+    }
+}
+

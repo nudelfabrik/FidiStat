@@ -1,0 +1,20 @@
+{
+    "graph" : {
+        "title" : "CPU Temperature",
+        "type" : "line",
+        "refreshEveryNSeconds" : 60,
+        "datasequences" : [
+            {
+                "title": "CPU 1",
+                "datapoints" : [
+                ]
+            },
+            {
+                "title": "CPU 2",
+                "datapoints" : [
+                ]
+            }
+        ]
+    }
+}
+
