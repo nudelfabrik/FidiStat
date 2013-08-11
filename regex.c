@@ -9,32 +9,30 @@
 #include <regex.h>
 #include <string.h>
 #include "regex.h"
+#include "main.h"
 
+struct statStruct stats[10];
 
+void regexing(int i) {
+    regex_t regex;
+    int retex;
+    regmatch_t pmatch;
+    const char *rawPnt = stats[i].raw;
 
-void regexing(const char * reg, char* string) {
-regex_t regex;
-int retex;
-size_t maxGroups = 3;
-regmatch_t pmatch[maxGroups];
-    retex = regcomp( &regex, reg, REG_EXTENDED);
+    retex = regcomp( &regex, stats[i].regex, REG_EXTENDED);
     if( retex ){ fprintf(stderr, "Could not compile regex\n"); exit(1); }
-    if (regexec(&regex, string, maxGroups, pmatch, 0) == 0) {
-        char stringCp[strlen(string) + 1];
-        strcpy(stringCp, string);
-        stringCp[pmatch[0].rm_eo] = 0;
-        strcpy(string, stringCp + pmatch[0].rm_so);
-                
-    }
-    sanitize(string);
-    
+        while (regexec(&regex, rawPnt, 1, &pmatch, 0) == 0) {
+            sprintf(stats[i].result, "%s%.*s\n",stats[i].result,  (int)(pmatch.rm_eo - pmatch.rm_so), &rawPnt[pmatch.rm_so]);
+            rawPnt += pmatch.rm_eo;
+        }
+    sanitize(i);
 }
 
-void sanitize(char* string) {
-    int i;
-    for (i = 0; i < strlen(string)+ 1  ; i++) {
-        if (string[i] == ',') {
-            string[i] = '.';
+void sanitize(int i) {
+    int j;
+    for (j = 0; j < strlen(stats[i].result)+ 1  ; j++) {
+        if (stats[i].result[j] == ',') {
+            stats[i].result[j] = '.';
         }
     }
 }

@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <regex.h>
 #include <libconfig.h>
 #include "regex.h"
 #include "config.h"
@@ -17,9 +18,8 @@ struct statStruct stats[10];
 
 int main(int argc, const char *argv[])
 {
-    FILE *fp;
-    char source[1024];
-    char *srcPnt = source;
+    json_t *root;
+    json_error_t error;
     
     initConf();
     int statNum = getStatNum(); 
@@ -32,17 +32,23 @@ int main(int argc, const char *argv[])
         if (stats[i].enabled) {
             getConfRegex(i);
             getConfCmmd(i);
+            cmmdOutput(i); //Speicher Cmmd Output
+            regexing(i);
         }
     }
 
-    for (i = 0; i < statNum; i++) {
-        if (stats[i].enabled) {
-            fp = popen(stats[i].cmmd, "r");  
-            fgets(source, sizeof(source)-1, fp);
-            regexing(stats[i].regex, srcPnt);
-            printf("%s", source);
-        }
-    }
     destroyConf(); 
     return 0;
 }
+
+void cmmdOutput(int i) {
+    char raw[OUTPUT_SIZE];
+    FILE *fp;
+
+    fp = popen(stats[i].cmmd, "r");  
+    while(fgets(raw, sizeof(stats[i].raw-1), fp) != NULL) {
+        strcat(stats[i].raw,raw);
+    }
+    pclose(fp);
+}
+
