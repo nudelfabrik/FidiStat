@@ -1,0 +1,30 @@
+{
+    "graph" : {
+        "title" : "Process Counts",
+        "type" : "line",
+        "refreshEveryNSeconds" : 60,
+        "datasequences" : [
+            {
+                "title": "RUNQ",
+                "datapoints" : [
+                ]
+            },
+            {
+                "title": "Disk Wait",
+                "datapoints" : [
+                ]
+            },
+            {
+                "title": "Page Wait",
+                "datapoints" : [
+                ]
+            },
+            {
+                "title": "Sleep",
+                "datapoints" : [
+                ]
+            }
+        ]
+    }
+}
+

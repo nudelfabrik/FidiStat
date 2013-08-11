@@ -1,0 +1,22 @@
+{
+    "graph" : {
+        "title" : "Live Network Traffic",
+        "type" : "line",
+        "refreshEveryNSeconds" : 30,
+        "datasequences" : [
+            {
+                "title": "In",
+                "color": "yellow",
+                "datapoints" : [
+                ]
+            },
+            {
+                "title": "Out",
+                "color": "blue",
+                "datapoints" : [
+                ]
+            }
+        ]
+    }
+}
+
