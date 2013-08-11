@@ -11,7 +11,7 @@ void makeJansson(Status *stat) {
     json_error_t error;
 
     char file[OUTPUT_SIZE];
-    sprintf(file, "%s.json", stat->name);
+    sprintf(file, "%s%s.json",path, stat->name);
     root = json_load_file(file, 0, &error);
     if (!root) {
         printf("Unable to load parmaters! error: on line %d: %s\n", error.line, error.text); 

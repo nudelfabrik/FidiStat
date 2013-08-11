@@ -30,6 +30,7 @@
 #include "config.h"
 #include "jansson.h"
 
+char path[OUTPUT_SIZE];
 char zeit[10];
 
 int main(int argc, const char *argv[])
@@ -39,6 +40,7 @@ int main(int argc, const char *argv[])
 
     //load Config File
     initConf();
+    getPath();
     
     //Set zeit to current time    
     timeSet();

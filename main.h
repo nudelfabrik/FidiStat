@@ -18,6 +18,7 @@ struct statStruct {
 typedef struct statStruct Status;
 
 char zeit[10];
+char path[OUTPUT_SIZE];
 void cmmdOutput(Status *stat);
 void timeSet();
 

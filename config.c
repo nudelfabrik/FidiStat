@@ -7,6 +7,8 @@
 
 config_t config;
 config_setting_t *setting;
+char path[OUTPUT_SIZE];
+
 
 void initConf () {
     config_init(&config);
@@ -18,6 +20,13 @@ void initConf () {
         exit(1);
     }
 }
+
+void getPath() {
+    const char *temp;
+    config_lookup_string(&config, "path", &temp);
+    strcpy(path, temp);
+}
+
 int getStatNum () {
     setting = config_lookup(&config, "list");
     return config_setting_length(setting);
