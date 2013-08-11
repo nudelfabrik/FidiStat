@@ -7,7 +7,6 @@
 
 config_t config;
 config_setting_t *setting;
-struct statStruct stats[10];
 
 void initConf () {
     config_init(&config);
@@ -16,6 +15,7 @@ void initConf () {
         fprintf(stderr, "%s:%d - %s\n", config_error_file(&config),
         config_error_line(&config), config_error_text(&config));
         config_destroy(&config);
+        exit(1);
     }
 }
 int getStatNum () {
@@ -24,24 +24,24 @@ int getStatNum () {
 }
 
 
-void getConfList(int i) {
+void getConfList(Status *stat, int i) {
     setting = config_lookup(&config, "list");
-    stats[i].name = config_setting_get_string_elem(setting, i);
+    stat->name = config_setting_get_string_elem(setting, i);
 }
 
-void getConfEnable(int i) {
-    setting = config_lookup(&config, stats[i].name); 
-    config_setting_lookup_bool(setting, "enabled", &stats[i].enabled);
+void getConfEnable(Status *stat) {
+    setting = config_lookup(&config, stat->name); 
+    config_setting_lookup_bool(setting, "enabled", &stat->enabled);
 }
 
-void getConfCmmd(int i) {
-    setting = config_lookup(&config, stats[i].name); 
-    config_setting_lookup_string(setting, "cmmd", &stats[i].cmmd);
+void getConfCmmd(Status *stat) {
+    setting = config_lookup(&config, stat->name); 
+    config_setting_lookup_string(setting, "cmmd", &stat->cmmd);
 }
 
-void getConfRegex(int i) {
-    setting = config_lookup(&config, stats[i].name); 
-    config_setting_lookup_string(setting, "regex", &stats[i].regex);
+void getConfRegex(Status *stat) {
+    setting = config_lookup(&config, stat->name); 
+    config_setting_lookup_string(setting, "regex", &stat->regex);
 }
 
 void destroyConf() {

@@ -15,7 +15,10 @@ struct statStruct {
     double  result[10];
 
 };
+typedef struct statStruct Status;
+
 char zeit[10];
-void cmmdOutput(int i);
+void cmmdOutput(Status *stat);
+void timeSet();
 
 #endif
