@@ -2,10 +2,10 @@
 #define CONFIG
 void initConf();
 void destroyConf();
-const char * getConfList(int i);
+const char * getConfList(Status *Stat, int i);
 int getStatNum();
-void getConfEnable(int i);
-void getConfCmmd(int i);
-void getConfRegex(int i);
+void getConfEnable(Status *Stat);
+void getConfCmmd(Status *Stat);
+void getConfRegex(Status *Stat);
 
 #endif

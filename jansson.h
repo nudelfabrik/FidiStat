@@ -1,6 +1,6 @@
 #ifndef JANSSON
 #define JANSSON
 
-void makeJansson(int i);
+void makeJansson(Status *Stat);
 
 #endif
