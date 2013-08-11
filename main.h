@@ -3,6 +3,7 @@
 
 #define PATH    "~/"
 #define CFG_FILE "config.cfg"
+#define MAXCOUNT 30
 #define OUTPUT_SIZE 1024
 
 struct statStruct {
@@ -11,10 +12,10 @@ struct statStruct {
     const char *cmmd;
     const char *regex;
     char raw[OUTPUT_SIZE] ;
-    char  result[OUTPUT_SIZE];
+    double  result[10];
 
 };
-
+char zeit[10];
 void cmmdOutput(int i);
 
 #endif

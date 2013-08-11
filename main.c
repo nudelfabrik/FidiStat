@@ -13,17 +13,23 @@
 #include "regex.h"
 #include "config.h"
 #include "main.h"
+#include "jansson.h"
+#include <time.h>
 
 struct statStruct stats[10];
+char zeit[10];
 
 int main(int argc, const char *argv[])
 {
-    json_t *root;
-    json_error_t error;
-    
     initConf();
     int statNum = getStatNum(); 
- 
+    time_t epoch_time;
+    struct tm *tm_p;
+    epoch_time = time( NULL );
+    tm_p = localtime( &epoch_time );
+    sprintf(zeit, "%.2d:%.2d", 
+    tm_p->tm_hour, tm_p->tm_min );
+    //
     //import the config file
     int i = 0;
     for (i = 0; i < statNum; i++) {
@@ -34,6 +40,7 @@ int main(int argc, const char *argv[])
             getConfCmmd(i);
             cmmdOutput(i); //Speicher Cmmd Output
             regexing(i);
+            makeJansson(i);
         }
     }
 
