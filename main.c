@@ -54,11 +54,16 @@ int main(int argc, const char *argv[])
         getConfList(statsPtr, i);
         getConfEnable(statsPtr);
         if (stats[i].enabled) {
+            getConfType(statsPtr);
             getConfRegex(statsPtr);
             getConfCmmd(statsPtr);
             cmmdOutput(statsPtr);
-            regexing(statsPtr);
-            makeJansson(statsPtr);
+            if (stats[i].type == 2) {
+                makeCSV(statsPtr);
+            } else {
+                regexing(statsPtr);
+                makeJansson(statsPtr);
+            }
         }
     }
 

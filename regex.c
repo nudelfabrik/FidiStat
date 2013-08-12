@@ -23,17 +23,23 @@ void regexing(Status *stat) {
             rawPnt += pmatch.rm_eo;
             j++;
         }
+    regfree(&regex);
+
 }
 
 void sanitize(char c[OUTPUT_SIZE]) {
     int j;
-    int k;
-    for (k = 0; k < 10; k++) {
-        
     for (j = 0; j < strlen(c)- 1  ; j++) {
         if (c[j] == ',') {
             c[j] = '.';
+            break;
+        }
+        int k;
+        for (k = 0; k < 10; k++) {
+            if (c[j] == (char) k) {
+                c[j] = ' ';
+                break;
+            }
         }
     }
-        }
 }
