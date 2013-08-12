@@ -10,6 +10,7 @@ config_setting_t *setting;
 char path[OUTPUT_SIZE];
 
 
+//get the config specified in main.h
 void initConf () {
     config_init(&config);
     if(! config_read_file(&config, CFG_FILE))
@@ -21,12 +22,13 @@ void initConf () {
     }
 }
 
+//Get Path to .jsons
 void getPath() {
     const char *temp;
     config_lookup_string(&config, "path", &temp);
     strcpy(path, temp);
 }
-
+//get number of Stats
 int getStatNum () {
     setting = config_lookup(&config, "list");
     return config_setting_length(setting);

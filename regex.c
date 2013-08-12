@@ -29,12 +29,14 @@ void regexing(Status *stat) {
 
 void sanitize(char c[OUTPUT_SIZE]) {
     int j;
+    //Json wants "." instead of ","
     for (j = 0; j < strlen(c)- 1  ; j++) {
         if (c[j] == ',') {
             c[j] = '.';
             break;
         }
         int k;
+    //Delete every non-numeric (Tips for improvement are welcomed)
         for (k = 0; k < 10; k++) {
             if (c[j] == (char) k) {
                 c[j] = ' ';
