@@ -1,16 +1,17 @@
 {
     "graph" : {
-        "title" : "HDD usage",
+        "title" : "Usage",
         "type" : "bar",
         "datasequences" : [
             {
-                "title": "absolute",
+            "title" : "HDD",
                 "datapoints" : [
-                ]
-            },
-            {
-                "title": "relative",
-                "datapoints" : [
+                        { "title" : "Dokumente", "value" : 483284},
+                        { "title" : "Filme", "value" : 4486162435},
+                        { "title" : "Audio", "value" : 72292373},
+                        { "title" : "Programme", "value" : 207304398},
+                        { "title" : "Spiele", "value" : 303384812},
+                        { "title" : "Gesamt", "value" : 21887060523},
                 ]
             }
         ]
