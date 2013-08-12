@@ -53,6 +53,11 @@ void getConfRegex(Status *stat) {
     config_setting_lookup_string(setting, "regex", &stat->regex);
 }
 
+void getConfType(Status *stat) {
+    setting = config_lookup(&config, stat->name); 
+    config_setting_lookup_int(setting, "type", &stat->type);
+}
+
 void destroyConf() {
     config_destroy(&config); 
 }

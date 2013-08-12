@@ -6,6 +6,7 @@ const char * getConfList(Status *Stat, int i);
 int getStatNum();
 void getPath();
 void getConfEnable(Status *Stat);
+void getConfType(Status *Stat);
 void getConfCmmd(Status *Stat);
 void getConfRegex(Status *Stat);
 
