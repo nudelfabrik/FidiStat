@@ -12,6 +12,7 @@ void makeJansson(Status *stat) {
 
     char file[OUTPUT_SIZE];
     sprintf(file, "%s%s.json",path, stat->name);
+    //Load *.json
     root = json_load_file(file, 0, &error);
     if (!root) {
         printf("Unable to load parmaters! error: on line %d: %s\n", error.line, error.text); 
@@ -21,12 +22,14 @@ void makeJansson(Status *stat) {
     int j;
     for (j = 0; j < json_array_size(dataseq); j++) {
         arry = json_object_get(json_array_get(dataseq, j),"datapoints"); 
+    //If Type is 0 /Line (standard case) append new value at the bottom 
         if (stat->type == 0) {
             if (json_array_size(arry) >= MAXCOUNT) {
                  json_array_remove(arry,0);
             }
             newval = json_pack("{sssf}", "title", zeit, "value", stat->result[j]);
             json_array_append_new(arry, newval);
+    //When Type is Bar, every Entry has its own name and you change the value
         } else {
             int k;
             for (k = 0; k < sizeof(stat->result); k++) {
@@ -34,9 +37,11 @@ void makeJansson(Status *stat) {
             }
         }
     }
+        //write modified json
         json_dump_file(root, file, JSON_PRESERVE_ORDER || JSON_INDENT(2));
 }
 
+//If type is 2, you create a new .csv evertime the command runs
 void makeCSV(Status *stat) {
     FILE *fp;
     char file[OUTPUT_SIZE];

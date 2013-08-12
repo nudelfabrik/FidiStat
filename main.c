@@ -72,6 +72,7 @@ int main(int argc, const char *argv[])
     return 0;
 }
 
+//Set time
 void timeSet() {
     time_t epoch_time;
     struct tm *tm_p;
@@ -81,6 +82,7 @@ void timeSet() {
     tm_p->tm_hour, tm_p->tm_min );
 }
 
+//Get Output from Command
 void cmmdOutput(Status *stat) {
     char raw[OUTPUT_SIZE];
     FILE *fp;
