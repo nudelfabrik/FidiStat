@@ -16,6 +16,7 @@ void makeJansson(Status *stat) {
     root = json_load_file(file, 0, &error);
     if (!root) {
         printf("Unable to load parmaters! error: on line %d: %s\n", error.line, error.text); 
+        printf("File: %s\n", stat->name);
         exit(1);
     }
     dataseq = json_object_get(json_object_get(root, "graph"), "datasequences");
