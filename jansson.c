@@ -45,7 +45,7 @@ void makeJansson(Status *stat) {
 void makeCSV(Status *stat) {
     FILE *fp;
     char file[OUTPUT_SIZE];
-    char output[OUTPUT_SIZE];
+    char output[OUTPUT_SIZE] = "";
     sprintf(file, "%s%s.csv",path, stat->name);
     fp = fopen(file, "w");
     strcat(output, stat->regex);
