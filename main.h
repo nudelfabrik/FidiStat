@@ -1,7 +1,7 @@
 #ifndef MAIN
 #define MAIN
 
-#define CFG_FILE "config.cfg"
+#define CFG_FILE "/usr/local/etc/fidistat/config.cfg"
 #define MAXCOUNT 30
 #define OUTPUT_SIZE 1024
 #define MAXSTAT 10
