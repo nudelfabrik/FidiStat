@@ -22,7 +22,7 @@ Install
 * You need [Jansson](http://www.digip.org/jansson/) and [Libconfig](http://www.hyperrealm.com/libconfig/)
 * <code>gcc -lconfig -ljansson main.c regex.c config.c jansson.c -o status</code>
     * makefile will be provided later
-* make a new folder (default: json) and copy the .jsons from json-base
+* make a new folder and copy the .jsons from json-base
 * Modify the config.cfg file to match your needs and the specific commands, depending on the Platform
 
 
