@@ -18,30 +18,10 @@ void regexing(Status *stat) {
     if( retex ){ fprintf(stderr, "Could not compile regex\n"); exit(1); }
         while (regexec(&regex, rawPnt, 1, &pmatch, 0) == 0) {
             sprintf(res, "%.*s",  (int)(pmatch.rm_eo - pmatch.rm_so), &rawPnt[pmatch.rm_so]);
-            sanitize(res);
             stat->result[j] = atof(res);
             rawPnt += pmatch.rm_eo;
             j++;
         }
     regfree(&regex);
 
-}
-
-void sanitize(char c[OUTPUT_SIZE]) {
-    int j;
-    //Json wants "." instead of ","
-    for (j = 0; j < strlen(c)- 1  ; j++) {
-        if (c[j] == ',') {
-            c[j] = '.';
-            break;
-        }
-        int k;
-    //Delete every non-numeric (Tips for improvement are welcomed)
-        for (k = 0; k < 10; k++) {
-            if (c[j] == (char) k) {
-                c[j] = ' ';
-                break;
-            }
-        }
-    }
 }
