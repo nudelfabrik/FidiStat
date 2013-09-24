@@ -1,12 +1,7 @@
 FidiStat
 ========
 
-FreeNAS monitoring for [Status Board](http://www.panic.com/statusboard/)
-
-
-TODO
-----
-* Makefile
+FreeBSD/FreeNAS monitoring for [Status Board](http://www.panic.com/statusboard/)
 
 Ready
 -----
@@ -19,12 +14,12 @@ Ready
 
 Install
 ------
-* You need [Jansson](http://www.digip.org/jansson/) and [Libconfig](http://www.hyperrealm.com/libconfig/)
-* <code>gcc -lconfig -ljansson main.c regex.c config.c jansson.c -o status</code>
-    * makefile will be provided later
-* make a new folder and copy the .jsons from json-base (Inside your Webserver to reach it from Status Board)
-* Modify the config.cfg file to match your needs and the specific commands, depending on the Platform
-* Add fidistat to your crontab to execute it regularly
+<code>sudo gmake install clean</code>  
+You need [Jansson](http://www.digip.org/jansson/) and [Libconfig](http://www.hyperrealm.com/libconfig/)
+They are available in /usr/ports/ if using FreeBSD. When /usr/ports/ are installed, gmake will install them for you.
+Standard Destination is <code>/usr/local/bin/fidistat</code> for the binary and <code>/usr/local/etc/fidistat</code> for the config.cfg als well as the jsons.
+These can be symlinked into a Directory accessible from Status Board.
+At last, add fidistat to your crontab to log your data every x Minutes.
 
 
 config.cfg
