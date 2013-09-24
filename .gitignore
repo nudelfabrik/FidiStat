@@ -1,8 +1,3 @@
 a.out
-.fuse_hidden*
 ._*
 .DS_Store
-statboardLinks.html
-stats.txt
-Shell\ sysctl
-json/
