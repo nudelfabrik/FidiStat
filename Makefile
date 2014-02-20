@@ -1,4 +1,4 @@
-CC=gcc
+CC=clang
 LIB_DIR=/usr/local
 CFLAGS=-I $(LIB_DIR)/include -L $(LIB_DIR)/lib
 INS_DIR=/usr/local
