@@ -14,11 +14,13 @@ void makeJansson(Status *stat) {
     sprintf(file, "%s%s.json",path, stat->name);
     //Load *.json
     root = json_load_file(file, 0, &error);
+    //CHeck for Errors
     if (!root) {
         printf("Unable to load parmaters! error: on line %d: %s\n", error.line, error.text); 
         printf("File: %s\n", stat->name);
         exit(1);
     }
+    //Get old Data
     dataseq = json_object_get(json_object_get(root, "graph"), "datasequences");
     int j;
     for (j = 0; j < json_array_size(dataseq); j++) {
@@ -38,11 +40,11 @@ void makeJansson(Status *stat) {
             }
         }
     }
-        //write modified json
-        json_dump_file(root, file, JSON_PRESERVE_ORDER || JSON_INDENT(2));
+    //write modified json
+    json_dump_file(root, file, JSON_PRESERVE_ORDER || JSON_INDENT(2));
 }
 
-//If type is 2, you create a new .csv evertime the command runs
+//If type is 2, create a new .csv evertime the command runs
 void makeCSV(Status *stat) {
     FILE *fp;
     char file[OUTPUT_SIZE];
