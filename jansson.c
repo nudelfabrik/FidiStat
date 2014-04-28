@@ -41,7 +41,7 @@ void makeJansson(Status *stat) {
         }
     }
     //write modified json
-    json_dump_file(root, file, JSON_PRESERVE_ORDER || JSON_INDENT(2));
+    json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2));
 }
 
 //If type is 2, create a new .csv evertime the command runs
