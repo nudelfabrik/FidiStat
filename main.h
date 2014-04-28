@@ -20,7 +20,7 @@ typedef struct statStruct Status;
 
 
 char zeit[10];
-char path[OUTPUT_SIZE];
+const char *path;
 void cmmdOutput(Status *stat);
 void timeSet();
 
