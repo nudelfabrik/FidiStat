@@ -32,6 +32,7 @@ ifeq (strip $(wildcard $(LIB_DIR)/lib/libjansson.*),)
 		echo "Refer to README to install manually"; \
 	fi 
 endif
+	echo "jansson installed"
 	$(CC) $(CFLAGS) -c jansson.c 
 
 regex.o: regex.c
