@@ -44,6 +44,6 @@ install: all
 	cp -n json-base/* $(INS_DIR)/etc/fidistat/json
 	cp -n configFiles/* $(INS_DIR)/etc/fidistat
 
-clean: install
+clean: 
 	rm *.o
 	rm fidistat
