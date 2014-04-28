@@ -6,7 +6,6 @@
 
 
 config_t config;
-config_setting_t *setting;
 char path[OUTPUT_SIZE];
 
 
@@ -24,48 +23,68 @@ void initConf () {
     }
 }
 
+config_setting_t* getSetting(const char * item) {
+    config_setting_t *setting = config_lookup(&config, item);
+    if (setting == NULL) {
+        fprintf(stderr, "Can't find %s\n", item);
+        exit(1);
+    }
+    return setting;
+}
 //Get Path to .jsons
 void getPath() {
     const char *temp;
-    config_lookup_string(&config, "path", &temp);
+    int confBool = config_lookup_string(&config, "path", &temp);
+    if (!confBool) {
+        fprintf(stderr, "Can't lookup path to .json\n");
+        exit(1);
+        //TODO Check if Directory actually exists
+    }
     strcpy(path, temp);
 }
 
 //get number of Stats
 int getStatNum () {
-    setting = config_lookup(&config, "list");
-    return config_setting_length(setting);
+    getSetting("list"); 
+    return config_setting_length(getSetting("list"));
 }
 
 
 //Set name of *stat to the ith item of config list
 void getConfList(Status *stat, int i) {
-    setting = config_lookup(&config, "list");
-    stat->name = config_setting_get_string_elem(setting, i);
+    stat->name = config_setting_get_string_elem(getSetting("list"), i);
 }
 
 //Check if *stat is enabled 
 void getConfEnable(Status *stat) {
-    setting = config_lookup(&config, stat->name); 
-    config_setting_lookup_bool(setting, "enabled", &stat->enabled);
+    if (!config_setting_lookup_bool(getSetting(stat->name), "enabled", &stat->enabled)) {
+        fprintf(stderr, "Can't lookup enabled of %s\n", stat->name);
+        exit(1);
+    }
 }
 
 //Get Command of *stat
 void getConfCmmd(Status *stat) {
-    setting = config_lookup(&config, stat->name); 
-    config_setting_lookup_string(setting, "cmmd", &stat->cmmd);
+    if (!config_setting_lookup_string(getSetting(stat->name), "cmmd", &stat->cmmd)) {
+        fprintf(stderr, "Can't lookup Command of %s\n", stat->name);
+        exit(1);
+    }
 }
  
 //Get Regex of *stat
 void getConfRegex(Status *stat) {
-    setting = config_lookup(&config, stat->name); 
-    config_setting_lookup_string(setting, "regex", &stat->regex);
+    if (!config_setting_lookup_string(getSetting(stat->name), "regex", &stat->regex)) {
+        fprintf(stderr, "Can't lookup Regex of %s\n", stat->name);
+        exit(1);
+    }
 }
 
 //Get Type of *stat
 void getConfType(Status *stat) {
-    setting = config_lookup(&config, stat->name); 
-    config_setting_lookup_int(setting, "type", &stat->type);
+    if (!config_setting_lookup_int(getSetting(stat->name), "type", &stat->type)) {
+        fprintf(stderr, "Can't lookup Config Type of %s\n", stat->name);
+        exit(1);
+    }
 }
 
 //Destroy Config
