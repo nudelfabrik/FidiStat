@@ -6,7 +6,6 @@
 
 
 config_t config;
-char path[OUTPUT_SIZE];
 
 
 //get the config specified in main.h
@@ -33,14 +32,14 @@ config_setting_t* getSetting(const char * item) {
 }
 //Get Path to .jsons
 void getPath() {
-    const char *temp;
-    int confBool = config_lookup_string(&config, "path", &temp);
-    if (!confBool) {
+    if (!config_lookup_string(&config, "path", &path)) {
         fprintf(stderr, "Can't lookup path to .json\n");
         exit(1);
-        //TODO Check if Directory actually exists
     }
-    strcpy(path, temp);
+    if (path[strlen(path)-1] != '/') {
+        fprintf(stderr, "Path does not end with /\n");
+        exit(1);
+    }
 }
 
 //get number of Stats
