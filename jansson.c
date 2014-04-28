@@ -10,7 +10,7 @@ void makeJansson(Status *stat) {
     json_t *root, *dataseq, *arry, *newval;
     json_error_t error;
 
-    char file[OUTPUT_SIZE];
+    char file[strlen(path)+strlen(stat->name)+6];
     sprintf(file, "%s%s.json",path, stat->name);
     //Load *.json
     root = json_load_file(file, 0, &error);
