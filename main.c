@@ -96,7 +96,7 @@ void cmmdOutput(Status *stat) {
 
 
 void debug(Status *stat) {
-    printf("Output of %s:\n %s", stat->name, stat->raw);
+    printf("Output of %s:\n %s\n", stat->name, stat->raw);
     int i;
     for (i = 0; i < 4; i++) {
         printf("Result %i of %s: %f\n", i, stat->name, stat->result[i]);
