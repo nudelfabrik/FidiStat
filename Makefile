@@ -42,8 +42,8 @@ install: all
 	install -m 0755 fidistat $(INS_DIR)/bin
 	test -d $(INS_DIR)/etc/fidistat || mkdir $(INS_DIR)/etc/fidistat
 	test -d $(INS_DIR)/etc/fidistat/json || mkdir $(INS_DIR)/etc/fidistat/json
-	cp -n json-base/* $(INS_DIR)/etc/fidistat/json
-	cp -n configFiles/* $(INS_DIR)/etc/fidistat
+	cp -n json-base/* $(INS_DIR)/etc/fidistat/json || :
+	cp -n configFiles/* $(INS_DIR)/etc/fidistat || :
 
 clean: 
 	rm *.o
