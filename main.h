@@ -21,6 +21,7 @@ typedef struct statStruct Status;
 
 char zeit[10];
 const char *path;
+void options(void);
 void cmmdOutput(Status *stat);
 void debug(Status *stat);
 void timeSet();
