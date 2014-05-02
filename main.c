@@ -72,6 +72,10 @@ int main(int argc, const char *argv[])
     return 0;
 }
 
+void options(void) {
+
+}
+
 //Set time
 void timeSet() {
     time_t epoch_time;
