@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <getopt.h>
 #include "main.h"
 #include "regex.h"
 #include "config.h"
@@ -34,6 +35,35 @@ char zeit[10];
 
 int main(int argc, const char *argv[])
 {
+    static struct option long_options[] =
+    {
+        {"verbose", no_argument, &verbose_flag, 1},
+        {"test", no_argument, &test_flag, 1},
+        {"help", no_argument, 0, 'h'},
+        {0, 0, 0, 0}
+    };
+    int option_index = 0;
+    while ((c = getopt_long(argc, argv, "htv", long_options, NULL)) != -1) {
+        switch (c) {
+        case 'v':
+            verbose_flag = 1;
+            break;
+        case 'h':
+            fprintf(stdout, "HELP! I'm trapped in a Code Factory!");
+        case 0:
+            break;
+        case 't':
+            test_flag = 1;
+            break;
+        case '?':
+        default:    /* invalid option */
+            fprintf(stderr, "%s: option `-%c' is invalid: ignored\n",
+            argv[0], optopt);
+            break;
+        }
+
+    }
+
     Status stats[10];
     Status *statsPtr;
 
@@ -61,7 +91,9 @@ int main(int argc, const char *argv[])
                 makeCSV(statsPtr);
             } else {
                 regexing(statsPtr);
-                //debug(statsPtr);
+                if (verbose_flag) {
+                    debug(statsPtr);
+                }
                 makeJansson(statsPtr);
             }
         }
@@ -70,10 +102,6 @@ int main(int argc, const char *argv[])
     //Destroy Config
     destroyConf(); 
     return 0;
-}
-
-void options(void) {
-
 }
 
 //Set time
