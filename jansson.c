@@ -62,7 +62,7 @@ int makeJansson(Status *stat) {
         }
     }
     //write modified json
-    if (!test_flag) {
+    if (!dry_flag) {
         if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2))) {
             fprintf(stderr, "error in writing back to %s.json", stat->name);
             return 0;
@@ -82,7 +82,7 @@ void makeCSV(Status *stat) {
     strcat(output, stat->regex);
     strcat(output, "\n");
     strcat(output, stat->raw);
-    if (!test_flag) {
+    if (!dry_flag) {
         fprintf(fp, "%s",output); 
     }
     fclose(fp);

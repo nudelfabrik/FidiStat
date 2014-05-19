@@ -32,36 +32,41 @@
 #include "jansson.h"
 
 char zeit[10];
+const char *helptext="--verbose, -v: echoes every value to stdout \n--dry, -d: Dry run, nothing is written to disk\n--config CFG_File, -f CFG_File: expects path to Config file."; 
 
 int main(int argc, const char *argv[])
 {
+    printf("test");
     static struct option long_options[] =
     {
         {"verbose", no_argument, &verbose_flag, 1},
-        {"test", no_argument, &test_flag, 1},
+        {"dry", no_argument, &dry_flag, 1},
         {"help", no_argument, 0, 'h'},
         {"config", required_argument, 0, 'f'},
         {0, 0, 0, 0}
     };
     int option_index = 0;
     int c;
-    while ((c = getopt_long(argc, argv, "htv", long_options, NULL)) != -1) {
+
+    while ((c = getopt_long(argc, argv, "dfhv", long_options, NULL)) != -1) {
         switch (c) {
         case 'v':
             verbose_flag = 1;
             break;
         case 'h':
-            fprintf(stdout, "HELP! I'm trapped in a Code Factory!");
-        case 0:
+            fprintf(stdout, "%s", helptext);
             break;
-        case 't':
-            test_flag = 1;
+        case 'd':
+            dry_flag = 1;
             break;
         case 'f':
             cfgLocation = optarg;
+            break;
+        case 0:
+            break;
         case '?':
-        default:    /* invalid option */
-            fprintf(stderr, "%s: option `-%c' is invalid: ignored\n",
+        default:     invalid option 
+        fprintf(stderr, "%s: option `-%c' is invalid: ignored\n",
             argv[0], optopt);
             break;
         }
