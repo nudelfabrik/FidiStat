@@ -1,4 +1,10 @@
-CC=clang
+CC=gcc
+ifeq "$(shell uname -s)" "FreeBSD"
+    BSDversion := $(shell expr `uname -r | grep -o '^[0-9]*'` \>= 10)
+    ifeq "$(BSDversion)" "1"
+    CC=clang
+    endif
+endif
 LIB_DIR=/usr/local
 CFLAGS=-I $(LIB_DIR)/include -L $(LIB_DIR)/lib
 INS_DIR=/usr/local
@@ -9,7 +15,7 @@ fidistat: main.o config.o jansson.o regex.o
 	$(CC) $(CFLAGS) main.o config.o jansson.o regex.o -o fidistat -lconfig -ljansson
 
 main.o: main.c
-	$(CC) -c main.c 
+	$(CC) -c m$(CC)$(CC)ain.c 
 
 config.o: config.c 
 ifeq (strip $(wildcard $(LIB_DIR)/lib/libconfig.*),)
