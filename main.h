@@ -1,7 +1,6 @@
 #ifndef MAIN
 #define MAIN
 
-#define CFG_FILE "/usr/local/etc/fidistat/config.cfg"
 #define MAXCOUNT 30
 #define OUTPUT_SIZE 1024
 #define MAXSTAT 10
@@ -18,9 +17,12 @@ struct statStruct {
 };
 typedef struct statStruct Status;
 
+int verbose_flag;
+int dry_flag;
 
 char zeit[10];
 const char *path;
+
 void cmmdOutput(Status *stat);
 void debug(Status *stat);
 void timeSet();

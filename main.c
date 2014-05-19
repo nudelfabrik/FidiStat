@@ -25,20 +25,60 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <getopt.h>
 #include "main.h"
 #include "regex.h"
 #include "config.h"
 #include "jansson.h"
 
 char zeit[10];
-
+const char *helptext="--verbose, -v: echoes every value to stdout \n--dry, -d: Dry run, nothing is written to disk\n--config CFG_File, -f CFG_File: expects path to Config file.\n"; 
+char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 int main(int argc, const char *argv[])
 {
+    static struct option long_options[] =
+    {
+        {"verbose", no_argument, &verbose_flag, 1},
+        {"dry", no_argument, &dry_flag, 1},
+        {"help", no_argument, 0, 'h'},
+        {"config", required_argument, 0, 'f'},
+        {0, 0, 0, 0}
+    };
+    int option_index = 0;
+
+    int c;
+
+//dry_flag = 0;
+    while ((c = getopt_long(argc, argv, "dfhv", long_options, NULL)) != -1) {
+        switch (c) {
+        case 'v':
+            verbose_flag = 1;
+            break;
+        case 'h':
+            fprintf(stdout, "%s", helptext);
+            break;
+        case 'd':
+            dry_flag = 1;
+            break;
+        case 'f':
+            cfgLocation = optarg;
+            break;
+        case 0:
+            break;
+        case '?':
+        default:     
+        fprintf(stderr, "%s: option `-%c' is invalid: ignored\n",
+            argv[0], optopt);
+            break;
+        }
+
+    }
+
     Status stats[10];
     Status *statsPtr;
 
     //load Config File
-    initConf();
+    initConf(cfgLocation);
     getPath();
     
     //Set zeit to current time    
@@ -61,7 +101,9 @@ int main(int argc, const char *argv[])
                 makeCSV(statsPtr);
             } else {
                 regexing(statsPtr);
-                //debug(statsPtr);
+                if (verbose_flag) {
+                    debug(statsPtr);
+                }
                 makeJansson(statsPtr);
             }
         }
@@ -91,7 +133,10 @@ void cmmdOutput(Status *stat) {
     while(fgets(raw, sizeof(stat->raw-1), fp) != NULL) {
         strcat(stat->raw,raw);
     }
-    pclose(fp);
+    if (pclose(fp) != 0) {
+        fprintf(stderr, "Command of %s exits != 0\n", stat->name);
+        exit(1);
+    }
 }
 
 
