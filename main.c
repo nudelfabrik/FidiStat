@@ -40,6 +40,7 @@ int main(int argc, const char *argv[])
         {"verbose", no_argument, &verbose_flag, 1},
         {"test", no_argument, &test_flag, 1},
         {"help", no_argument, 0, 'h'},
+        {"config", required_argument, 0, 'f'},
         {0, 0, 0, 0}
     };
     int option_index = 0;
@@ -55,6 +56,8 @@ int main(int argc, const char *argv[])
         case 't':
             test_flag = 1;
             break;
+        case 'f':
+            cfgLocation = optarg;
         case '?':
         default:    /* invalid option */
             fprintf(stderr, "%s: option `-%c' is invalid: ignored\n",
