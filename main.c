@@ -32,11 +32,10 @@
 #include "jansson.h"
 
 char zeit[10];
-const char *helptext="--verbose, -v: echoes every value to stdout \n--dry, -d: Dry run, nothing is written to disk\n--config CFG_File, -f CFG_File: expects path to Config file."; 
-
+const char *helptext="--verbose, -v: echoes every value to stdout \n--dry, -d: Dry run, nothing is written to disk\n--config CFG_File, -f CFG_File: expects path to Config file.\n"; 
+char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 int main(int argc, const char *argv[])
 {
-    printf("test");
     static struct option long_options[] =
     {
         {"verbose", no_argument, &verbose_flag, 1},
@@ -46,6 +45,7 @@ int main(int argc, const char *argv[])
         {0, 0, 0, 0}
     };
     int option_index = 0;
+
     int c;
 
     while ((c = getopt_long(argc, argv, "dfhv", long_options, NULL)) != -1) {
@@ -77,7 +77,7 @@ int main(int argc, const char *argv[])
     Status *statsPtr;
 
     //load Config File
-    initConf();
+    initConf(cfgLocation);
     getPath();
     
     //Set zeit to current time    
