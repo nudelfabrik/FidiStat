@@ -3,7 +3,7 @@ FidiStat
 
 FreeNAS monitoring for [Status Board](http://www.panic.com/statusboard/)
 
-**Work in Progress**
+**DEPRECATED**
 
 TODO
 ----
