@@ -13,7 +13,7 @@ void initConf () {
     //init config Structure
     config_init(&config);
     //parse File and watch for Errors
-    if(! config_read_file(&config, CFG_FILE))
+    if(! config_read_file(&config, cfgLocation))
     {
         fprintf(stderr, "%s:%d - %s\n", config_error_file(&config),
         config_error_line(&config), config_error_text(&config));
