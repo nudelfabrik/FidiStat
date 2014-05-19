@@ -3,21 +3,9 @@ FidiStat
 
 FreeNAS monitoring for [Status Board](http://www.panic.com/statusboard/)
 
-**DEPRECATED**
+DEPRECATED
+----------
 
-TODO
-----
-Better scripts
-
-Ready
------
-* load avg.
-* cpu temperature
-* network traffic
-* HDD temperature
-* automated script which generates a statusboard:// link
-* HDD usage
-* live network traffic
 
 Install
 ------
