@@ -19,7 +19,6 @@ typedef struct statStruct Status;
 
 static int verbose_flag;
 static int dry_flag;
-char *cfgLocation;
 
 char zeit[10];
 const char *path;
