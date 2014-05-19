@@ -48,6 +48,7 @@ int main(int argc, const char *argv[])
 
     int c;
 
+//dry_flag = 0;
     while ((c = getopt_long(argc, argv, "dfhv", long_options, NULL)) != -1) {
         switch (c) {
         case 'v':
@@ -132,7 +133,10 @@ void cmmdOutput(Status *stat) {
     while(fgets(raw, sizeof(stat->raw-1), fp) != NULL) {
         strcat(stat->raw,raw);
     }
-    pclose(fp);
+    if (pclose(fp) != 0) {
+        fprintf(stderr, "Command of %s exits != 0\n", stat->name);
+        exit(1);
+    }
 }
 
 
