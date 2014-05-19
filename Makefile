@@ -15,7 +15,7 @@ fidistat: main.o config.o jansson.o regex.o
 	$(CC) $(CFLAGS) main.o config.o jansson.o regex.o -o fidistat -lconfig -ljansson
 
 main.o: main.c
-	$(CC) -c m$(CC)$(CC)ain.c 
+	$(CC) -c main.c 
 
 config.o: config.c 
 ifeq (strip $(wildcard $(LIB_DIR)/lib/libconfig.*),)
@@ -26,7 +26,7 @@ ifeq (strip $(wildcard $(LIB_DIR)/lib/libconfig.*),)
 		echo "Refer to README to install manually"; \
 	fi 
 endif
-	echo "config installed"
+	@echo "config installed"
 	$(CC) $(CFLAGS) -c config.c
 
 jansson.o: jansson.c
@@ -38,7 +38,7 @@ ifeq (strip $(wildcard $(LIB_DIR)/lib/libjansson.*),)
 		echo "Refer to README to install manually"; \
 	fi 
 endif
-	echo "jansson installed"
+	@echo "jansson installed"
 	$(CC) $(CFLAGS) -c jansson.c 
 
 regex.o: regex.c
