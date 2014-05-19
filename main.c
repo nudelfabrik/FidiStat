@@ -44,6 +44,7 @@ int main(int argc, const char *argv[])
         {0, 0, 0, 0}
     };
     int option_index = 0;
+    int c;
     while ((c = getopt_long(argc, argv, "htv", long_options, NULL)) != -1) {
         switch (c) {
         case 'v':
