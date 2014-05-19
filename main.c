@@ -65,7 +65,7 @@ int main(int argc, const char *argv[])
         case 0:
             break;
         case '?':
-        default:     invalid option 
+        default:     
         fprintf(stderr, "%s: option `-%c' is invalid: ignored\n",
             argv[0], optopt);
             break;
