@@ -18,10 +18,12 @@ struct statStruct {
 };
 typedef struct statStruct Status;
 
+static int verbose_flag;
+static int test_flag;
 
 char zeit[10];
 const char *path;
-void options(void);
+
 void cmmdOutput(Status *stat);
 void debug(Status *stat);
 void timeSet();
