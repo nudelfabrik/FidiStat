@@ -21,3 +21,9 @@ you can import to Status Board.app
 Examples can be found in FreeBSD.cfg and FreeNAS.cfg
 They may have additional dependencies but you can use other commands to get data.
 
+
+options
+-------
+--verbose, -v: echoes every value to stdout. 
+--dry, -d: Dry run, nothing is written to disk.
+--config CFG_File, -f CFG_File: expects path to config file. if not specified, <code>/usr/local/etc/fidistat/config.cfg</code> is used.
