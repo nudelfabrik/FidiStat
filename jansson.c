@@ -81,4 +81,5 @@ void makeCSV(Status *stat) {
     strcat(output, "\n");
     strcat(output, stat->raw);
     fprintf(fp, "%s",output); 
+    fclose(fp);
 }
