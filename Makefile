@@ -15,7 +15,7 @@ fidistat: main.o config.o jansson.o regex.o
 	$(CC) $(CFLAGS) main.o config.o jansson.o regex.o -o fidistat -lconfig -ljansson
 
 main.o: main.c
-	$(CC) -c m$(CC)$(CC)ain.c 
+	$(CC) -c main.c 
 
 config.o: config.c 
 ifeq (strip $(wildcard $(LIB_DIR)/lib/libconfig.*),)
