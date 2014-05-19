@@ -1,6 +1,6 @@
 #ifndef CONFIG
 #define CONFIG
-void initConf();
+void initConf(const char * path);
 void destroyConf();
 const char * getConfList(Status *Stat, int i);
 int getStatNum();
