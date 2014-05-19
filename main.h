@@ -17,8 +17,8 @@ struct statStruct {
 };
 typedef struct statStruct Status;
 
-static int verbose_flag;
-static int dry_flag;
+int verbose_flag;
+int dry_flag;
 
 char zeit[10];
 const char *path;
