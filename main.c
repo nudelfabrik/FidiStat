@@ -80,6 +80,7 @@ int main(int argc, const char *argv[])
     //load Config File
     initConf(cfgLocation);
     getPath();
+    getMaxCount();
     
     //Set zeit to current time    
     timeSet();
@@ -148,3 +149,4 @@ void debug(Status *stat) {
     }
 
 }
+

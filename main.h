@@ -1,7 +1,6 @@
 #ifndef MAIN
 #define MAIN
 
-#define MAXCOUNT 30
 #define OUTPUT_SIZE 1024
 #define MAXSTAT 10
 
@@ -22,6 +21,7 @@ int dry_flag;
 
 char zeit[10];
 const char *path;
+int maxCount;
 
 void cmmdOutput(Status *stat);
 void debug(Status *stat);
