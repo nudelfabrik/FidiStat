@@ -129,8 +129,10 @@ void timeSet() {
 
 //Get Output from Command
 void cmmdOutput(Status *stat) {
-    char raw[OUTPUT_SIZE];
+    char raw[OUTPUT_SIZE] = "";
     FILE *fp;
+
+    strcpy(stat->raw, "\0");
 
     fp = popen(stat->cmmd, "r");  
     while(fgets(raw, sizeof(stat->raw-1), fp) != NULL) {
@@ -144,7 +146,7 @@ void cmmdOutput(Status *stat) {
 
 
 void debug(Status *stat) {
-    printf("Output of %s:\n %s\n", stat->name, stat->raw);
+    printf("Output of %s:\n%s\n", stat->name, stat->raw);
     int i;
     for (i = 0; i < 4; i++) {
         printf("Result %i of %s: %f\n", i, stat->name, stat->result[i]);
