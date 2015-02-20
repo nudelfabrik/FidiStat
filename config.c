@@ -4,9 +4,7 @@
 #include <libconfig.h>
 #include "main.h"
 
-
 config_t config;
-
 
 //get the config specified in main.h
 void initConf (const char * path) {
@@ -42,9 +40,10 @@ void getPath() {
     }
 }
 
+// Get max datapoints displayed
 void getMaxCount() {
     if (!config_lookup_int(&config, "maxEntrys", &maxCount)) {
-        fprintf(stderr, "Can't lookup path to .json\n");
+        fprintf(stderr, "Can't find maxEntries");
         exit(1);
     }
 }
