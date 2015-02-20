@@ -6,13 +6,13 @@ ifeq "$(shell uname -s)" "FreeBSD"
     endif
 endif
 LIB_DIR=/usr/local
-CFLAGS=-I $(LIB_DIR)/include -L $(LIB_DIR)/lib
+CFLAGS=-I $(LIB_DIR)/include
 INS_DIR=/usr/local
 
 all: fidistat
 
 fidistat: main.o config.o jansson.o regex.o
-	$(CC) $(CFLAGS) main.o config.o jansson.o regex.o -o fidistat -lconfig -ljansson
+	$(CC) $(CFLAGS) -L $(LIB_DIR)/lib main.o config.o jansson.o regex.o -o fidistat -lconfig -ljansson
 
 main.o: main.c
 	$(CC) -c main.c 
