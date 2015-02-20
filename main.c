@@ -31,8 +31,9 @@
 #include "config.h"
 #include "jansson.h"
 
-char zeit[10];
 const char *helptext="--verbose, -v: echoes every value to stdout \n--dry, -d: Dry run, nothing is written to disk\n--config CFG_File, -f CFG_File: expects path to Config file.\n"; 
+
+// Default Config Location
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 int main(int argc, const char *argv[])
 {
@@ -48,7 +49,6 @@ int main(int argc, const char *argv[])
 
     int c;
 
-//dry_flag = 0;
     while ((c = getopt_long(argc, argv, "dfhv", long_options, NULL)) != -1) {
         switch (c) {
         case 'v':
@@ -77,13 +77,15 @@ int main(int argc, const char *argv[])
     Status stats[10];
     Status *statsPtr;
 
-    //load Config File
+    // load Config File and Settings
     initConf(cfgLocation);
     getPath();
     getMaxCount();
     
-    //Set zeit to current time    
+    // Set zeit to current time    
     timeSet();
+
+    // Get max number of Settings
     int statNum = getStatNum();
 
     int i = 0;
@@ -149,4 +151,3 @@ void debug(Status *stat) {
     }
 
 }
-
