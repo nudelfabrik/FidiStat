@@ -42,6 +42,13 @@ void getPath() {
     }
 }
 
+void getMaxCount() {
+    if (!config_lookup_int(&config, "maxEntrys", &maxCount)) {
+        fprintf(stderr, "Can't lookup path to .json\n");
+        exit(1);
+    }
+}
+
 //get number of Stats
 int getStatNum () {
     getSetting("list"); 

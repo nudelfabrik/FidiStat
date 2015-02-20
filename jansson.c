@@ -35,7 +35,7 @@ int makeJansson(Status *stat) {
         }
     //If Type is 0 /Line (standard case) append new value at the bottom 
         if (stat->type == 0) {
-            if (json_array_size(arry) >= MAXCOUNT) {
+            if (json_array_size(arry) >= maxCount) {
                  if (json_array_remove(arry,0)) {
                      fprintf(stderr, "error in processing %s.json", stat->name);
                      return 0;
