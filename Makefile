@@ -1,10 +1,11 @@
 CC=gcc
-ifeq "$(shell uname -s)" "FreeBSD"
-    BSDversion := $(shell expr `uname -r | grep -o '^[0-9]*'` \>= 10)
-    ifeq "$(BSDversion)" "1"
-    CC=clang
-    endif
-endif
+SYSTEM != uname -s
+.if $(SYSTEM) == FreeBSD
+BSDversion != uname -r | grep -o '^[0-9]*'
+.    if $(BSDversion) == 10 
+CC   = clang
+.    endif
+.endif
 LIB_DIR=/usr/local
 CFLAGS=-I $(LIB_DIR)/include
 INS_DIR=/usr/local
@@ -18,26 +19,25 @@ main.o: main.c
 	$(CC) -c main.c 
 
 config.o: config.c 
-ifeq (strip $(wildcard $(LIB_DIR)/lib/libconfig.*),)
-	if -d /usr/ports/devel/libconfig ; then \
-		cd /usr/ports/devel/libconfig && make install clean ; \
-	else \
-		echo "libconfig not installed and not found in /usr/ports/" ; \
-		echo "Refer to README to install manually"; \
-	fi 
-endif
+	@if [ ! -f $(LIB_DIR)/lib/libconfig.a ]; then \
+		if [ -d /usr/ports/devel/libconfig ]; then \
+			cd /usr/ports/devel/libconfig && make install clean ; \
+		else \
+			echo "libconfig not installed and not found in /usr/ports/" ; \
+			echo "Refer to README to install manually"; \
+		fi; \
+	fi
 	@echo "config installed"
 	$(CC) $(CFLAGS) -c config.c
 
 jansson.o: jansson.c
-ifeq (strip $(wildcard $(LIB_DIR)/lib/libjansson.*),)
-	if -d /usr/ports/devel/jansson ; then \
-		cd /usr/ports/devel/jansson && make install clean ; \
-	else \
-		echo "jansson not installed and not found in /usr/ports/" ; \
-		echo "Refer to README to install manually"; \
-	fi 
-endif
+	@if [ ! -f $(LIB_DIR)/lib/libjansson.a  ]; then \
+		if [ -d /usr/ports/devel/jansson ]; then \ cd /usr/ports/devel/jansson && make install clean ; \
+		else \
+			echo "jansson not installed and not found in /usr/ports/" ; \
+			echo "Refer to README to install manually"; \
+		fi ; \
+	fi
 	@echo "jansson installed"
 	$(CC) $(CFLAGS) -c jansson.c 
 
@@ -52,5 +52,5 @@ install: all
 	cp -n configFiles/* $(INS_DIR)/etc/fidistat || :
 
 clean: 
-	rm *.o
-	rm fidistat
+	-rm *.o
+	-rm fidistat
