@@ -101,6 +101,9 @@ int main(int argc, const char *argv[])
             getConfCmmd(statsPtr);
             cmmdOutput(statsPtr);
             if (stats[i].type == 2) {
+                if (verbose_flag) {
+                    debug(statsPtr);
+                }
                 makeCSV(statsPtr);
             } else {
                 regexing(statsPtr);
@@ -146,10 +149,11 @@ void cmmdOutput(Status *stat) {
 
 
 void debug(Status *stat) {
-    printf("Output of %s:\n%s\n", stat->name, stat->raw);
-    int i;
-    for (i = 0; i < 4; i++) {
-        printf("Result %i of %s: %f\n", i, stat->name, stat->result[i]);
+    printf("\nOutput of %s:\n%s\n", stat->name, stat->raw);
+    if (stat->type != 2) {
+        int i;
+        for (i = 0; i < 4; i++) {
+            printf("Result %i of %s: %f\n", i, stat->name, stat->result[i]);
+        }
     }
-
 }

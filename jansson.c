@@ -78,13 +78,13 @@ void makeCSV(Status *stat) {
     FILE *fp;
     char file[OUTPUT_SIZE];
     char output[OUTPUT_SIZE] = "";
-    sprintf(file, "%s%s.csv",path, stat->name);
-    fp = fopen(file, "w");
     strcat(output, stat->regex);
     strcat(output, "\n");
     strcat(output, stat->raw);
     if (!dry_flag) {
+        sprintf(file, "%s%s.csv",path, stat->name);
+        fp = fopen(file, "w");
         fprintf(fp, "%s",output); 
+        fclose(fp);
     }
-    fclose(fp);
 }
