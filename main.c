@@ -81,8 +81,6 @@ int main(int argc, const char *argv[])
     getPath();
     getMaxCount();
 
-    bootstrap();
-    
     // Set zeit to current time    
     timeSet();
 
