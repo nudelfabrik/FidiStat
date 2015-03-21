@@ -12,4 +12,5 @@ void getConfType(Status *Stat);
 void getConfCmmd(Status *Stat);
 void getConfRegex(Status *Stat);
 void getDisplaySettings(const char* name, const char* path);
+void getSequences(const char* path);
 #endif

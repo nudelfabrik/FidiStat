@@ -124,6 +124,17 @@ void getDisplaySettings(const char* path, const char* subSetting) {
     }
 }
 
+void getSequences(const char* path) {
+    config_setting_t* sequences = config_lookup(&config, path);
+    int numSeq = config_setting_length(sequences);
+
+    // Add every Setting of Display to json file
+    for (int i = 0; i < numSeq; i++) {
+        addNewSequence(config_setting_get_string_elem(sequences, i));
+    }
+
+}
+
 //Destroy Config
 void destroyConf() {
     config_destroy(&config); 
