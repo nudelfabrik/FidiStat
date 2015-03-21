@@ -8,7 +8,7 @@ CC   = clang
 .endif
 LIB_DIR=/usr/local
 CFLAGS=-I $(LIB_DIR)/include
-INS_DIR=/usr/local
+INS_DIR=/usr/local/etc
 
 all: fidistat
 
@@ -46,8 +46,8 @@ regex.o: regex.c
 
 install: all
 	install -m 0755 fidistat $(INS_DIR)/bin
-	test -d $(INS_DIR)/etc/fidistat || mkdir $(INS_DIR)/etc/fidistat
-	test -d $(INS_DIR)/etc/fidistat/json || mkdir $(INS_DIR)/etc/fidistat/json
+	test -d $(INS_DIR)/fidistat || mkdir $(INS_DIR)/fidistat
+	test -d $(INS_DIR)/fidistat/json || mkdir $(INS_DIR)/fidistat/json
 	cp -n json-base/* $(INS_DIR)/etc/fidistat/json || :
 	cp -n configFiles/* $(INS_DIR)/etc/fidistat || :
 
