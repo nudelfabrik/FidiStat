@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <libconfig.h>
 #include "main.h"
+#include "bootstrap.h"
 
 config_t config;
 
@@ -57,14 +58,8 @@ int getStatNum () {
 
 //Set name of *stat to the ith item of config list
 void getConfList(Status *stat, int i) {
-    stat->name = getName(i);
+    stat->name = config_setting_get_string_elem(getSetting("list"), i);
 }
-
-const char* getName(int i) {
-    return config_setting_get_string_elem(getSetting("list"), i);
-}
-
-
 
 //Check if *stat is enabled 
 void getConfEnable(Status *stat) {
@@ -101,7 +96,7 @@ void getConfType(Status *stat) {
 void getDisplaySettings(const char* path, const char* subSetting) {
 
     // Get Display Setting of name
-    config_setting_t* display = config_lookup(config, path);
+    config_setting_t* display = config_lookup(&config, path);
     int numSettings = config_setting_length(display);
 
     // Add every Setting of Display to json file
@@ -110,14 +105,14 @@ void getDisplaySettings(const char* path, const char* subSetting) {
 
         // Int and String Settings
         if (config_setting_type(sett) == CONFIG_TYPE_INT) {
-            addNewValue(config_setting_name(sett),config_setting_get_int(sett), subSetting);
+            addNewInt(config_setting_name(sett),config_setting_get_int(sett), subSetting);
         }
         if (config_setting_type(sett) == CONFIG_TYPE_STRING) {
-            addNewValue(config_setting_name(sett),config_setting_get_string(sett), subSetting);
+            addNewString(config_setting_name(sett),config_setting_get_string(sett), subSetting);
         }
 
         // Object Settings
-        if (config_setting_type(sett) == CONFIG_TYPE_LIST) {
+        if (config_setting_type(sett) == CONFIG_TYPE_GROUP) {
             const char* name = config_setting_name(sett);
             addNewSubSetting(name);
 
