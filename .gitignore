@@ -3,3 +3,5 @@ a.out
 *._*
 .DS_Store
 fidistat
+.ycm_extra_conf.py
+.ycm_extra_conf.pyc
