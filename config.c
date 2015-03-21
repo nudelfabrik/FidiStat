@@ -57,8 +57,14 @@ int getStatNum () {
 
 //Set name of *stat to the ith item of config list
 void getConfList(Status *stat, int i) {
-    stat->name = config_setting_get_string_elem(getSetting("list"), i);
+    stat->name = getName(i);
 }
+
+const char* getName(int i) {
+    return config_setting_get_string_elem(getSetting("list"), i);
+}
+
+
 
 //Check if *stat is enabled 
 void getConfEnable(Status *stat) {
@@ -89,6 +95,37 @@ void getConfType(Status *stat) {
     if (!config_setting_lookup_int(getSetting(stat->name), "type", &stat->type)) {
         fprintf(stderr, "Can't lookup Config Type of %s\n", stat->name);
         exit(1);
+    }
+}
+
+void getDisplaySettings(const char* path, const char* subSetting) {
+
+    // Get Display Setting of name
+    config_setting_t* display = config_lookup(config, path);
+    int numSettings = config_setting_length(display);
+
+    // Add every Setting of Display to json file
+    for (int i = 0; i < numSettings; i++) {
+        config_setting_t* sett = config_setting_get_elem(display, i);
+
+        // Int and String Settings
+        if (config_setting_type(sett) == CONFIG_TYPE_INT) {
+            addNewValue(config_setting_name(sett),config_setting_get_int(sett), subSetting);
+        }
+        if (config_setting_type(sett) == CONFIG_TYPE_STRING) {
+            addNewValue(config_setting_name(sett),config_setting_get_string(sett), subSetting);
+        }
+
+        // Object Settings
+        if (config_setting_type(sett) == CONFIG_TYPE_LIST) {
+            const char* name = config_setting_name(sett);
+            addNewSubSetting(name);
+
+            // Add all other 
+            char newPath[strlen(path)+strlen(name)+2];
+            sprintf(newPath, "%s.%s" , path, name);
+            getDisplaySettings(newPath, name);
+        }
     }
 }
 

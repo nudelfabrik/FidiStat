@@ -12,8 +12,8 @@ struct statStruct {
     const char *regex;
     char raw[OUTPUT_SIZE]; 
     double  result[MAXSTAT];
-
 };
+
 typedef struct statStruct Status;
 
 int verbose_flag;
@@ -24,6 +24,7 @@ const char *path;
 int maxCount;
 
 void cmmdOutput(Status *stat);
+void addMissingJson(void);
 void debug(Status *stat);
 void timeSet();
 
