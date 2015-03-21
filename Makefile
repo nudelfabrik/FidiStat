@@ -12,8 +12,8 @@ INS_DIR=/usr/local/etc
 
 all: fidistat
 
-fidistat: main.o config.o jansson.o regex.o
-	$(CC) $(CFLAGS) -L $(LIB_DIR)/lib main.o config.o jansson.o regex.o -o fidistat -lconfig -ljansson
+fidistat: main.o config.o jansson.o regex.o bootstrap.o
+	$(CC) $(CFLAGS) -L $(LIB_DIR)/lib main.o config.o jansson.o regex.o bootstrap.o -o fidistat -lconfig -ljansson
 
 main.o: main.c
 	$(CC) -c main.c 
@@ -43,6 +43,9 @@ jansson.o: jansson.c
 
 regex.o: regex.c
 	$(CC) -c regex.c
+
+bootstrap.o: bootstrap.c
+	$(CC) $(CFLAGS) -c bootstrap.c
 
 install: all
 	install -m 0755 fidistat $(INS_DIR)/bin
