@@ -30,6 +30,7 @@
 #include "regex.h"
 #include "config.h"
 #include "jansson.h"
+#include "bootstrap.h"
 
 const char *helptext="--verbose, -v: echoes every value to stdout \n--dry, -d: Dry run, nothing is written to disk\n--config CFG_File, -f CFG_File: expects path to Config file.\n"; 
 
@@ -74,19 +75,22 @@ int main(int argc, const char *argv[])
 
     }
 
-    Status stats[10];
-    Status *statsPtr;
 
     // load Config File and Settings
     initConf(cfgLocation);
     getPath();
     getMaxCount();
+
+    bootstrap();
     
     // Set zeit to current time    
     timeSet();
 
     // Get max number of Settings
     int statNum = getStatNum();
+
+    Status stats[statNum];
+    Status *statsPtr;
 
     int i = 0;
     for (i = 0; i < statNum; i++) {
@@ -96,6 +100,7 @@ int main(int argc, const char *argv[])
         getConfList(statsPtr, i);
         getConfEnable(statsPtr);
         if (stats[i].enabled) {
+            bootstrap(statsPtr);
             getConfType(statsPtr);
             getConfRegex(statsPtr);
             getConfCmmd(statsPtr);
@@ -146,6 +151,7 @@ void cmmdOutput(Status *stat) {
         exit(1);
     }
 }
+
 
 
 void debug(Status *stat) {
