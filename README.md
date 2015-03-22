@@ -21,6 +21,10 @@ you can import to Status Board.app
 Examples can be found in FreeBSD.cfg and FreeNAS.cfg
 They may have additional dependencies but you can use other commands to get data.
 
+Graph Settings
+--------------
+The Statusboard options for the graph can be edited in the display config for each status.
+See [here](http://www.panic.com/statusboard/docs/graph_tutorial.pdf) for all options.
 
 options
 -------
