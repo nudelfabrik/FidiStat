@@ -85,6 +85,15 @@ void getConfRegex(Status *stat) {
     }
 }
 
+const char* getCSVtitle(Status *stat) {
+    const char* title;
+    if (!config_setting_lookup_string(getSetting(stat->name), "display.title", title)) {
+        fprintf(stderr, "Can't lookup Title of %s\n", stat->name);
+        exit(1);
+    }
+    return title;
+}
+
 //Get Type of *stat
 void getConfType(Status *stat) {
     if (!config_setting_lookup_int(getSetting(stat->name), "type", &stat->type)) {

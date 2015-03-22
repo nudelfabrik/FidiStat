@@ -11,6 +11,7 @@ void getConfEnable(Status *Stat);
 void getConfType(Status *Stat);
 void getConfCmmd(Status *Stat);
 void getConfRegex(Status *Stat);
+const char* getCSVtitle(Status *stat);
 void getDisplaySettings(const char* name, const char* path);
 void getSequences(const char* path);
 #endif
