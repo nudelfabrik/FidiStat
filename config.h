@@ -14,5 +14,5 @@ void getConfRegex(Status *Stat);
 const char* getCSVtitle(Status *stat);
 void getDisplaySettings(const char* name, const char* path);
 void getSequences(const char* path);
-void getBarTitles(const_char* path);
+void getBarTitles(const char* path);
 #endif

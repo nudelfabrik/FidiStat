@@ -10,6 +10,7 @@
 json_t *root, *graph, *sequences;
 json_error_t error;
 
+// Check if File exist and  create if needed
 void bootstrap(Status* status) {
     char file[strlen(path)+strlen(status->name)+6];
     sprintf(file, "%s%s.json",path, status->name);
@@ -21,8 +22,9 @@ void bootstrap(Status* status) {
     }
 }
 
+// Create new JSON File
 void createFile(Status* status) {
-    if (stat->type == 2) {
+    if (status->type == 2) {
         return;
     }
     root = json_object();
@@ -40,11 +42,13 @@ void createFile(Status* status) {
     getSequences(confPath);
 
 
-    if (stat->type == 1) {
+    // If Type is Bar, load Bartitles
+    if (status->type == 1) {
         sprintf(confPath, "%s.bartitles" , status->name);
         getBarTitles(confPath);
     }
 
+    // Build json Object
     json_object_set(graph, "datasequences", sequences);
     json_object_set(root, "graph", graph);
 
@@ -54,10 +58,12 @@ void createFile(Status* status) {
     json_dump_file(root, file, JSON_INDENT(4)|JSON_PRESERVE_ORDER);
 }
 
+// Adds new SubObject under "Graph"
 void addNewSubSetting(const char* subObj) {
     json_object_set(graph, subObj, json_object());
 }
 
+// Adds new String Key/Value pair to Graph or a SubObject of Graph
 void addNewString(const char* key, const char* value, const char* subObj) {
     if (!strcmp(subObj,  "graph")) {
         json_object_set(graph, key, json_string(value)); 
@@ -66,6 +72,7 @@ void addNewString(const char* key, const char* value, const char* subObj) {
     }
 }
 
+// Adds new Integer Key/Value pair to Graph or a SubObject of Graph
 void addNewInt(const char* key, int value, const char* subObj) {
     if (!strcmp(subObj, "graph")) {
         json_object_set(graph, key, json_integer(value)); 
@@ -74,6 +81,7 @@ void addNewInt(const char* key, int value, const char* subObj) {
     }
 }
 
+// Add new Sequence to "sequences"
 void addNewSequence(const char* title) {
     json_t* newSeq = json_object();
     json_object_set(newSeq, "title", json_string(title));
@@ -81,9 +89,10 @@ void addNewSequence(const char* title) {
     json_array_append(sequences, newSeq);
 }
 
+// Add new Title/value Object to datapoints for Bar Graph
 void addNewBarTitle(const char* title) {
     json_t* newTitle = json_object();
-    json_object_set(newSeq, "title", json_string(title));
-    json_object_set(newSeq, "value", json_integer());
-    json_array_append(json_object_get(json_object_get(sequences, 0), "datapoints"), newSeq);
+    json_object_set(newTitle, "title", json_string(title));
+    json_object_set(newTitle, "value", json_real(0));
+    json_array_append(json_object_get(json_array_get(sequences, 0), "datapoints"), newTitle);
 }

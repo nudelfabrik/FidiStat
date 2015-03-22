@@ -5,7 +5,6 @@
 #include "main.h"
 #include "regex.h"
 
-
 void regexing(Status *stat) {
     regex_t regex;
     int retex;
