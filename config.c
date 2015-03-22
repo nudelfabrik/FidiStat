@@ -87,7 +87,8 @@ void getConfRegex(Status *stat) {
 
 const char* getCSVtitle(Status *stat) {
     const char* title;
-    if (!config_setting_lookup_string(getSetting(stat->name), "display.title", title)) {
+    config_setting_t *setting = config_lookup(&config, stat->name);
+    if (!config_setting_lookup_string(config_setting_get_member(setting, "display"), "title", &title)) {
         fprintf(stderr, "Can't lookup Title of %s\n", stat->name);
         exit(1);
     }
@@ -97,17 +98,18 @@ const char* getCSVtitle(Status *stat) {
 //Get Type of *stat
 void getConfType(Status *stat) {
     const char* type;
-    if (!config_setting_lookup_string(getSetting(stat->name), "type", type)) {
+    config_setting_t *setting = config_lookup(&config, stat->name);
+    if (!config_setting_lookup_string(config_setting_get_member(setting, "display"), "type", &type)) {
         fprintf(stderr, "Can't lookup Config Type of %s\n", stat->name);
         exit(1);
     }
-    if (!strcmp(subObj,  "line")) {
+    if (!strcmp(type,  "line")) {
         stat->type = 0;
     } else {
-        if (!strcmp(subObj,  "bar")) {
+        if (!strcmp(type,  "bar")) {
             stat->type = 1;
         } else {
-            if (!strcmp(subObj,  "csv")) {
+            if (!strcmp(type,  "csv")) {
                 stat->type = 2;
             } else {
                 fprintf(stderr, "Config Type of  %s\n not recognized", stat->name);
@@ -117,6 +119,7 @@ void getConfType(Status *stat) {
     }
 }
 
+// Load Display Setting from path
 void getDisplaySettings(const char* path, const char* subSetting) {
 
     // Get Display Setting of name
@@ -148,6 +151,7 @@ void getDisplaySettings(const char* path, const char* subSetting) {
     }
 }
 
+// get datasequence arrays
 void getSequences(const char* path) {
     config_setting_t* sequences = config_lookup(&config, path);
     int numSeq = config_setting_length(sequences);
@@ -159,7 +163,8 @@ void getSequences(const char* path) {
 
 }
 
-void getBarTitles(const_char* path) {
+// get Titles of Bars for Bar Graphs
+void getBarTitles(const char* path) {
     config_setting_t* sequences = config_lookup(&config, path);
     int numSeq = config_setting_length(sequences);
     for (int i = 0; i < numSeq; i++) {

@@ -94,25 +94,31 @@ int main(int argc, const char *argv[])
     for (i = 0; i < statNum; i++) {
         //Make Pointer point to current status
         statsPtr = &stats[i]; 
-        //Load Settings into Struct
+        //Get Name of Status
         getConfList(statsPtr, i);
         getConfEnable(statsPtr);
+
         if (stats[i].enabled) {
-            bootstrap(statsPtr);
             getConfType(statsPtr);
-            getConfRegex(statsPtr);
+            bootstrap(statsPtr);
             getConfCmmd(statsPtr);
+
+            // Execute Command and save Output
             cmmdOutput(statsPtr);
+
+            // Check wich type the status is
             if (stats[i].type == 2) {
                 if (verbose_flag) {
                     debug(statsPtr);
                 }
                 makeCSV(statsPtr);
             } else {
+                getConfRegex(statsPtr);
                 regexing(statsPtr);
                 if (verbose_flag) {
                     debug(statsPtr);
                 }
+                // Add Data to JSON
                 makeJansson(statsPtr);
             }
         }
@@ -149,8 +155,6 @@ void cmmdOutput(Status *stat) {
         exit(1);
     }
 }
-
-
 
 void debug(Status *stat) {
     printf("\nOutput of %s:\n%s\n", stat->name, stat->raw);

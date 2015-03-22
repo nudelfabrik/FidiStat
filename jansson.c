@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "main.h"
 #include "jansson.h"
+#include "config.h"
 
 
 int makeJansson(Status *stat) {
@@ -23,7 +24,7 @@ int makeJansson(Status *stat) {
     // Get old Data
     dataseq = json_object_get(json_object_get(root, "graph"), "datasequences");
     if (!dataseq) {
-        fprintf(stderr, "Can't get data from %s.json", stat->name);
+        fprintf(stderr, "Can't get data from %s.json\n", stat->name);
         return 0;
     }
     // Process Every Datasequence
@@ -31,32 +32,32 @@ int makeJansson(Status *stat) {
     for (j = 0; j < json_array_size(dataseq); j++) {
         arry = json_object_get(json_array_get(dataseq, j),"datapoints"); 
         if (!arry) {
-            fprintf(stderr, "Can't get data from %s.json", stat->name);
+            fprintf(stderr, "Can't get data from %s.json\n", stat->name);
             return 0;
         }
         // If Type is 0 /Line (standard case) append new value at the bottom 
         if (stat->type == 0) {
             if (json_array_size(arry) >= maxCount) {
                  if (json_array_remove(arry,0)) {
-                     fprintf(stderr, "error in processing %s.json", stat->name);
+                     fprintf(stderr, "error in processing %s.json\n", stat->name);
                      return 0;
                  }
             }
             newval = json_pack("{sssf}", "title", zeit, "value", stat->result[j]);
             if (!newval) {
-                fprintf(stderr, "error in creating new entry for %s.json", stat->name);
+                fprintf(stderr, "error in creating new entry for %s.json\n", stat->name);
                 return 0;
             }
             if (json_array_append_new(arry, newval)) {
-                fprintf(stderr, "error in appending new entry in %s.json", stat->name);
+                fprintf(stderr, "error in appending new entry in %s.json\n", stat->name);
                 return 0;
             }
         // When Type is Bar, every Entry has its own name and you change the value
         } else {
             int k;
-            for (k = 0; k < sizeof(stat->result); k++) {
+            for (k = 0; k < json_array_size(arry); k++) {
                 if (json_real_set(json_object_get(json_array_get(arry, k), "value"), stat->result[k])) {
-                    fprintf(stderr, "error in changing entry in %s.json", stat->name);
+                    fprintf(stderr, "error in changing entry in %s.json\n", stat->name);
                     return 0;
                 }
             }
