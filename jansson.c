@@ -78,7 +78,7 @@ void makeCSV(Status *stat) {
     FILE *fp;
     char file[OUTPUT_SIZE];
     char output[OUTPUT_SIZE] = "";
-    strcat(output, stat->regex);
+    strcat(output, getCSVtitle(stat));
     strcat(output, "\n");
     strcat(output, stat->raw);
     if (!dry_flag) {
