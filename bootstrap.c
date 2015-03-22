@@ -22,6 +22,9 @@ void bootstrap(Status* status) {
 }
 
 void createFile(Status* status) {
+    if (stat->type == 2) {
+        return;
+    }
     root = json_object();
     graph = json_object();
     sequences = json_array();
@@ -35,6 +38,13 @@ void createFile(Status* status) {
     // Create Datasequences
     sprintf(confPath, "%s.sequencetitles" , status->name);
     getSequences(confPath);
+
+
+    if (stat->type == 1) {
+        sprintf(confPath, "%s.bartitles" , status->name);
+        getBarTitles(confPath);
+    }
+
     json_object_set(graph, "datasequences", sequences);
     json_object_set(root, "graph", graph);
 
@@ -69,4 +79,11 @@ void addNewSequence(const char* title) {
     json_object_set(newSeq, "title", json_string(title));
     json_object_set(newSeq, "datapoints", json_array());
     json_array_append(sequences, newSeq);
+}
+
+void addNewBarTitle(const char* title) {
+    json_t* newTitle = json_object();
+    json_object_set(newSeq, "title", json_string(title));
+    json_object_set(newSeq, "value", json_integer());
+    json_array_append(json_object_get(json_object_get(sequences, 0), "datapoints"), newSeq);
 }

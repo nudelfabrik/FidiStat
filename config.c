@@ -96,9 +96,24 @@ const char* getCSVtitle(Status *stat) {
 
 //Get Type of *stat
 void getConfType(Status *stat) {
-    if (!config_setting_lookup_int(getSetting(stat->name), "type", &stat->type)) {
+    const char* type;
+    if (!config_setting_lookup_string(getSetting(stat->name), "type", type)) {
         fprintf(stderr, "Can't lookup Config Type of %s\n", stat->name);
         exit(1);
+    }
+    if (!strcmp(subObj,  "line")) {
+        stat->type = 0;
+    } else {
+        if (!strcmp(subObj,  "bar")) {
+            stat->type = 1;
+        } else {
+            if (!strcmp(subObj,  "csv")) {
+                stat->type = 2;
+            } else {
+                fprintf(stderr, "Config Type of  %s\n not recognized", stat->name);
+                exit(1);
+            }
+        }
     }
 }
 
@@ -140,6 +155,15 @@ void getSequences(const char* path) {
     // Add every Setting of Display to json file
     for (int i = 0; i < numSeq; i++) {
         addNewSequence(config_setting_get_string_elem(sequences, i));
+    }
+
+}
+
+void getBarTitles(const_char* path) {
+    config_setting_t* sequences = config_lookup(&config, path);
+    int numSeq = config_setting_length(sequences);
+    for (int i = 0; i < numSeq; i++) {
+        addNewBarTitle(config_setting_get_string_elem(sequences, i));
     }
 
 }
