@@ -168,7 +168,11 @@ void getSequences(const char* name) {
 
     // Add every Setting of Display to json file
     for (int i = 0; i < numSeq; i++) {
-        addNewSequence(config_setting_get_string_elem(sequences, i), config_setting_get_string_elem(colours, i));
+        if (colours) {
+            addNewSequence(config_setting_get_string_elem(sequences, i), config_setting_get_string_elem(colours, i));
+        } else {
+            addNewSequence(config_setting_get_string_elem(sequences, i), NULL);
+        }
     }
 }
 
