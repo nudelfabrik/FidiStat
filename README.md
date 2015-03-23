@@ -31,3 +31,5 @@ options
 * --verbose, -v: echoes every value to stdout. 
 * --dry, -d: Dry run, nothing is written to disk.
 * --config CFG_File, -f CFG_File: expects path to config file. if not specified, <code>/usr/local/etc/fidistat/config.cfg</code> is used.
+* --delete -x : Delete ALL jsons listed in "list".
+* --clean  -c : Delet all jsons not enabled.
