@@ -32,7 +32,11 @@
 #include "jansson.h"
 #include "bootstrap.h"
 
-const char *helptext="--verbose, -v: echoes every value to stdout \n--dry, -d: Dry run, nothing is written to disk\n--config CFG_File, -f CFG_File: expects path to Config file.\n"; 
+const char *helptext="--verbose, -v:                  echoes every value to stdout \n\
+--dry, -d:                      Dry run, nothing is written to disk\n\
+--config CFG_File, -f CFG_File: expects path to Config file\n\
+--clean -c:                     remove all files not enabled\n\
+--delete -x:                    remove all files\n"; 
 
 // Default Config Location
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
@@ -43,6 +47,8 @@ int main(int argc, const char *argv[])
         {"verbose", no_argument, &verbose_flag, 1},
         {"dry", no_argument, &dry_flag, 1},
         {"help", no_argument, 0, 'h'},
+        {"clean", no_argument, &clean_flag, 1},
+        {"delete", no_argument, &delete_flag, 1},
         {"config", required_argument, 0, 'f'},
         {0, 0, 0, 0}
     };
@@ -50,19 +56,29 @@ int main(int argc, const char *argv[])
 
     int c;
 
-    while ((c = getopt_long(argc, argv, "dfhv", long_options, NULL)) != -1) {
+    while ((c = getopt_long(argc, argv, "cdfhvx", long_options, NULL)) != -1) {
         switch (c) {
         case 'v':
             verbose_flag = 1;
             break;
         case 'h':
             fprintf(stdout, "%s", helptext);
+            exit(0);
             break;
         case 'd':
             dry_flag = 1;
             break;
         case 'f':
             cfgLocation = optarg;
+            break;
+        case 'r':
+            rebuild_flag = 1;
+            break;
+        case 'c':
+            clean_flag = 1;
+            break;
+        case 'x':
+            delete_flag = 1;
             break;
         case 0:
             break;
@@ -81,8 +97,6 @@ int main(int argc, const char *argv[])
     getPath();
     getMaxCount();
 
-    bootstrap();
-    
     // Set zeit to current time    
     timeSet();
 
@@ -93,28 +107,47 @@ int main(int argc, const char *argv[])
     Status *statsPtr;
 
     int i = 0;
+    if (delete_flag) {
+        for (i = 0; i < statNum; i++) {
+            del(&stats[i]);
+        }
+    }
+    if (clean_flag) {
+        for (i = 0; i < statNum; i++) {
+            if (stats[i].enabled) {
+            del(&stats[i]);
+        }
+        }
+    }
+
     for (i = 0; i < statNum; i++) {
         //Make Pointer point to current status
         statsPtr = &stats[i]; 
-        //Load Settings into Struct
+        //Get Name of Status
         getConfList(statsPtr, i);
         getConfEnable(statsPtr);
+
         if (stats[i].enabled) {
-            bootstrap(statsPtr);
             getConfType(statsPtr);
-            getConfRegex(statsPtr);
+            bootstrap(statsPtr);
             getConfCmmd(statsPtr);
+
+            // Execute Command and save Output
             cmmdOutput(statsPtr);
+
+            // Check wich type the status is
             if (stats[i].type == 2) {
                 if (verbose_flag) {
                     debug(statsPtr);
                 }
                 makeCSV(statsPtr);
             } else {
+                getConfRegex(statsPtr);
                 regexing(statsPtr);
                 if (verbose_flag) {
                     debug(statsPtr);
                 }
+                // Add Data to JSON
                 makeJansson(statsPtr);
             }
         }
@@ -152,8 +185,6 @@ void cmmdOutput(Status *stat) {
     }
 }
 
-
-
 void debug(Status *stat) {
     printf("\nOutput of %s:\n%s\n", stat->name, stat->raw);
     if (stat->type != 2) {
@@ -162,4 +193,10 @@ void debug(Status *stat) {
             printf("Result %i of %s: %f\n", i, stat->name, stat->result[i]);
         }
     }
+}
+
+void del(Status *stat) {
+    const char* path[strlen(path) + strlen(stat->name) + 6];
+    sprintf(path, "%s%s.json", path, stat->name);
+    remove(path);
 }
