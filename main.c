@@ -77,7 +77,6 @@ int main(int argc, const char *argv[])
 
 
     // load Config File and Settings
-    printf("TEST");
     initConf(cfgLocation);
     getPath();
     getMaxCount();

@@ -123,7 +123,11 @@ void getConfType(Status *stat) {
 void getDisplaySettings(const char* name, const char* subSetting) {
 
     char path[strlen(name)+20];
-    sprintf(path, "%s.display" , name);
+    if (!strcmp(subSetting,  "graph")) {
+        sprintf(path, "%s.display" , name);
+    } else {
+        sprintf(path, "%s.display.%s", name, subSetting);
+    }
     // Get Display Setting of name
     config_setting_t* display = config_lookup(&config, path);
     int numSettings = config_setting_length(display);
@@ -142,13 +146,11 @@ void getDisplaySettings(const char* name, const char* subSetting) {
 
         // Object Settings
         if (config_setting_type(sett) == CONFIG_TYPE_GROUP) {
-            const char* name = config_setting_name(sett);
-            addNewSubSetting(name);
+            const char* subName = config_setting_name(sett);
+            addNewSubSetting(subName);
 
             // Add all other 
-            char newPath[strlen(path)+strlen(name)+2];
-            sprintf(newPath, "%s.%s" , path, name);
-            getDisplaySettings(newPath, name);
+            getDisplaySettings(name, subName);
         }
     }
 }
