@@ -12,7 +12,7 @@ void getConfType(Status *Stat);
 void getConfCmmd(Status *Stat);
 void getConfRegex(Status *Stat);
 const char* getCSVtitle(Status *stat);
-void getDisplaySettings(const char* name, const char* path);
-void getSequences(const char* path);
-void getBarTitles(const char* path);
+void getDisplaySettings(const char* name, const char* subSetting);
+void getSequences(const char* name);
+void getBarTitles(const char* name);
 #endif
