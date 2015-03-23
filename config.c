@@ -120,8 +120,10 @@ void getConfType(Status *stat) {
 }
 
 // Load Display Setting from path
-void getDisplaySettings(const char* path, const char* subSetting) {
+void getDisplaySettings(const char* name, const char* subSetting) {
 
+    char path[strlen(name)+20];
+    sprintf(path, "%s.display" , name);
     // Get Display Setting of name
     config_setting_t* display = config_lookup(&config, path);
     int numSettings = config_setting_length(display);
@@ -152,21 +154,29 @@ void getDisplaySettings(const char* path, const char* subSetting) {
 }
 
 // get datasequence arrays
-void getSequences(const char* path) {
+void getSequences(const char* name) {
+    char path[strlen(name)+20];
+    sprintf(path, "%s.sequencetitles" , name);
     config_setting_t* sequences = config_lookup(&config, path);
+
+    sprintf(path, "%s.sequencecolors" , name);
+    config_setting_t* colours = config_lookup(&config, path);
+
     int numSeq = config_setting_length(sequences);
 
     // Add every Setting of Display to json file
     for (int i = 0; i < numSeq; i++) {
-        addNewSequence(config_setting_get_string_elem(sequences, i));
+        addNewSequence(config_setting_get_string_elem(sequences, i), config_setting_get_string_elem(colours, i));
     }
-
 }
 
 // get Titles of Bars for Bar Graphs
-void getBarTitles(const char* path) {
+void getBarTitles(const char* name) {
+    char path[strlen(name)+20];
+    sprintf(path, "%s.bartitles" , name);
     config_setting_t* sequences = config_lookup(&config, path);
     int numSeq = config_setting_length(sequences);
+
     for (int i = 0; i < numSeq; i++) {
         addNewBarTitle(config_setting_get_string_elem(sequences, i));
     }

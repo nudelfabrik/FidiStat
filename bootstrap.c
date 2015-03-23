@@ -31,21 +31,14 @@ void createFile(Status* status) {
     graph = json_object();
     sequences = json_array();
 
-    char confPath[strlen(status->name)+10];
-    sprintf(confPath, "%s.display" , status->name);
-    
-    // Load Display Settings: title, etc
-    getDisplaySettings(confPath, "graph");
+    getDisplaySettings(status->name, "graph");
 
     // Create Datasequences
-    sprintf(confPath, "%s.sequencetitles" , status->name);
-    getSequences(confPath);
-
+    getSequences(status->name);
 
     // If Type is Bar, load Bartitles
     if (status->type == 1) {
-        sprintf(confPath, "%s.bartitles" , status->name);
-        getBarTitles(confPath);
+        getBarTitles(status->name);
     }
 
     // Build json Object
@@ -53,7 +46,7 @@ void createFile(Status* status) {
     json_object_set(root, "graph", graph);
 
     // Print created JSON
-    char file[strlen(confPath)+strlen(status->name)+6];
+    char file[strlen(path)+strlen(status->name)+6];
     sprintf(file, "%s%s.json",path, status->name);
     json_dump_file(root, file, JSON_INDENT(4)|JSON_PRESERVE_ORDER);
 }
@@ -82,9 +75,13 @@ void addNewInt(const char* key, int value, const char* subObj) {
 }
 
 // Add new Sequence to "sequences"
-void addNewSequence(const char* title) {
+void addNewSequence(const char* title, const char* colour) {
     json_t* newSeq = json_object();
     json_object_set(newSeq, "title", json_string(title));
+    // If Colour is specified, set colour
+    if (colour) {
+        json_object_set(newSeq, "color", json_string(colour));
+    }
     json_object_set(newSeq, "datapoints", json_array());
     json_array_append(sequences, newSeq);
 }
