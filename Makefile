@@ -6,6 +6,9 @@ BSDversion != uname -r | grep -o '^[0-9]*'
 CC   = clang
 .    endif
 .endif
+.if $(SYSTEM) == Darwin
+CC   = clang
+.endif
 LIB_DIR=/usr/local
 CFLAGS=-I $(LIB_DIR)/include
 INS_DIR=/usr/local/etc
