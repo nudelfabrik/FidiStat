@@ -115,13 +115,13 @@ int main(int argc, const char *argv[])
         if (delete_flag) {
             del(&stats[i]);
             fprintf(stdout, "Removed %s.json\n", stats[i].name);
-            exit(0);
+            break;
         }
         if (clean_flag) {
             if (!stats[i].enabled) {
                 del(&stats[i]);
                 fprintf(stdout, "Removed %s.json\n", stats[i].name);
-                exit(0);
+                break;
             }
         }
 
