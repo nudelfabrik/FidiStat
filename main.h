@@ -18,6 +18,7 @@ typedef struct statStruct Status;
 
 int verbose_flag;
 int dry_flag;
+int clean_flag, delete_flag;
 
 char zeit[10];
 const char *path;
@@ -27,5 +28,6 @@ void cmmdOutput(Status *stat);
 void addMissingJson(void);
 void debug(Status *stat);
 void timeSet();
+void del(Status *stat);
 
 #endif
