@@ -71,9 +71,6 @@ int main(int argc, const char *argv[])
         case 'f':
             cfgLocation = optarg;
             break;
-        case 'r':
-            rebuild_flag = 1;
-            break;
         case 'c':
             clean_flag = 1;
             break;
@@ -107,18 +104,6 @@ int main(int argc, const char *argv[])
     Status *statsPtr;
 
     int i = 0;
-    if (delete_flag) {
-        for (i = 0; i < statNum; i++) {
-            del(&stats[i]);
-        }
-    }
-    if (clean_flag) {
-        for (i = 0; i < statNum; i++) {
-            if (stats[i].enabled) {
-            del(&stats[i]);
-        }
-        }
-    }
 
     for (i = 0; i < statNum; i++) {
         //Make Pointer point to current status
@@ -126,6 +111,19 @@ int main(int argc, const char *argv[])
         //Get Name of Status
         getConfList(statsPtr, i);
         getConfEnable(statsPtr);
+
+        if (delete_flag) {
+            del(&stats[i]);
+            fprintf(stdout, "Removed %s.json\n", stats[i].name);
+            exit(0);
+        }
+        if (clean_flag) {
+            if (!stats[i].enabled) {
+                del(&stats[i]);
+                fprintf(stdout, "Removed %s.json\n", stats[i].name);
+                exit(0);
+            }
+        }
 
         if (stats[i].enabled) {
             getConfType(statsPtr);
@@ -196,7 +194,7 @@ void debug(Status *stat) {
 }
 
 void del(Status *stat) {
-    const char* path[strlen(path) + strlen(stat->name) + 6];
-    sprintf(path, "%s%s.json", path, stat->name);
-    remove(path);
+    char file[strlen(path) + strlen(stat->name) + 6];
+    sprintf(file, "%s%s.json", path, stat->name);
+    remove(file);
 }
