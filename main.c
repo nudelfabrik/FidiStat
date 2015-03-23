@@ -105,25 +105,30 @@ int main(int argc, const char *argv[])
 
     int i = 0;
 
+    if (delete_flag) {
+        for (i = 0; i < statNum; i++) {
+            getConfList(&stats[i], i);
+            del(&stats[i]);
+            fprintf(stdout, "Removed %s.json\n", stats[i].name);
+        }
+        exit(0);
+    }
+    if (clean_flag) {
+        for (i = 0; i < statNum; i++) {
+            getConfList(&stats[i], i);
+            getConfEnable(&stats[i]);
+            del(&stats[i]);
+            fprintf(stdout, "Removed %s.json\n", stats[i].name);
+        }
+        exit(0);
+    }
+
     for (i = 0; i < statNum; i++) {
         //Make Pointer point to current status
         statsPtr = &stats[i]; 
         //Get Name of Status
         getConfList(statsPtr, i);
         getConfEnable(statsPtr);
-
-        if (delete_flag) {
-            del(&stats[i]);
-            fprintf(stdout, "Removed %s.json\n", stats[i].name);
-            break;
-        }
-        if (clean_flag) {
-            if (!stats[i].enabled) {
-                del(&stats[i]);
-                fprintf(stdout, "Removed %s.json\n", stats[i].name);
-                break;
-            }
-        }
 
         if (stats[i].enabled) {
             getConfType(statsPtr);
