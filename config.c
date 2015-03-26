@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <libconfig.h>
 #include "main.h"
+#include "bootstrap.h"
 
 config_t config;
 
@@ -57,14 +58,8 @@ int getStatNum () {
 
 //Set name of *stat to the ith item of config list
 void getConfList(Status *stat, int i) {
-    stat->name = getName(i);
+    stat->name = config_setting_get_string_elem(getSetting("list"), i);
 }
-
-const char* getName(int i) {
-    return config_setting_get_string_elem(getSetting("list"), i);
-}
-
-
 
 //Check if *stat is enabled 
 void getConfEnable(Status *stat) {
@@ -90,18 +85,45 @@ void getConfRegex(Status *stat) {
     }
 }
 
+const char* getCSVtitle(Status *stat) {
+    const char* title;
+    config_setting_t *setting = config_lookup(&config, stat->name);
+    if (!config_setting_lookup_string(config_setting_get_member(setting, "display"), "title", &title)) {
+        fprintf(stderr, "Can't lookup Title of %s\n", stat->name);
+        exit(1);
+    }
+    return title;
+}
+
 //Get Type of *stat
 void getConfType(Status *stat) {
-    if (!config_setting_lookup_int(getSetting(stat->name), "type", &stat->type)) {
+    const char* type;
+    config_setting_t *setting = config_lookup(&config, stat->name);
+    if (!config_setting_lookup_string(config_setting_get_member(setting, "display"), "type", &type)) {
         fprintf(stderr, "Can't lookup Config Type of %s\n", stat->name);
         exit(1);
     }
+    if (!strcmp(type,  "line")) {
+        stat->type = 0;
+    } else {
+        if (!strcmp(type,  "bar")) {
+            stat->type = 1;
+        } else {
+            if (!strcmp(type,  "csv")) {
+                stat->type = 2;
+            } else {
+                fprintf(stderr, "Config Type of  %s\n not recognized", stat->name);
+                exit(1);
+            }
+        }
+    }
 }
 
+// Load Display Setting from path
 void getDisplaySettings(const char* path, const char* subSetting) {
 
     // Get Display Setting of name
-    config_setting_t* display = config_lookup(config, path);
+    config_setting_t* display = config_lookup(&config, path);
     int numSettings = config_setting_length(display);
 
     // Add every Setting of Display to json file
@@ -110,14 +132,14 @@ void getDisplaySettings(const char* path, const char* subSetting) {
 
         // Int and String Settings
         if (config_setting_type(sett) == CONFIG_TYPE_INT) {
-            addNewValue(config_setting_name(sett),config_setting_get_int(sett), subSetting);
+            addNewInt(config_setting_name(sett),config_setting_get_int(sett), subSetting);
         }
         if (config_setting_type(sett) == CONFIG_TYPE_STRING) {
-            addNewValue(config_setting_name(sett),config_setting_get_string(sett), subSetting);
+            addNewString(config_setting_name(sett),config_setting_get_string(sett), subSetting);
         }
 
         // Object Settings
-        if (config_setting_type(sett) == CONFIG_TYPE_LIST) {
+        if (config_setting_type(sett) == CONFIG_TYPE_GROUP) {
             const char* name = config_setting_name(sett);
             addNewSubSetting(name);
 
@@ -127,6 +149,28 @@ void getDisplaySettings(const char* path, const char* subSetting) {
             getDisplaySettings(newPath, name);
         }
     }
+}
+
+// get datasequence arrays
+void getSequences(const char* path) {
+    config_setting_t* sequences = config_lookup(&config, path);
+    int numSeq = config_setting_length(sequences);
+
+    // Add every Setting of Display to json file
+    for (int i = 0; i < numSeq; i++) {
+        addNewSequence(config_setting_get_string_elem(sequences, i));
+    }
+
+}
+
+// get Titles of Bars for Bar Graphs
+void getBarTitles(const char* path) {
+    config_setting_t* sequences = config_lookup(&config, path);
+    int numSeq = config_setting_length(sequences);
+    for (int i = 0; i < numSeq; i++) {
+        addNewBarTitle(config_setting_get_string_elem(sequences, i));
+    }
+
 }
 
 //Destroy Config
