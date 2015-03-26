@@ -3,12 +3,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
-#include "jansson.h"
+#include "json.h"
 #include "config.h"
 
 
 int makeJansson(Status *stat) {
-    json_t *root, *dataseq, *arry, *newval;
+    json_t *root, *dataseq, *graph, *arry, *newval;
     json_error_t error;
 
     char file[strlen(path)+strlen(stat->name)+6];
@@ -22,20 +22,16 @@ int makeJansson(Status *stat) {
         exit(1);
     }
     // Get old Data
-    dataseq = json_object_get(json_object_get(root, "graph"), "datasequences");
-    if (!dataseq) {
-        fprintf(stderr, "Can't get data from %s.json\n", stat->name);
-        return 0;
+    graph = json_object_get(root, "graph");
+    dataseq = getSequences(graph);
+    if (!check(dataseq)) {
+        printError(stat->name);
     }
     // Process Every Datasequence
     int j;
     for (j = 0; j < json_array_size(dataseq); j++) {
-        arry = json_object_get(json_array_get(dataseq, j),"datapoints"); 
-        if (!arry) {
-            fprintf(stderr, "Can't get data from %s.json\n", stat->name);
-            return 0;
-        }
         // If Type is 0 /Line (standard case) append new value at the bottom 
+        arry = getSingleSeqeunce(dataseq, j);
         if (stat->type == 0) {
             if (json_array_size(arry) >= maxCount) {
                  if (json_array_remove(arry,0)) {
@@ -74,6 +70,30 @@ int makeJansson(Status *stat) {
         
 }
 
+json_t* getSequences(json_t* graph) {
+    return json_object_get(graph, "datasequences");
+}
+
+const char* getTitle(json_t* root) {
+    return json_string_value(json_object_get(json_object_get(root, "graph"), "title"));
+}
+
+json_t* getSingleSeqeunce(json_t* sequences, int i) {
+        return json_object_get(json_array_get(sequences, i),"datapoints"); 
+}
+
+int check(json_t* object) {
+
+        if (!object) {
+            return 0;
+        } else {
+            return 1;
+        }
+}
+
+void printError(const char* name) {
+    fprintf(stderr, "Can't get data from %s.json\n", name);
+}
 // If type is 2, create a new .csv evertime the command runs
 void makeCSV(Status *stat) {
     FILE *fp;
