@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <libconfig.h>
-#include "main.h"
 #include "bootstrap.h"
 
 config_t config;
@@ -57,12 +56,12 @@ int getStatNum () {
 
 
 //Set name of *stat to the ith item of config list
-void getConfList(Status *stat, int i) {
+void setConfName(Status *stat, int i) {
     stat->name = config_setting_get_string_elem(getSetting("list"), i);
 }
 
 //Check if *stat is enabled 
-void getConfEnable(Status *stat) {
+void setConfEnable(Status *stat) {
     if (!config_setting_lookup_bool(getSetting(stat->name), "enabled", &stat->enabled)) {
         fprintf(stderr, "Can't lookup enabled of %s\n", stat->name);
         exit(1);
@@ -70,7 +69,7 @@ void getConfEnable(Status *stat) {
 }
 
 //Get Command of *stat
-void getConfCmmd(Status *stat) {
+void setConfCmmd(Status *stat) {
     if (!config_setting_lookup_string(getSetting(stat->name), "cmmd", &stat->cmmd)) {
         fprintf(stderr, "Can't lookup Command of %s\n", stat->name);
         exit(1);
@@ -78,7 +77,7 @@ void getConfCmmd(Status *stat) {
 }
  
 //Get Regex of *stat
-void getConfRegex(Status *stat) {
+void setConfRegex(Status *stat) {
     if (!config_setting_lookup_string(getSetting(stat->name), "regex", &stat->regex)) {
         fprintf(stderr, "Can't lookup Regex of %s\n", stat->name);
         exit(1);
@@ -96,7 +95,7 @@ const char* getCSVtitle(Status *stat) {
 }
 
 //Get Type of *stat
-void getConfType(Status *stat) {
+void setConfType(Status *stat) {
     const char* type;
     config_setting_t *setting = config_lookup(&config, stat->name);
     if (!config_setting_lookup_string(config_setting_get_member(setting, "display"), "type", &type)) {
