@@ -19,7 +19,7 @@ fidistat: main.o config.o jansson.o regex.o bootstrap.o
 	$(CC) $(CFLAGS) -L $(LIB_DIR)/lib main.o config.o jansson.o regex.o bootstrap.o -o fidistat -lconfig -ljansson
 
 main.o: main.c
-	$(CC) -c main.c 
+	$(CC) $(CFLAGS) -c main.c 
 
 config.o: config.c 
 	@if [ ! -f $(LIB_DIR)/lib/libconfig.a ]; then \
