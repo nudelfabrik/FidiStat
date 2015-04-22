@@ -1,0 +1,38 @@
+.\" The following commands are required for all man pages.
+.Dd April 22, 2015
+.Os 
+.Dt FIDISTAT 1
+.Sh NAME
+.Nm FidiStat
+.Nd one line description of name
+.Sh SYNOPSIS
+.Nm
+.Op Fl cdvx
+.Op Fl f Ar config.cfg
+.Sh DESCRIPTION
+Executes commands specified in the config files which output system statistics and
+parses these to a JSON file readable by StatusBoard (panic.com/statusboard)
+.Sh OPTIONS
+.Bl -tag -width indent 
+.It Fl c
+Delete all jsons not enabled.
+.It Fl d
+Dry run, nothing is written to disk.
+.It Fl v
+echoes every value to stdout.
+.It Fl x
+Delete ALL jsons listed in "list".
+.It Fl "f CFG_FILE"
+expects path to config file.
+.El
+.Sh IMPLEMENTATION NOTES
+Which commands work depend on the OS and installed programs.
+some basic config files are provided.
+.Sh FILES
+.Pa /usr/local/etc/fidistat/config 
+Default configuration file
+.Sh SEE ALSO
+See www.panic.com/statusboard for information on StatusBoard
+.Sh AUTHOR
+Benedikt Scholtes (benedikt.scholtes@fourtytwo.xyz)
+.\" .Sh BUGS
