@@ -15,8 +15,8 @@ INS_DIR=/usr/local/etc
 
 all: fidistat
 
-fidistat: main.o config.o jansson.o regex.o bootstrap.o
-	$(CC) $(CFLAGS) -L $(LIB_DIR)/lib main.o config.o jansson.o regex.o bootstrap.o -o fidistat -lconfig -ljansson
+fidistat: main.o config.o json.o regex.o bootstrap.o
+	$(CC) $(CFLAGS) -L $(LIB_DIR)/lib main.o config.o json.o regex.o bootstrap.o -o fidistat -lconfig -ljansson
 
 main.o: main.c
 	$(CC) $(CFLAGS) -c main.c 
@@ -33,7 +33,7 @@ config.o: config.c
 	@echo "config installed"
 	$(CC) $(CFLAGS) -c config.c
 
-jansson.o: jansson.c
+json.o: json.c
 	@if [ ! -f $(LIB_DIR)/lib/libjansson.a  ]; then \
 		if [ -d /usr/ports/devel/jansson ]; then \ cd /usr/ports/devel/jansson && make install clean ; \
 		else \
@@ -42,7 +42,7 @@ jansson.o: jansson.c
 		fi ; \
 	fi
 	@echo "jansson installed"
-	$(CC) $(CFLAGS) -c jansson.c 
+	$(CC) $(CFLAGS) -c json.c 
 
 regex.o: regex.c
 	$(CC) -c regex.c

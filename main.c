@@ -108,7 +108,6 @@ int main(int argc, const char *argv[])
     // delete .jsons if flags are set
     if (delete_flag) {
         for (i = 0; i < statNum; i++) {
-            getConfList(&stats[i], i);
             del(&stats[i]);
             fprintf(stdout, "Removed %s.json\n", stats[i].name);
         }
