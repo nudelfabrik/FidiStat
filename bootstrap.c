@@ -12,13 +12,15 @@ json_error_t error;
 
 // Check if File exist and  create if needed
 void bootstrap(Status* status) {
-    char file[strlen(path)+strlen(status->name)+6];
-    sprintf(file, "%s%s.json",path, status->name);
-    if ( access( file, F_OK ) == -1 ) {
-        if(verbose_flag) {  
-            printf("%s not found, creating new File", file);
+    if (status->type != 2) {
+        char file[strlen(path)+strlen(status->name)+6];
+        sprintf(file, "%s%s.json",path, status->name);
+        if ( access( file, F_OK ) == -1 ) {
+            if(verbose_flag) {  
+                printf("%s not found, creating new File", file);
+            }
+            createFile(status);
         }
-        createFile(status);
     }
 }
 

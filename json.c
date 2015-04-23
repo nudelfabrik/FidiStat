@@ -23,7 +23,7 @@ int makeJansson(Status *stat) {
     }
     // Get old Data
     graph = json_object_get(root, "graph");
-    dataseq = getSequences(graph);
+    dataseq = getDataSequences(graph);
     if (!check(dataseq)) {
         printError(stat->name);
     }
@@ -70,7 +70,7 @@ int makeJansson(Status *stat) {
         
 }
 
-json_t* getSequences(json_t* graph) {
+json_t* getDataSequences(json_t* graph) {
     return json_object_get(graph, "datasequences");
 }
 

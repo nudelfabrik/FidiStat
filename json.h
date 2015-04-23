@@ -5,7 +5,7 @@
 
 int makeJansson(Status *Stat);
 void makeCSV(Status *Stat);
-json_t* getSequences(json_t* graph);
+json_t* getDataSequences(json_t* graph);
 json_t* getSingleSeqeunce(json_t* sequences, int i);
 const char* getTitle(json_t* graph);
 int check(json_t* object);
