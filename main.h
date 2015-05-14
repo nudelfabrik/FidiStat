@@ -29,5 +29,6 @@ void addMissingJson(void);
 void debug(Status *stat);
 void timeSet();
 void del(Status *stat);
+void handleFlags(int argc, const char *argv[]);
 
 #endif
