@@ -27,7 +27,8 @@
 #include <time.h>
 #include <getopt.h>
 #include <errno.h>
-#include <stdlib.h>
+#include <libutil.h>
+#include <signal.h>
 #include "main.h"
 #include "regex.h"
 #include "config.h"
@@ -78,16 +79,18 @@ int main(int argc, const char *argv[])
     pfh = pidfile_open("/var/run/fidistat.pid", 0600, &otherpid);
     if (pfh == NULL) {
         if (errno == EEXIST) {
-            fprintf(stderr, "Daemon already running with PID %d", otherpid);
+            fprintf(stdout, "Daemon already running with PID %d\n", otherpid);
             exit(-1);
         }
-            fprintf(stderr, "Cannot create pidfile");
+            fprintf(stdout, "Cannot create pidfile\n");
     }   
+
     if  (daemon(0, 0) == -1) {
         fprintf(stderr, "Cannot daemonize");
         pidfile_remove(pfh);
         exit(-1);
     }
+
     pidfile_write(pfh);
 
     fixtime();
