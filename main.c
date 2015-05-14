@@ -26,22 +26,18 @@
 #include <stdlib.h>
 #include <time.h>
 #include <getopt.h>
+#include <errno.h>
 #include "main.h"
 #include "regex.h"
 #include "config.h"
 #include "json.h"
 #include "bootstrap.h"
 
-const char *helptext="--verbose, -v:                  echoes every value to stdout \n\
---dry, -d:                      Dry run, nothing is written to disk\n\
---config CFG_File, -f CFG_File: expects path to Config file\n\
---clean -c:                     remove all files not enabled\n\
---delete -x:                    remove all files\n"; 
-
 // Default Config Location
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 int main(int argc, const char *argv[])
 {
+    // Set Flags if some are set
     handleFlags(argc, argv);
 
     // load Config File and Settings
@@ -76,43 +72,64 @@ int main(int argc, const char *argv[])
             exit(0);
         }
     }
+    struct pidfh *pfh;
+    pid_t otherpid;
 
-    // Main Loop, go over every Status
-    for (i = 0; i < statNum; i++) {
-        //Make Pointer point to current status
-        statsPtr = &stats[i]; 
-        //Get Name of Status
-        setConfName(statsPtr, i);
-        setConfEnable(statsPtr);
+    pfh = pidfile_open("/var/run/.pid", 0600, &otherpid);
+    if (pfh == NULL) {
+        if (errno == EEXIST) {
+            fprintf(stderr, "Daemon already running with PID %d", otherpid);
+            exit(-1);
+        }
+            fprintf(stderr, "Cannot create pidfile");
+    }   
+    if  (daemon(0, 0) == -1) {
+        fprintf(stderr, "Cannot daemonize");
+        pidfile_remove(pfh);
+        exit(-1);
+    }
+    pidfile_write(pfh);
 
-        if (stats[i].enabled) {
-            // Load Remaining Config Settings
-            setConfType(statsPtr);
-            setConfCmmd(statsPtr);
+    while(1) {
+        // Main Loop, go over every Status
+        for (i = 0; i < statNum; i++) {
+            //Make Pointer point to current status
+            statsPtr = &stats[i]; 
+            //Get Name of Status
+            setConfName(statsPtr, i);
+            setConfEnable(statsPtr);
 
-            // Create File if not present
-            bootstrap(statsPtr);
+            if (stats[i].enabled) {
+                // Load Remaining Config Settings
+                setConfType(statsPtr);
+                setConfCmmd(statsPtr);
 
-            // Execute Command and save Output
-            cmmdOutput(statsPtr);
+                // Create File if not present
+                bootstrap(statsPtr);
 
-            // Check wich type the status is
-            if (stats[i].type == 2) {
-                if (verbose_flag) {
-                    debug(statsPtr);
+                // Execute Command and save Output
+                cmmdOutput(statsPtr);
+
+                // Check wich type the status is
+                if (stats[i].type == 2) {
+                    if (verbose_flag) {
+                        debug(statsPtr);
+                    }
+                    makeCSV(statsPtr);
+                } else {
+                    setConfRegex(statsPtr);
+                    regexing(statsPtr);
+                    if (verbose_flag) {
+                        debug(statsPtr);
+                    }
+                    // Add Data to JSON
+                    makeJansson(statsPtr);
                 }
-                makeCSV(statsPtr);
-            } else {
-                setConfRegex(statsPtr);
-                regexing(statsPtr);
-                if (verbose_flag) {
-                    debug(statsPtr);
-                }
-                // Add Data to JSON
-                makeJansson(statsPtr);
             }
         }
+        sleep(600);
     }
+    pidfile_remove(pfh);
 
     //Destroy Config
     destroyConf(); 
@@ -175,6 +192,11 @@ void handleFlags(int argc, const char *argv[]) {
     };
 
     int c;
+    const char *helptext="--verbose, -v:                  echoes every value to stdout \n\
+    --dry, -d:                      Dry run, nothing is written to disk\n\
+    --config CFG_File, -f CFG_File: expects path to Config file\n\
+    --clean -c:                     remove all files not enabled\n\
+    --delete -x:                    remove all files\n"; 
 
     while ((c = getopt_long(argc, argv, "cdfhvx", long_options, NULL)) != -1) {
         switch (c) {
