@@ -42,52 +42,7 @@ const char *helptext="--verbose, -v:                  echoes every value to stdo
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 int main(int argc, const char *argv[])
 {
-    static struct option long_options[] =
-    {
-        {"verbose", no_argument, &verbose_flag, 1},
-        {"dry", no_argument, &dry_flag, 1},
-        {"help", no_argument, 0, 'h'},
-        {"clean", no_argument, &clean_flag, 1},
-        {"delete", no_argument, &delete_flag, 1},
-        {"config", required_argument, 0, 'f'},
-        {0, 0, 0, 0}
-    };
-    int option_index = 0;
-
-    int c;
-
-    while ((c = getopt_long(argc, argv, "cdfhvx", long_options, NULL)) != -1) {
-        switch (c) {
-        case 'v':
-            verbose_flag = 1;
-            break;
-        case 'h':
-            fprintf(stdout, "%s", helptext);
-            exit(0);
-            break;
-        case 'd':
-            dry_flag = 1;
-            break;
-        case 'f':
-            cfgLocation = optarg;
-            break;
-        case 'c':
-            clean_flag = 1;
-            break;
-        case 'x':
-            delete_flag = 1;
-            break;
-        case 0:
-            break;
-        case '?':
-        default:     
-        fprintf(stderr, "%s: option `-%c' is invalid: ignored\n",
-            argv[0], optopt);
-            break;
-        }
-
-    }
-
+    handleFlags(argc, argv);
 
     // load Config File and Settings
     initConf(cfgLocation);
@@ -205,4 +160,51 @@ void del(Status *stat) {
     char file[strlen(path) + strlen(stat->name) + 6];
     sprintf(file, "%s%s.json", path, stat->name);
     remove(file);
+}
+
+void handleFlags(int argc, const char *argv[]) {
+    static struct option long_options[] =
+    {
+        {"verbose", no_argument, &verbose_flag, 1},
+        {"dry", no_argument, &dry_flag, 1},
+        {"help", no_argument, 0, 'h'},
+        {"clean", no_argument, &clean_flag, 1},
+        {"delete", no_argument, &delete_flag, 1},
+        {"config", required_argument, 0, 'f'},
+        {0, 0, 0, 0}
+    };
+
+    int c;
+
+    while ((c = getopt_long(argc, argv, "cdfhvx", long_options, NULL)) != -1) {
+        switch (c) {
+        case 'v':
+            verbose_flag = 1;
+            break;
+        case 'h':
+            fprintf(stdout, "%s", helptext);
+            exit(0);
+            break;
+        case 'd':
+            dry_flag = 1;
+            break;
+        case 'f':
+            cfgLocation = optarg;
+            break;
+        case 'c':
+            clean_flag = 1;
+            break;
+        case 'x':
+            delete_flag = 1;
+            break;
+        case 0:
+            break;
+        case '?':
+        default:     
+        fprintf(stderr, "%s: option `-%c' is invalid: ignored\n",
+            argv[0], optopt);
+            break;
+        }
+
+    }
 }
