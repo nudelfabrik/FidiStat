@@ -27,6 +27,7 @@
 #include <time.h>
 #include <getopt.h>
 #include <errno.h>
+#include <libutil.h>
 #include "main.h"
 #include "regex.h"
 #include "config.h"
@@ -75,7 +76,7 @@ int main(int argc, const char *argv[])
     struct pidfh *pfh;
     pid_t otherpid;
 
-    pfh = pidfile_open("/var/run/.pid", 0600, &otherpid);
+    pfh = pidfile_open("/var/run/fidistat.pid", 0600, &otherpid);
     if (pfh == NULL) {
         if (errno == EEXIST) {
             fprintf(stderr, "Daemon already running with PID %d", otherpid);
