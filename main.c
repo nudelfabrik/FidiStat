@@ -27,7 +27,7 @@
 #include <time.h>
 #include <getopt.h>
 #include <errno.h>
-#include <libutil.h>
+#include <stdlib.h>
 #include "main.h"
 #include "regex.h"
 #include "config.h"
@@ -47,7 +47,6 @@ int main(int argc, const char *argv[])
     getMaxCount();
 
     // Set zeit to current time    
-    timeSet();
 
     // Get max number of Settings
     int statNum = getStatNum();
@@ -91,7 +90,9 @@ int main(int argc, const char *argv[])
     }
     pidfile_write(pfh);
 
+    fixtime();
     while(1) {
+        timeSet();
         // Main Loop, go over every Status
         for (i = 0; i < statNum; i++) {
             //Make Pointer point to current status
@@ -135,6 +136,24 @@ int main(int argc, const char *argv[])
     //Destroy Config
     destroyConf(); 
     return 0;
+}
+
+// Wait to a round time for execution
+void fixtime(void) {
+    time_t epoch_time;
+    struct tm *tm_p;
+    epoch_time = time( NULL );
+    tm_p = localtime( &epoch_time );
+    // 20 Seconds should be enough to execute all commands
+    if (tm_p->tm_sec > 40) {
+        sleep(22);
+    }
+    // TODO: 10 is depened on the interval
+    if ( (tm_p->tm_min % 10) != 0) {
+        int min = 10 - (tm_p->tm_min % 10);
+        sleep(min*60);
+    }
+    return;
 }
 
 //Set time
