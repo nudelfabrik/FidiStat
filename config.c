@@ -78,9 +78,11 @@ void setConfCmmd(Status *stat) {
  
 //Get Regex of *stat
 void setConfRegex(Status *stat) {
-    if (!config_setting_lookup_string(getSetting(stat->name), "regex", &stat->regex)) {
-        fprintf(stderr, "Can't lookup Regex of %s\n", stat->name);
-        exit(1);
+    if (stat->type != 2) {
+        if (!config_setting_lookup_string(getSetting(stat->name), "regex", &stat->regex)) {
+            fprintf(stderr, "Can't lookup Regex of %s\n", stat->name);
+            exit(1);
+        }
     }
 }
 

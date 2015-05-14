@@ -56,6 +56,23 @@ int main(int argc, const char *argv[])
     Status *statsPtr;
 
     int i = 0;
+    for (i = 0; i < statNum; i++) {
+        Status newStat;
+        setConfName(&newStat, i);
+        setConfEnable(&newStat);
+
+        if (stats[i].enabled) {
+            stats[i] = newStat;
+            // Load Remaining Config Settings
+            setConfType(&stats[i]);
+            setConfCmmd(&stats[i]);
+            setConfRegex(&newStat);
+
+            // Create File if not present
+            bootstrap(&stats[i]);
+        }
+            
+    }
 
     // delete .jsons if flags are set
     if (delete_flag) {
@@ -100,35 +117,12 @@ int main(int argc, const char *argv[])
         for (i = 0; i < statNum; i++) {
             //Make Pointer point to current status
             statsPtr = &stats[i]; 
-            //Get Name of Status
-            setConfName(statsPtr, i);
-            setConfEnable(statsPtr);
 
-            if (stats[i].enabled) {
-                // Load Remaining Config Settings
-                setConfType(statsPtr);
-                setConfCmmd(statsPtr);
-
-                // Create File if not present
-                bootstrap(statsPtr);
-
-                // Execute Command and save Output
-                cmmdOutput(statsPtr);
-
-                // Check wich type the status is
-                if (stats[i].type == 2) {
-                    if (verbose_flag) {
-                        debug(statsPtr);
-                    }
-                    makeCSV(statsPtr);
-                } else {
-                    setConfRegex(statsPtr);
-                    regexing(statsPtr);
-                    if (verbose_flag) {
-                        debug(statsPtr);
-                    }
-                    // Add Data to JSON
-                    makeJansson(statsPtr);
+            if (statsPtr != NULL) {
+                if (stats[i].enabled) {
+                    // Execute Command and save Output
+                    cmmdOutput(statsPtr);
+                    makeStat(statsPtr);
                 }
             }
         }
