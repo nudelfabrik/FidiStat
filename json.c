@@ -5,6 +5,7 @@
 #include "main.h"
 #include "json.h"
 #include "config.h"
+#include "regex.h"
 
 
 int makeJansson(Status *stat) {
@@ -89,6 +90,21 @@ int check(json_t* object) {
         } else {
             return 1;
         }
+}
+
+void makeStat(Status *stat) {
+    if (stat->type == 2) {
+        if (verbose_flag) {
+            debug(stat);
+        }
+        makeCSV(stat);
+    } else {
+        regexing(stat);
+        if (verbose_flag) {
+            debug(stat);
+        }
+        makeJansson(stat);
+    }
 }
 
 void printError(const char* name) {
