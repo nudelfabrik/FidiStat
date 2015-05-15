@@ -50,8 +50,6 @@ int main(int argc, const char *argv[])
     getPath();
     getMaxCount();
 
-    // Set zeit to current time    
-    timeSet();
 
     // Get max number of Settings
     int statNum = getStatNum();
@@ -83,14 +81,18 @@ int main(int argc, const char *argv[])
 
     pidfile_write(pfh);
 
-    fixtime();
+    if (!(dry_flag)) {
+        fixtime();
+    }
     int i;
     while(1) {
+        // Set zeit to current time    
         timeSet();
         // Main Loop, go over every Status
         for (i = 0; i < statNum; i++) {
             //Make Pointer point to current status
             statsPtr = &stats[i]; 
+
 
             if (statsPtr != NULL) {
                 syslog(LOG_DEBUG, "checking: %s", statsPtr->name);
@@ -122,7 +124,7 @@ void confSetup(Status stats[]) {
             del(&newStat);
             fprintf(stdout, "Removed %s.json\n", newStat.name);
         } else {
-            if (stats[i].enabled) {
+            if (newStat.enabled) {
                 if (clean_flag) {
                     del(&newStat);
                     fprintf(stdout, "Removed %s.json\n", newStat.name);
@@ -130,13 +132,14 @@ void confSetup(Status stats[]) {
 
                 syslog(LOG_DEBUG, "added: %s", newStat.name);
                 // Load Remaining Config Settings
-                setConfType(&stats[i]);
-                setConfCmmd(&stats[i]);
+                setConfType(&newStat);
+                setConfCmmd(&newStat);
                 setConfRegex(&newStat);
 
                 // Create File if not present
-                bootstrap(&stats[i]);
+                bootstrap(&newStat);
             }
+            stats[i] = newStat;
         }
             
     }
