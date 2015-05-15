@@ -60,36 +60,33 @@ int main(int argc, const char *argv[])
         Status newStat;
         setConfName(&newStat, i);
         setConfEnable(&newStat);
+        if (delete_flag) {
+            del(&newStat);
+            fprintf(stdout, "Removed %s.json\n", newStat.name);
+        } else {
+            if (stats[i].enabled) {
+                if (clean_flag) {
+                    del(&newStat);
+                    fprintf(stdout, "Removed %s.json\n", newStat.name);
+                }
+                stats[i] = newStat;
+                // Load Remaining Config Settings
+                setConfType(&stats[i]);
+                setConfCmmd(&stats[i]);
+                setConfRegex(&newStat);
 
-        if (stats[i].enabled) {
-            stats[i] = newStat;
-            // Load Remaining Config Settings
-            setConfType(&stats[i]);
-            setConfCmmd(&stats[i]);
-            setConfRegex(&newStat);
-
-            // Create File if not present
-            bootstrap(&stats[i]);
+                // Create File if not present
+                bootstrap(&stats[i]);
+            }
         }
             
     }
 
     // delete .jsons if flags are set
-    if (delete_flag) {
-        for (i = 0; i < statNum; i++) {
-            del(&stats[i]);
-            fprintf(stdout, "Removed %s.json\n", stats[i].name);
-        }
+    if (delete_flag || clean_flag) {
         exit(0);
     }
-    if (clean_flag) {
-        for (i = 0; i < statNum; i++) {
-            if (stats[i].enabled) {
-                del(&stats[i]);
-            }
-            exit(0);
-        }
-    }
+
     struct pidfh *pfh;
     pid_t otherpid;
 
