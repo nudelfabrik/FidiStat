@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <libutil.h>
 #include <signal.h>
+#include <syslog.h>
 #include "main.h"
 #include "regex.h"
 #include "config.h"
@@ -59,6 +60,7 @@ int main(int argc, const char *argv[])
     // Setup all config files
     confSetup(stats);
 
+    // Daemonize
     struct pidfh *pfh;
     pid_t otherpid;
 
@@ -76,6 +78,8 @@ int main(int argc, const char *argv[])
         pidfile_remove(pfh);
         exit(-1);
     }
+    openlog("fidistat", LOG_PID, LOG_DAEMON);
+    syslog(LOG_INFO, "Started Fidistat");
 
     pidfile_write(pfh);
 
@@ -170,7 +174,7 @@ void timeSet() {
 }
 
 //Get Output from Command
-void cmmdOutput(Status *stat) {
+int cmmdOutput(Status *stat) {
     char raw[OUTPUT_SIZE] = "";
     FILE *fp;
 
@@ -182,16 +186,17 @@ void cmmdOutput(Status *stat) {
     }
     if (pclose(fp) != 0) {
         fprintf(stderr, "Command of %s exits != 0\n", stat->name);
-        exit(1);
+        return -1;
     }
+    return 0;
 }
 
 void debug(Status *stat) {
-    printf("\nOutput of %s:\n%s\n", stat->name, stat->raw);
+    syslog(LOG_INFO, "\nOutput of %s:\n%s\n", stat->name, stat->raw);
     if (stat->type != 2) {
         int i;
         for (i = 0; i < 4; i++) {
-            printf("Result %i of %s: %f\n", i, stat->name, stat->result[i]);
+            syslog(LOG_INFO, "Result %i of %s: %f\n", i, stat->name, stat->result[i]);
         }
     }
 }
