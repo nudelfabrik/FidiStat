@@ -41,6 +41,8 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 int main(int argc, const char *argv[])
 {
     // Set Flags if some are set
+    openlog("fidistat", LOG_PID, LOG_DAEMON);
+    syslog(LOG_INFO, "Started Fidistat");
     handleFlags(argc, argv);
 
     // load Config File and Settings
@@ -78,8 +80,6 @@ int main(int argc, const char *argv[])
         pidfile_remove(pfh);
         exit(-1);
     }
-    openlog("fidistat", LOG_PID, LOG_DAEMON);
-    syslog(LOG_INFO, "Started Fidistat");
 
     pidfile_write(pfh);
 
@@ -93,7 +93,8 @@ int main(int argc, const char *argv[])
             statsPtr = &stats[i]; 
 
             if (statsPtr != NULL) {
-                if (stats[i].enabled) {
+                syslog(LOG_DEBUG, "checking: %s", statsPtr->name);
+                if (statsPtr->enabled) {
                     // Execute Command and save Output
                     cmmdOutput(statsPtr);
                     makeStat(statsPtr);
@@ -127,7 +128,7 @@ void confSetup(Status stats[]) {
                     fprintf(stdout, "Removed %s.json\n", newStat.name);
                 }
 
-                stats[i] = newStat;
+                syslog(LOG_DEBUG, "added: %s", newStat.name);
                 // Load Remaining Config Settings
                 setConfType(&stats[i]);
                 setConfCmmd(&stats[i]);
@@ -138,6 +139,10 @@ void confSetup(Status stats[]) {
             }
         }
             
+    }
+
+    for (i = 0; i < getStatNum(); i++) {
+        syslog(LOG_DEBUG, "%i: %s", i,stats[i].name);
     }
     if (delete_flag || clean_flag) {
         exit(0);
