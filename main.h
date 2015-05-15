@@ -24,6 +24,7 @@ char zeit[10];
 const char *path;
 int maxCount;
 
+void confSetup(Status stats[]);
 void fixtime(void);
 void cmmdOutput(Status *stat);
 void addMissingJson(void);

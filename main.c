@@ -48,6 +48,7 @@ int main(int argc, const char *argv[])
     getMaxCount();
 
     // Set zeit to current time    
+    timeSet();
 
     // Get max number of Settings
     int statNum = getStatNum();
@@ -55,37 +56,8 @@ int main(int argc, const char *argv[])
     Status stats[statNum];
     Status *statsPtr;
 
-    int i = 0;
-    for (i = 0; i < statNum; i++) {
-        Status newStat;
-        setConfName(&newStat, i);
-        setConfEnable(&newStat);
-        if (delete_flag) {
-            del(&newStat);
-            fprintf(stdout, "Removed %s.json\n", newStat.name);
-        } else {
-            if (stats[i].enabled) {
-                if (clean_flag) {
-                    del(&newStat);
-                    fprintf(stdout, "Removed %s.json\n", newStat.name);
-                }
-                stats[i] = newStat;
-                // Load Remaining Config Settings
-                setConfType(&stats[i]);
-                setConfCmmd(&stats[i]);
-                setConfRegex(&newStat);
-
-                // Create File if not present
-                bootstrap(&stats[i]);
-            }
-        }
-            
-    }
-
-    // delete .jsons if flags are set
-    if (delete_flag || clean_flag) {
-        exit(0);
-    }
+    // Setup all config files
+    confSetup(stats);
 
     struct pidfh *pfh;
     pid_t otherpid;
@@ -108,6 +80,7 @@ int main(int argc, const char *argv[])
     pidfile_write(pfh);
 
     fixtime();
+    int i;
     while(1) {
         timeSet();
         // Main Loop, go over every Status
@@ -130,6 +103,42 @@ int main(int argc, const char *argv[])
     //Destroy Config
     destroyConf(); 
     return 0;
+}
+
+void confSetup(Status stats[]) {
+    int i = 0;
+    for (i = 0; i < getStatNum(); i++) {
+        Status newStat;
+        setConfName(&newStat, i);
+        setConfEnable(&newStat);
+
+        // delete .jsons if flags are set
+        if (delete_flag) {
+            del(&newStat);
+            fprintf(stdout, "Removed %s.json\n", newStat.name);
+        } else {
+            if (stats[i].enabled) {
+                if (clean_flag) {
+                    del(&newStat);
+                    fprintf(stdout, "Removed %s.json\n", newStat.name);
+                }
+
+                stats[i] = newStat;
+                // Load Remaining Config Settings
+                setConfType(&stats[i]);
+                setConfCmmd(&stats[i]);
+                setConfRegex(&newStat);
+
+                // Create File if not present
+                bootstrap(&stats[i]);
+            }
+        }
+            
+    }
+    if (delete_flag || clean_flag) {
+        exit(0);
+    }
+
 }
 
 // Wait to a round time for execution
