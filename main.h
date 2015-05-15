@@ -26,7 +26,7 @@ int maxCount;
 
 void confSetup(Status stats[]);
 void fixtime(void);
-void cmmdOutput(Status *stat);
+int cmmdOutput(Status *stat);
 void addMissingJson(void);
 void debug(Status *stat);
 void timeSet();
