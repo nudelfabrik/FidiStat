@@ -31,34 +31,19 @@
 #include <signal.h>
 #include <syslog.h>
 #include "main.h"
-#include "regex.h"
-#include "config.h"
-#include "json.h"
-#include "bootstrap.h"
+#include "client.h"
 
-// Default Config Location
-char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 int main(int argc, const char *argv[])
 {
     // Set Flags if some are set
-    openlog("fidistat", LOG_PID, LOG_DAEMON);
-    syslog(LOG_INFO, "Started Fidistat");
     handleFlags(argc, argv);
+    return -1;
+}
 
-    // load Config File and Settings
-    initConf(cfgLocation);
-    getPath();
-    getMaxCount();
+void client_start() {
 
-
-    // Get max number of Settings
-    int statNum = getStatNum();
-
-    Status stats[statNum];
-    Status *statsPtr;
-
-    // Setup all config files
-    confSetup(stats);
+    openlog("fidistat-client", LOG_PID, LOG_DAEMON);
+    syslog(LOG_INFO, "Started Fidistat Client");
 
     // Daemonize
     struct pidfh *pfh;
@@ -81,122 +66,51 @@ int main(int argc, const char *argv[])
 
     pidfile_write(pfh);
 
-    if (!(dry_flag)) {
-        fixtime();
-    }
-    int i;
-    while(1) {
-        // Set zeit to current time    
-        timeSet();
-        // Main Loop, go over every Status
-        for (i = 0; i < statNum; i++) {
-            //Make Pointer point to current status
-            statsPtr = &stats[i]; 
+    client();
 
-
-            if (statsPtr != NULL) {
-                syslog(LOG_DEBUG, "checking: %s", statsPtr->name);
-                if (statsPtr->enabled) {
-                    // Execute Command and save Output
-                    cmmdOutput(statsPtr);
-                    makeStat(statsPtr);
-                }
-            }
-        }
-        sleep(600);
-    }
     pidfile_remove(pfh);
 
     //Destroy Config
     destroyConf(); 
-    return 0;
+    closelog();
+    exit(0);
 }
 
-void confSetup(Status stats[]) {
-    int i = 0;
-    for (i = 0; i < getStatNum(); i++) {
-        Status newStat;
-        setConfName(&newStat, i);
-        setConfEnable(&newStat);
+void client_stop() {
+    struct pidfh *pfh;
+    pid_t otherpid;
 
-        // delete .jsons if flags are set
-        if (delete_flag) {
-            del(&newStat);
-            fprintf(stdout, "Removed %s.json\n", newStat.name);
-        } else {
-            if (newStat.enabled) {
-                if (clean_flag) {
-                    del(&newStat);
-                    fprintf(stdout, "Removed %s.json\n", newStat.name);
+    pfh = pidfile_open("/var/run/fidistat.pid", 0600, &otherpid);
+    if (pfh == NULL) {
+        if (errno == EEXIST) {
+            if (!kill(otherpid, SIGTERM)) {
+                fprintf(stdout, "Stopped FidiStat(%d) successfully", otherpid);
+            } else {
+                switch(errno) {
+                    case EPERM:
+                        fprintf(stderr, "Insufficient rights.");
+                        exit(-1);
+                        break;
+                    case ESRCH:
+                        fprintf(stderr, "PID not found, removing pidfile");
+                        pidfile_remove(pfh);
+                        exit(-1);
+                        break;
+                    default:
+                        exit(-1);
+                        break;
                 }
-
-                syslog(LOG_DEBUG, "added: %s", newStat.name);
-                // Load Remaining Config Settings
-                setConfType(&newStat);
-                setConfCmmd(&newStat);
-                setConfRegex(&newStat);
-
-                // Create File if not present
-                bootstrap(&newStat);
             }
-            stats[i] = newStat;
         }
-            
-    }
-
-    for (i = 0; i < getStatNum(); i++) {
-        syslog(LOG_DEBUG, "%i: %s", i,stats[i].name);
-    }
-    if (delete_flag || clean_flag) {
-        exit(0);
-    }
-
+    }   
+    pidfile_remove(pfh);
+    fprintf(stdout, "FidiStat not running?\n");
+    exit(-1);
 }
 
-// Wait to a round time for execution
-void fixtime(void) {
-    time_t epoch_time;
-    struct tm *tm_p;
-    epoch_time = time( NULL );
-    tm_p = localtime( &epoch_time );
-    // 20 Seconds should be enough to execute all commands
-    if (tm_p->tm_sec > 40) {
-        sleep(22);
-    }
-    // TODO: 10 is depened on the interval
-    if ( (tm_p->tm_min % 10) != 0) {
-        int min = 10 - (tm_p->tm_min % 10);
-        sleep(min*60);
-    }
-    return;
-}
-
-//Set time
-void timeSet() {
-    time_t epoch_time;
-    struct tm *tm_p;
-    epoch_time = time( NULL );
-    tm_p = localtime( &epoch_time );
-    sprintf(zeit, "%.2d:%.2d", 
-    tm_p->tm_hour, tm_p->tm_min );
-}
-
-//Get Output from Command
-int cmmdOutput(Status *stat) {
-    char raw[OUTPUT_SIZE] = "";
-    FILE *fp;
-
-    strcpy(stat->raw, "\0");
-
-    fp = popen(stat->cmmd, "r");  
-    while(fgets(raw, sizeof(stat->raw-1), fp) != NULL) {
-        strcat(stat->raw,raw);
-    }
-    if (pclose(fp) != 0) {
-        fprintf(stderr, "Command of %s exits != 0\n", stat->name);
-        return -1;
-    }
-    return 0;
+void client_restart() {
+    client_stop();
+    client_start();
 }
 
 void debug(Status *stat) {
@@ -207,12 +121,6 @@ void debug(Status *stat) {
             syslog(LOG_INFO, "Result %i of %s: %f\n", i, stat->name, stat->result[i]);
         }
     }
-}
-
-void del(Status *stat) {
-    char file[strlen(path) + strlen(stat->name) + 6];
-    sprintf(file, "%s%s.json", path, stat->name);
-    remove(file);
 }
 
 void handleFlags(int argc, const char *argv[]) {
@@ -226,6 +134,21 @@ void handleFlags(int argc, const char *argv[]) {
         {"config", required_argument, 0, 'f'},
         {0, 0, 0, 0}
     };
+    int i;
+    for (i = 0; i < argc; i++) {
+        if (strcmp(argv[i], "start")) {
+            client_start();
+            exit(0);
+        }
+        if (strcmp(argv[i], "stop")) {
+            client_stop();
+            exit(0);
+        }
+        if (strcmp(argv[i], "restart")) {
+            client_restart();
+            exit(0);
+        }
+    }
 
     int c;
     const char *helptext="--verbose, -v:                  echoes every value to stdout \n\

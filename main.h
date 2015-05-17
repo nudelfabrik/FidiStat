@@ -15,22 +15,11 @@ struct statStruct {
 };
 
 typedef struct statStruct Status;
+void client_start();
+void client_stop();
+void client_restart();
 
-int verbose_flag;
-int dry_flag;
-int clean_flag, delete_flag;
-
-char zeit[10];
-const char *path;
-int maxCount;
-
-void confSetup(Status stats[]);
-void fixtime(void);
-int cmmdOutput(Status *stat);
-void addMissingJson(void);
 void debug(Status *stat);
-void timeSet();
-void del(Status *stat);
 void handleFlags(int argc, const char *argv[]);
 
 #endif
