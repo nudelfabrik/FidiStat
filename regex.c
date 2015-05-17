@@ -14,7 +14,7 @@ void regexing(Status *stat) {
     int j = 0;
 
     retex = regcomp( &regex, stat->regex, REG_EXTENDED);
-    if( retex ){ fprintf(stderr, "Could not compile regex\n"); exit(1); }
+    if( retex ){ syslog(LOG_ERR, "Could not compile regex\n"); exit(1); }
         while (regexec(&regex, rawPnt, 1, &pmatch, 0) == 0) {
             sprintf(res, "%.*s",  (int)(pmatch.rm_eo - pmatch.rm_so), &rawPnt[pmatch.rm_so]);
             stat->result[j] = atof(res);

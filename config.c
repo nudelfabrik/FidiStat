@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <syslog.h>
 #include <libconfig.h>
 #include "bootstrap.h"
 #include "client.h"
@@ -14,7 +15,7 @@ void initConf (const char * path) {
     //parse File and watch for Errors
     if(! config_read_file(&config, path))
     {
-        fprintf(stderr, "%s:%d - %s\n", config_error_file(&config),
+        syslog(LOG_ERR, "%s:%d - %s\n", config_error_file(&config),
         config_error_line(&config), config_error_text(&config));
         config_destroy(&config);
         exit(1);
@@ -24,7 +25,7 @@ void initConf (const char * path) {
 config_setting_t* getSetting(const char * item) {
     config_setting_t *setting = config_lookup(&config, item);
     if (setting == NULL) {
-        fprintf(stderr, "Can't find %s\n", item);
+        syslog(LOG_ERR, "Can't find %s\n", item);
         exit(1);
     }
     return setting;
@@ -32,11 +33,11 @@ config_setting_t* getSetting(const char * item) {
 //Get Path to .jsons
 void getPath() {
     if (!config_lookup_string(&config, "path", &path)) {
-        fprintf(stderr, "Can't lookup path to .json\n");
+        syslog(LOG_ERR, "Can't lookup path to .json\n");
         exit(1);
     }
     if (path[strlen(path)-1] != '/') {
-        fprintf(stderr, "Path does not end with /\n");
+        syslog(LOG_ERR, "Path does not end with /\n");
         exit(1);
     }
 }
@@ -44,7 +45,7 @@ void getPath() {
 // Get max datapoints displayed
 void getMaxCount() {
     if (!config_lookup_int(&config, "maxEntrys", &maxCount)) {
-        fprintf(stderr, "Can't find maxEntries");
+        syslog(LOG_ERR, "Can't find maxEntries");
         exit(1);
     }
 }
@@ -64,7 +65,7 @@ void setConfName(Status *stat, int i) {
 //Check if *stat is enabled 
 void setConfEnable(Status *stat) {
     if (!config_setting_lookup_bool(getSetting(stat->name), "enabled", &stat->enabled)) {
-        fprintf(stderr, "Can't lookup enabled of %s\n", stat->name);
+        syslog(LOG_ERR, "Can't lookup enabled of %s\n", stat->name);
         exit(1);
     }
 }
@@ -72,7 +73,7 @@ void setConfEnable(Status *stat) {
 //Get Command of *stat
 void setConfCmmd(Status *stat) {
     if (!config_setting_lookup_string(getSetting(stat->name), "cmmd", &stat->cmmd)) {
-        fprintf(stderr, "Can't lookup Command of %s\n", stat->name);
+        syslog(LOG_ERR, "Can't lookup Command of %s\n", stat->name);
         exit(1);
     }
 }
@@ -81,7 +82,7 @@ void setConfCmmd(Status *stat) {
 void setConfRegex(Status *stat) {
     if (stat->type != 2) {
         if (!config_setting_lookup_string(getSetting(stat->name), "regex", &stat->regex)) {
-            fprintf(stderr, "Can't lookup Regex of %s\n", stat->name);
+            syslog(LOG_ERR, "Can't lookup Regex of %s\n", stat->name);
             exit(1);
         }
     }
@@ -91,7 +92,7 @@ const char* getCSVtitle(Status *stat) {
     const char* title;
     config_setting_t *setting = config_lookup(&config, stat->name);
     if (!config_setting_lookup_string(config_setting_get_member(setting, "display"), "title", &title)) {
-        fprintf(stderr, "Can't lookup Title of %s\n", stat->name);
+        syslog(LOG_ERR, "Can't lookup Title of %s\n", stat->name);
         exit(1);
     }
     return title;
@@ -102,7 +103,7 @@ void setConfType(Status *stat) {
     const char* type;
     config_setting_t *setting = config_lookup(&config, stat->name);
     if (!config_setting_lookup_string(config_setting_get_member(setting, "display"), "type", &type)) {
-        fprintf(stderr, "Can't lookup Config Type of %s\n", stat->name);
+        syslog(LOG_ERR, "Can't lookup Config Type of %s\n", stat->name);
         exit(1);
     }
     if (!strcmp(type,  "line")) {
@@ -114,7 +115,7 @@ void setConfType(Status *stat) {
             if (!strcmp(type,  "csv")) {
                 stat->type = 2;
             } else {
-                fprintf(stderr, "Config Type of  %s\n not recognized", stat->name);
+                syslog(LOG_ERR, "Config Type of  %s\n not recognized", stat->name);
                 exit(1);
             }
         }

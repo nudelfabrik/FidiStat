@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <syslog.h>
 #include "client.h"
 #include "bootstrap.h"
 #include "config.h"
@@ -17,7 +18,7 @@ void bootstrap(Status* status) {
         sprintf(file, "%s%s.json",path, status->name);
         if ( access( file, F_OK ) == -1 ) {
             if(verbose_flag) {  
-                printf("%s not found, creating new File", file);
+                syslog(LOG_ERR, "%s not found, creating new File", file);
             }
             createFile(status);
         }
