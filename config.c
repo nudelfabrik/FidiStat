@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <libconfig.h>
 #include "bootstrap.h"
+#include "client.h"
 
 config_t config;
 

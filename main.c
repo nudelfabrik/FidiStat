@@ -170,7 +170,7 @@ void handleFlags(int argc, const char *argv[]) {
             dry_flag = 1;
             break;
         case 'f':
-            cfgLocation = optarg;
+            setLocation(optarg);
             break;
         case 'c':
             clean_flag = 1;

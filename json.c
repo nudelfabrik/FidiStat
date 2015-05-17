@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main.h"
+#include "client.h"
 #include "json.h"
 #include "config.h"
 #include "regex.h"
