@@ -63,7 +63,7 @@ void confSetup(Status stats[]) {
         // delete .jsons if flags are set
         if (delete_flag) {
             del(&newStat);
-            fprintf(stdout, "Removed %s.json\n", newStat.name);
+            syslog(LOG_INFO, "Removed %s.json\n", newStat.name);
         } else {
             if (newStat.enabled) {
                 if (clean_flag) {
@@ -134,7 +134,7 @@ int cmmdOutput(Status *stat) {
         strcat(stat->raw,raw);
     }
     if (pclose(fp) != 0) {
-        fprintf(stderr, "Command of %s exits != 0\n", stat->name);
+        syslog(LOG_ERR, "Command of %s exits != 0\n", stat->name);
         return -1;
     }
     return 0;
