@@ -11,7 +11,7 @@ They are available in /usr/ports/ if using FreeBSD.
 When /usr/ports/ are installed, make will install them for you. Otherwise install them manually.   
 Standard Destination is <code>/usr/local/bin/fidistat</code> for the binary and <code>/usr/local/etc/fidistat/</code> for the config.cfg als well as the jsons.
 These can be symlinked into a Directory accessible from Status Board (That means a webserver wich distributes the files).
-At last, add fidistat to your crontab to log your data every x Minutes.
+
 
 
 config.cfg
@@ -28,7 +28,10 @@ See [here](http://www.panic.com/statusboard/docs/graph_tutorial.pdf) for all opt
 
 options
 -------
-* --verbose, -v: echoes every value to stdout. 
+* start: Start daemon
+* stop: stop daemon
+* restart: restart daemon
+* --verbose, -v: echoes every value to syslog. 
 * --dry, -d: Dry run, nothing is written to disk.
 * --config CFG_File, -f CFG_File: expects path to config file. if not specified, <code>/usr/local/etc/fidistat/config.cfg</code> is used.
 * --delete -x : Delete ALL jsons listed in "list".
