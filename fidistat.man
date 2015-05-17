@@ -4,7 +4,7 @@
 .Dt FIDISTAT 1
 .Sh NAME
 .Nm FidiStat
-.Nd one line description of name
+.Nd system statistics to JSON
 .Sh SYNOPSIS
 .Nm
 .Op Fl cdvx
