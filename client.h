@@ -6,7 +6,6 @@ int verbose_flag;
 int dry_flag;
 int clean_flag, delete_flag;
 
-char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 char zeit[10];
 const char *path;
 int maxCount;
@@ -19,5 +18,6 @@ int cmmdOutput(Status *stat);
 void addMissingJson(void);
 void timeSet();
 void del(Status *stat);
+void setLocation(char* loc);
 
 #endif

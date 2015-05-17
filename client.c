@@ -9,6 +9,7 @@
 #include "bootstrap.h"
 // Default Config Location
 
+char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 void client(void) {
 
     // load Config File and Settings
@@ -138,6 +139,11 @@ int cmmdOutput(Status *stat) {
     }
     return 0;
 }
+
+void setLocation(char* loc) {
+    cfgLocation = loc;
+}
+
 
 void del(Status *stat) {
     char file[strlen(path) + strlen(stat->name) + 6];
