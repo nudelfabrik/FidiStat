@@ -22,7 +22,7 @@ main.o: main.c
 	$(CC) $(CFLAGS) -c main.c 
 
 client.o: client.c
-	$(CC) $(CFLAGS) -c cliemt.c
+	$(CC) $(CFLAGS) -c client.c
 
 config.o: config.c 
 	@if [ ! -f $(LIB_DIR)/lib/libconfig.a ]; then \
