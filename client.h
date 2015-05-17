@@ -11,6 +11,8 @@ char zeit[10];
 const char *path;
 int maxCount;
 
+void client(void);
+
 void confSetup(Status stats[]);
 void fixtime(void);
 int cmmdOutput(Status *stat);

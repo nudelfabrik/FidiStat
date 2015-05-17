@@ -10,16 +10,19 @@ CC   = clang
 CC   = clang
 .endif
 LIB_DIR=/usr/local
-CFLAGS=-I $(LIB_DIR)/include -lutil
+CFLAGS=-I $(LIB_DIR)/include 
 INS_DIR=/usr/local/etc
 
 all: fidistat
 
-fidistat: main.o config.o json.o regex.o bootstrap.o
-	$(CC) $(CFLAGS) -L $(LIB_DIR)/lib main.o config.o json.o regex.o bootstrap.o -o fidistat -lconfig -ljansson
+fidistat: main.o client.o config.o json.o regex.o bootstrap.o
+	$(CC) $(CFLAGS) -lutil -L $(LIB_DIR)/lib main.o client.o config.o json.o regex.o bootstrap.o -o fidistat -lconfig -ljansson
 
 main.o: main.c
 	$(CC) $(CFLAGS) -c main.c 
+
+client.o: client.c
+	$(CC) $(CFLAGS) -c cliemt.c
 
 config.o: config.c 
 	@if [ ! -f $(LIB_DIR)/lib/libconfig.a ]; then \

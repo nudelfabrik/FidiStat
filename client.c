@@ -1,3 +1,7 @@
+#include <syslog.h>
+#include <string.h>
+#include <stdio.h>
+#include <time.h>
 #include "client.h"
 #include "regex.h"
 #include "config.h"
