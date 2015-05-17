@@ -42,6 +42,7 @@ int main(int argc, const char *argv[])
 
 void client_start() {
 
+    fprintf(stdout, "Starting fidistat...\n");
     openlog("fidistat-client", LOG_PID, LOG_DAEMON);
     syslog(LOG_INFO, "Started Fidistat Client");
 
@@ -84,15 +85,16 @@ void client_stop() {
     if (pfh == NULL) {
         if (errno == EEXIST) {
             if (!kill(otherpid, SIGTERM)) {
-                fprintf(stdout, "Stopped FidiStat(%d) successfully", otherpid);
+                fprintf(stdout, "Stopped FidiStat(%d) successfully\n", otherpid);
+                return;
             } else {
                 switch(errno) {
                     case EPERM:
-                        fprintf(stderr, "Insufficient rights.");
+                        fprintf(stderr, "Insufficient rights.\n");
                         exit(-1);
                         break;
                     case ESRCH:
-                        fprintf(stderr, "PID not found, removing pidfile");
+                        fprintf(stderr, "PID not found, removing pidfile\n");
                         pidfile_remove(pfh);
                         exit(-1);
                         break;
@@ -135,16 +137,16 @@ void handleFlags(int argc, const char *argv[]) {
         {0, 0, 0, 0}
     };
     int i;
-    for (i = 0; i < argc; i++) {
-        if (strcmp(argv[i], "start")) {
+    for (i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "start")) {
             client_start();
             exit(0);
         }
-        if (strcmp(argv[i], "stop")) {
+        if (!strcmp(argv[i], "stop")) {
             client_stop();
             exit(0);
         }
-        if (strcmp(argv[i], "restart")) {
+        if (!strcmp(argv[i], "restart")) {
             client_restart();
             exit(0);
         }
