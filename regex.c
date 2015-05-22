@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <syslog.h>
 #include <stdlib.h>
 #include <regex.h>
 #include <string.h>
