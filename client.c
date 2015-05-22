@@ -39,7 +39,6 @@ void client(void) {
             //Make Pointer point to current status
             statsPtr = &stats[i]; 
 
-
             if (statsPtr != NULL) {
                 syslog(LOG_DEBUG, "checking: %s", statsPtr->name);
                 if (statsPtr->enabled) {
