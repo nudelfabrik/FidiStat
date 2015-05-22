@@ -52,7 +52,6 @@ void getMaxCount() {
 
 //get number of Stats
 int getStatNum () {
-    getSetting("list"); 
     return config_setting_length(getSetting("list"));
 }
 
@@ -60,6 +59,7 @@ int getStatNum () {
 //Set name of *stat to the ith item of config list
 void setConfName(Status *stat, int i) {
     stat->name = config_setting_get_string_elem(getSetting("list"), i);
+    stat->ident = config_setting_get_string(getSetting("identifier"));
 }
 
 //Check if *stat is enabled 

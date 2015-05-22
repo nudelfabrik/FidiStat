@@ -8,6 +8,7 @@ struct statStruct {
     int enabled;
     int type;
     const char *name;
+    const char *ident;
     const char *cmmd;
     const char *regex;
     char raw[OUTPUT_SIZE]; 
