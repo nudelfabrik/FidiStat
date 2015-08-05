@@ -5,6 +5,7 @@
 #include <libconfig.h>
 #include "bootstrap.h"
 #include "client.h"
+#include "config.h"
 
 config_t config;
 
@@ -20,6 +21,9 @@ void initConf (const char * path) {
         config_destroy(&config);
         exit(1);
     }
+    getPath();
+    getMaxCount();
+
 }
 
 config_setting_t* getSetting(const char * item) {
@@ -30,6 +34,7 @@ config_setting_t* getSetting(const char * item) {
     }
     return setting;
 }
+
 //Get Path to .jsons
 void getPath() {
     if (!config_lookup_string(&config, "path", &path)) {
