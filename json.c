@@ -63,13 +63,18 @@ int makeJansson(Status *stat) {
     }
     // write modified json
     if (!dry_flag) {
-        if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2))) {
-            syslog(LOG_ERR, "error in writing back to %s.json", stat->name);
-            return 0;
-        }
     }
     return 1;
         
+}
+
+void dumpJSON (json_t *root, const char *name) {
+    char file[strlen(path)+strlen(name)+6];
+    sprintf(file, "%s%s.json",path, name);
+    if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2))) {
+        syslog(LOG_ERR, "error in writing back to %s.json", name);
+        return 0;
+    }
 }
 
 json_t* getDataSequences(json_t* graph) {

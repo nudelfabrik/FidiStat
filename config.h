@@ -9,6 +9,7 @@ void setConfName(Status *Stat, int i);
 const char* getStatName(int i);
 void getPath();
 void getMaxCount();
+void getLocalBool();
 void setConfEnable(Status *Stat);
 void setConfType(Status *Stat);
 void setConfCmmd(Status *Stat);

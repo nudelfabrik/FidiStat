@@ -14,9 +14,6 @@ void client(void) {
 
     // load Config File and Settings
     initConf(cfgLocation);
-    getPath();
-    getMaxCount();
-
 
     // Get max number of Settings
     int statNum = getStatNum();
@@ -44,12 +41,22 @@ void client(void) {
                 if (statsPtr->enabled) {
                     // Execute Command and save Output
                     cmmdOutput(statsPtr);
-                    makeStat(statsPtr);
+                    // Send Status to Server
+                    sendStat(statsPtr);
                 }
             }
         }
         sleep(600);
     }
+}
+
+void sendStat(Status *stat) {
+    if (local) {
+        makeStat(statsPtr);
+    } else {
+        //open Socket and Send
+    }
+
 }
 
 void confSetup(Status stats[]) {

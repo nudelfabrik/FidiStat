@@ -23,6 +23,7 @@ void initConf (const char * path) {
     }
     getPath();
     getMaxCount();
+    getLocalBool();
 
 }
 
@@ -55,6 +56,13 @@ void getMaxCount() {
     }
 }
 
+// Check if you should process the data or send it
+void getLocalBool() {
+    if (!config_lookup_bool(&config, "local", &local)) {
+        syslog(LOG_ERR, "Can't find local");
+        exit(1);
+    }
+}
 //get number of Stats
 int getStatNum () {
     return config_setting_length(getSetting("list"));

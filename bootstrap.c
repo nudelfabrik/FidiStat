@@ -7,6 +7,7 @@
 #include "client.h"
 #include "bootstrap.h"
 #include "config.h"
+#include "json.h"
 
 json_t *root, *graph, *sequences;
 json_error_t error;
@@ -49,9 +50,7 @@ void createFile(Status* status) {
     json_object_set(root, "graph", graph);
 
     // Print created JSON
-    char file[strlen(path)+strlen(status->name)+6];
-    sprintf(file, "%s%s.json",path, status->name);
-    json_dump_file(root, file, JSON_INDENT(4)|JSON_PRESERVE_ORDER);
+    dumpJSON(root, status->name);
 }
 
 // Adds new SubObject under "Graph"
