@@ -126,6 +126,8 @@ void debug(Status *stat) {
 }
 
 void handleFlags(int argc, const char *argv[]) {
+
+    // Handle CLI flags
     static struct option long_options[] =
     {
         {"verbose", no_argument, &verbose_flag, 1},
@@ -136,21 +138,6 @@ void handleFlags(int argc, const char *argv[]) {
         {"config", required_argument, 0, 'f'},
         {0, 0, 0, 0}
     };
-    int i;
-    for (i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "start")) {
-            client_start();
-            exit(0);
-        }
-        if (!strcmp(argv[i], "stop")) {
-            client_stop();
-            exit(0);
-        }
-        if (!strcmp(argv[i], "restart")) {
-            client_restart();
-            exit(0);
-        }
-    }
 
     int c;
     const char *helptext="--verbose, -v:                  echoes every value to stdout \n\
@@ -188,6 +175,22 @@ void handleFlags(int argc, const char *argv[]) {
             argv[0], optopt);
             break;
         }
+    }
 
+    // Handle Daemon Controls
+    int i;
+    for (i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "start")) {
+            client_start();
+            exit(0);
+        }
+        if (!strcmp(argv[i], "stop")) {
+            client_stop();
+            exit(0);
+        }
+        if (!strcmp(argv[i], "restart")) {
+            client_restart();
+            exit(0);
+        }
     }
 }
