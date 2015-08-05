@@ -9,6 +9,7 @@ int clean_flag, delete_flag;
 char zeit[10];
 const char *path;
 int maxCount;
+int local;
 
 void client(void);
 
