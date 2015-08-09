@@ -65,13 +65,21 @@ int makeJansson(Status *stat) {
     }
     // write modified json
     if (!dry_flag) {
-        dumpJSON(root, stat->name);
+        sendJSON(root, stat->name);
     }
     return 1;
         
 }
 
-void dumpJSON (json_t *root, const char *name) {
+void sendJSON(json_t *root, const char *name) {
+    if (local) {
+        dumpJSON(root, name);
+    } else {
+        // Send JSON to Server
+    }
+}
+
+void dumpJSON(json_t *root, const char *name) {
     char file[strlen(path)+strlen(name)+6];
     sprintf(file, "%s%s.json",path, name);
     if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2))) {

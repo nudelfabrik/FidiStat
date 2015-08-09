@@ -15,17 +15,25 @@ json_error_t error;
 // Check if File exist and  create if needed
 void bootstrap(Status* status) {
     if (status->type != 2) {
-        char file[strlen(path)+strlen(status->name)+6];
-        sprintf(file, "%s%s.json",path, status->name);
-        if ( access( file, F_OK ) == -1 ) {
+        if (checkForBootstrap(status->name)) {
             if(verbose_flag) {  
-                syslog(LOG_ERR, "%s not found, creating new File", file);
+                syslog(LOG_INFO, "%s.json not found, creating new File", status->name);
             }
             createFile(status);
         }
     }
 }
 
+int checkForBootstrap(const char* name) {
+    if (local) {
+        char file[strlen(path)+strlen(name)+6];
+        sprintf(file, "%s%s.json",path, status->name);
+        return (access( file, F_OK ) == -1);
+    } else {
+        // Ask Server, if bootstrap is needed
+    }
+
+}
 // Create new JSON File
 void createFile(Status* status) {
     if (status->type == 2) {
@@ -50,7 +58,7 @@ void createFile(Status* status) {
     json_object_set(root, "graph", graph);
 
     // Print created JSON
-    dumpJSON(root, status->name);
+    sendJSON(root, status->name);
 }
 
 // Adds new SubObject under "Graph"

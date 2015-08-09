@@ -5,6 +5,7 @@
 
 void bootstrap(Status* status);
 void createFile(Status* status);
+int checkForBootstrap(const char* name);
 
 void addNewSubSetting(const char* subObj);
 void addNewString(const char* key, const char* value, const char* subObj);
