@@ -141,7 +141,7 @@ int processCommand(Status *stat) {
     fp = popen(stat->cmmd, "r");  
     int i = 0;
     while (fgets(raw, sizeof(raw)-1, fp) != NULL) {
-        stat->result[i] = strtod(raw, NULL);
+        stat->result[i] = strtof(raw, NULL);
         i++;
     }
     if (pclose(fp) != 0) {
