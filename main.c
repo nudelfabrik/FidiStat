@@ -72,8 +72,6 @@ void client_start() {
 
     pidfile_remove(pfh);
 
-    //Destroy Config
-    destroyConf(); 
     closelog();
     exit(0);
 }

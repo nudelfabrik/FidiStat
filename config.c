@@ -91,24 +91,14 @@ void setConfCmmd(Status *stat) {
     }
 }
  
-//Get Regex of *stat
-void setConfRegex(Status *stat) {
-    if (stat->type != 2) {
-        if (!config_setting_lookup_string(getSetting(stat->name), "regex", &stat->regex)) {
-            syslog(LOG_ERR, "Can't lookup Regex of %s\n", stat->name);
-            exit(1);
-        }
-    }
-}
-
-const char* getCSVtitle(Status *stat) {
+void setCSVtitle(Status *stat) {
     const char* title;
     config_setting_t *setting = config_lookup(&config, stat->name);
     if (!config_setting_lookup_string(config_setting_get_member(setting, "display"), "title", &title)) {
         syslog(LOG_ERR, "Can't lookup Title of %s\n", stat->name);
         exit(1);
     }
-    return title;
+    stat->csv = title;
 }
 
 //Get Type of *stat
@@ -207,5 +197,5 @@ void getBarTitles(const char* name) {
 
 //Destroy Config
 void destroyConf() {
-    config_destroy(&config); 
+    config_destroy(&config);
 }

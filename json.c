@@ -120,7 +120,7 @@ void makeCSV(Status *stat) {
     FILE *fp;
     char file[OUTPUT_SIZE];
     char output[OUTPUT_SIZE] = "";
-    strcat(output, getCSVtitle(stat));
+    strcat(output, stat->csv);
     strcat(output, "\n");
 
     char raw[OUTPUT_SIZE] = "";

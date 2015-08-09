@@ -10,7 +10,7 @@ struct statStruct {
     const char *name;
     const char *ident;
     const char *cmmd;
-    const char *regex;
+    const char *csv;
     float result[MAXSTAT];
 };
 
