@@ -39,7 +39,7 @@ void client(void) {
                 syslog(LOG_DEBUG, "checking: %s", statsPtr->name);
                 if (statsPtr->enabled) {
                     // Execute Command and save Output
-                    cmmdOutput(statsPtr);
+                    processCommand(statsPtr);
                     // Send Status to Server
                     sendStat(statsPtr);
                 }
@@ -129,6 +129,9 @@ void timeSet() {
 
 //Get Output from Command
 int processCommand(Status *stat) {
+    if( stat->type == 2) {
+        return 2;
+    }
     char raw[OUTPUT_SIZE] = "";
     char *rawPnt = raw;
     FILE *fp;
@@ -146,7 +149,6 @@ int processCommand(Status *stat) {
     int retex;
     regmatch_t pmatch;
     char res[OUTPUT_SIZE];
-
     int j = 0;
 
     retex = regcomp( &regex, stat->regex, REG_EXTENDED);

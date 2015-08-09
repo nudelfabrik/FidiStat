@@ -121,7 +121,18 @@ void makeCSV(Status *stat) {
     char output[OUTPUT_SIZE] = "";
     strcat(output, getCSVtitle(stat));
     strcat(output, "\n");
-    strcat(output, stat->raw);
+
+    char raw[OUTPUT_SIZE] = "";
+    FILE *cmd;
+    cmd = popen(stat->cmmd, "r");  
+    if (fgets(raw, sizeof(*raw-1), cmd) == NULL) {
+        syslog(LOG_ERR, "Error executing command %s\n", stat->name);
+    }
+    if (pclose(cmd) != 0) {
+        syslog(LOG_ERR, "Command of %s exits != 0\n", stat->name);
+    }
+    strcat(output, raw);
+
     if (!dry_flag) {
         sprintf(file, "%s%s.csv",path, stat->name);
         fp = fopen(file, "w");
