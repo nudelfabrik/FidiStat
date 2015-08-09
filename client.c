@@ -27,6 +27,7 @@ void client(void) {
 
     // Destroy Config
     destroyConf(); 
+
     if (!(dry_flag) && !(now_flag)) {
         fixtime();
     }
@@ -43,8 +44,10 @@ void client(void) {
                 if (statsPtr->enabled) {
                     // Execute Command and save Output
                     processCommand(statsPtr);
+    syslog(LOG_ERR, " %s\n", statsPtr->name);
                     // Send Status to Server
                     sendStat(statsPtr);
+    syslog(LOG_ERR, " %s\n", statsPtr->name);
                 }
             }
         }

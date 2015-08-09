@@ -5,16 +5,17 @@
 #include <syslog.h>
 #include "client.h"
 #include "json.h"
-#include "config.h"
-#include "regex.h"
-
 
 int makeJansson(Status *stat) {
+
+    syslog(LOG_ERR, "1first in processing %s.json\n", stat->name);
     json_t *root, *dataseq, *graph, *arry, *newval;
     json_error_t error;
 
     char file[strlen(path)+strlen(stat->name)+6];
+
     sprintf(file, "%s%s.json",path, stat->name);
+    syslog(LOG_ERR, "2root in processing %s.json\n", stat->name);
     // Load *.json
     root = json_load_file(file, 0, &error);
     // CHeck for Errors
@@ -23,6 +24,7 @@ int makeJansson(Status *stat) {
         syslog(LOG_ERR, "File: %s\n", stat->name);
         exit(1);
     }
+    syslog(LOG_ERR, "3graph in processing %s.json\n", stat->cmmd);
     // Get old Data
     graph = json_object_get(root, "graph");
     dataseq = getDataSequences(graph);
@@ -55,9 +57,9 @@ int makeJansson(Status *stat) {
             int k;
             for (k = 0; k < json_array_size(arry); k++) {
                 if (json_real_set(json_object_get(json_array_get(arry, k), "value"), stat->result[k])) {
-                    syslog(LOG_ERR, "error in changing entry in %s.json\n", stat->name);
                     return 0;
                 }
+                    syslog(LOG_ERR, "error in changing entry in %s.json\n", stat->name);
             }
         }
     }
@@ -75,6 +77,7 @@ void dumpJSON (json_t *root, const char *name) {
     if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2))) {
         syslog(LOG_ERR, "error in writing back to %s.json", name);
     }
+    syslog(LOG_DEBUG, "written to %s.json", name);
 }
 
 json_t* getDataSequences(json_t* graph) {
