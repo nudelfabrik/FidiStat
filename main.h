@@ -11,8 +11,7 @@ struct statStruct {
     const char *ident;
     const char *cmmd;
     const char *regex;
-    char raw[OUTPUT_SIZE]; 
-    double  result[MAXSTAT];
+    double *result[MAXSTAT];
 };
 
 typedef struct statStruct Status;

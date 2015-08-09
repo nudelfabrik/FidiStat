@@ -1,9 +1,9 @@
 #include <syslog.h>
 #include <string.h>
+#include <regex.h>
 #include <stdio.h>
 #include <time.h>
 #include "client.h"
-#include "regex.h"
 #include "config.h"
 #include "json.h"
 #include "bootstrap.h"
@@ -27,12 +27,11 @@ void client(void) {
     if (!(dry_flag)) {
         fixtime();
     }
-    int i;
     while(1) {
         // Set zeit to current time    
         timeSet();
         // Main Loop, go over every Status
-        for (i = 0; i < statNum; i++) {
+        for (int i = 0; i < statNum; i++) {
             //Make Pointer point to current status
             statsPtr = &stats[i]; 
 
@@ -52,7 +51,7 @@ void client(void) {
 
 void sendStat(Status *stat) {
     if (local) {
-        makeStat(statsPtr);
+        makeStat(stat);
     } else {
         //open Socket and Send
     }
@@ -129,20 +128,40 @@ void timeSet() {
 }
 
 //Get Output from Command
-int cmmdOutput(Status *stat) {
+int processCommand(Status *stat) {
     char raw[OUTPUT_SIZE] = "";
+    char *rawPnt = raw;
     FILE *fp;
 
-    strcpy(stat->raw, "\0");
-
     fp = popen(stat->cmmd, "r");  
-    while(fgets(raw, sizeof(stat->raw-1), fp) != NULL) {
-        strcat(stat->raw,raw);
+    if (fgets(raw, sizeof(raw-1), fp) == NULL) {
+        syslog(LOG_ERR, "Error executing command %s\n", stat->name);
+        return -1;
     }
     if (pclose(fp) != 0) {
         syslog(LOG_ERR, "Command of %s exits != 0\n", stat->name);
         return -1;
     }
+    regex_t regex;
+    int retex;
+    regmatch_t pmatch;
+    char res[OUTPUT_SIZE];
+
+    int j = 0;
+
+    retex = regcomp( &regex, stat->regex, REG_EXTENDED);
+    if (retex) { 
+        syslog(LOG_ERR, "Could not compile regex\n"); 
+        return -1; 
+    }
+    while (regexec(&regex, rawPnt, 1, &pmatch, 0) == 0) {
+        sprintf(res, "%.*s",  (int)(pmatch.rm_eo - pmatch.rm_so), raw[pmatch.rm_so]);
+        double value = atof(res);
+        stat->result[j] = &value;
+        rawPnt += pmatch.rm_eo;
+        j++;
+    }
+    regfree(&regex);
     return 0;
 }
 

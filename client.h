@@ -13,6 +13,7 @@ int local;
 
 void client(void);
 
+void sendStat(Status *stat);
 void confSetup(Status stats[]);
 void fixtime(void);
 int cmmdOutput(Status *stat);
