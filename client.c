@@ -25,6 +25,8 @@ void client(void) {
     // Setup all config files
     confSetup(stats);
 
+    // Destroy Config
+    destroyConf(); 
     if (!(dry_flag) && !(now_flag)) {
         fixtime();
     }
@@ -81,7 +83,10 @@ void confSetup(Status stats[]) {
                 // Load Remaining Config Settings
                 setConfType(&newStat);
                 setConfCmmd(&newStat);
-                setConfRegex(&newStat);
+                if (newStat.type == 2) {
+                    setCSVtitle(&newStat);
+                }
+
 
                 // Create File if not present
                 bootstrap(&newStat);
