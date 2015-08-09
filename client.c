@@ -134,7 +134,7 @@ int processCommand(Status *stat) {
     FILE *fp;
 
     fp = popen(stat->cmmd, "r");  
-    if (fgets(raw, sizeof(raw-1), fp) == NULL) {
+    if (fgets(raw, sizeof(*raw-1), fp) == NULL) {
         syslog(LOG_ERR, "Error executing command %s\n", stat->name);
         return -1;
     }
@@ -155,7 +155,7 @@ int processCommand(Status *stat) {
         return -1; 
     }
     while (regexec(&regex, rawPnt, 1, &pmatch, 0) == 0) {
-        sprintf(res, "%.*s",  (int)(pmatch.rm_eo - pmatch.rm_so), raw[pmatch.rm_so]);
+        sprintf(res, "%.*s",  (int)(pmatch.rm_eo - pmatch.rm_so), &raw[pmatch.rm_so]);
         double value = atof(res);
         stat->result[j] = &value;
         rawPnt += pmatch.rm_eo;
