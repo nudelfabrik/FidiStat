@@ -7,29 +7,44 @@
 #include "json.h"
 
 int makeJansson(Status *stat) {
+    json_t *newval;
+    if (stat->type == 0) {
+        int j;
+        for (j = 0; j < json_array_size(dataseq); j++) {
+            newval = json_pack("{sssf}", "title", zeit, "value", stat->result[j]);
+            if (!newval) {
+                syslog(LOG_ERR, "error in creating new entry for %s.json\n", stat->name);
+                return 0;
+            }
+        }
+    }
+    // send json
+    if (!dry_flag) {
+        sendJSON(newval, stat->name);
+    }
+    return 1;
+        
+}
 
-    syslog(LOG_ERR, "1first in processing %s.json\n", stat->name);
+int pasteJSON(json_t *new, const char *name) {
     json_t *root, *dataseq, *graph, *arry, *newval;
     json_error_t error;
 
-    char file[strlen(path)+strlen(stat->name)+6];
+    char file[strlen(path)+strlen(name)+6];
 
     sprintf(file, "%s%s.json",path, stat->name);
-    syslog(LOG_ERR, "2root in processing %s.json\n", stat->name);
     // Load *.json
     root = json_load_file(file, 0, &error);
     // CHeck for Errors
     if (!root) {
         syslog(LOG_ERR, "Unable to load json File! error: on line %d: %s\n", error.line, error.text); 
-        syslog(LOG_ERR, "File: %s\n", stat->name);
         exit(1);
     }
-    syslog(LOG_ERR, "3graph in processing %s.json\n", stat->cmmd);
     // Get old Data
     graph = json_object_get(root, "graph");
     dataseq = getDataSequences(graph);
     if (!check(dataseq)) {
-        printError(stat->name);
+        printError(name);
     }
     // Process Every Datasequence
     int j;
@@ -39,17 +54,12 @@ int makeJansson(Status *stat) {
         if (stat->type == 0) {
             if (json_array_size(arry) >= maxCount) {
                  if (json_array_remove(arry,0)) {
-                     syslog(LOG_ERR, "error in processing %s.json\n", stat->name);
+                     syslog(LOG_ERR, "error in processing %s.json\n", name);
                      return 0;
                  }
             }
-            newval = json_pack("{sssf}", "title", zeit, "value", stat->result[j]);
-            if (!newval) {
-                syslog(LOG_ERR, "error in creating new entry for %s.json\n", stat->name);
-                return 0;
-            }
             if (json_array_append_new(arry, newval)) {
-                syslog(LOG_ERR, "error in appending new entry in %s.json\n", stat->name);
+                syslog(LOG_ERR, "error in appending new entry in %s.json\n", name);
                 return 0;
             }
         // When Type is Bar, every Entry has its own name and you change the value
@@ -59,17 +69,13 @@ int makeJansson(Status *stat) {
                 if (json_real_set(json_object_get(json_array_get(arry, k), "value"), stat->result[k])) {
                     return 0;
                 }
-                    syslog(LOG_ERR, "error in changing entry in %s.json\n", stat->name);
+                    syslog(LOG_ERR, "error in changing entry in %s.json\n", name);
             }
         }
     }
-    // write modified json
-    if (!dry_flag) {
-        sendJSON(root, stat->name);
-    }
-    return 1;
-        
+
 }
+
 
 void sendJSON(json_t *root, const char *name) {
     if (local) {
