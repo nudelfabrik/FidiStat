@@ -73,7 +73,6 @@ void dumpJSON (json_t *root, const char *name) {
     sprintf(file, "%s%s.json",path, name);
     if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2))) {
         syslog(LOG_ERR, "error in writing back to %s.json", name);
-        return 0;
     }
 }
 
