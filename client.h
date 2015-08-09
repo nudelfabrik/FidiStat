@@ -4,7 +4,7 @@
 
 int verbose_flag;
 int dry_flag;
-int clean_flag, delete_flag;
+int clean_flag, delete_flag, now_flag;
 
 char zeit[10];
 const char *path;

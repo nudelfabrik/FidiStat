@@ -54,7 +54,7 @@ int makeJansson(Status *stat) {
         } else {
             int k;
             for (k = 0; k < json_array_size(arry); k++) {
-                if (json_real_set(json_object_get(json_array_get(arry, k), "value"), *stat->result[k])) {
+                if (json_real_set(json_object_get(json_array_get(arry, k), "value"), stat->result[k])) {
                     syslog(LOG_ERR, "error in changing entry in %s.json\n", stat->name);
                     return 0;
                 }
@@ -63,6 +63,7 @@ int makeJansson(Status *stat) {
     }
     // write modified json
     if (!dry_flag) {
+        dumpJSON(root, stat->name);
     }
     return 1;
         

@@ -15,8 +15,8 @@ INS_DIR=/usr/local/etc
 
 all: fidistat
 
-fidistat: main.o client.o config.o json.o regex.o bootstrap.o
-	$(CC) $(CFLAGS) -lutil -L $(LIB_DIR)/lib main.o client.o config.o json.o regex.o bootstrap.o -o fidistat -lconfig -ljansson
+fidistat: main.o client.o config.o json.o bootstrap.o
+	$(CC) $(CFLAGS) -lutil -L $(LIB_DIR)/lib main.o client.o config.o json.o bootstrap.o -o fidistat -lconfig -ljansson
 
 main.o: main.c
 	$(CC) $(CFLAGS) -c main.c 
@@ -46,9 +46,6 @@ json.o: json.c
 	fi
 	@echo "jansson installed"
 	$(CC) $(CFLAGS) -c json.c 
-
-regex.o: regex.c
-	$(CC) -c regex.c
 
 bootstrap.o: bootstrap.c
 	$(CC) $(CFLAGS) -c bootstrap.c
