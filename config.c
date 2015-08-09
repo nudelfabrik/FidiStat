@@ -38,10 +38,13 @@ config_setting_t* getSetting(const char * item) {
 
 //Get Path to .jsons
 void getPath() {
-    if (!config_lookup_string(&config, "path", &path)) {
+    const char *lpath;
+
+    if (!config_lookup_string(&config, "path", &lpath)) {
         syslog(LOG_ERR, "Can't lookup path to .json\n");
         exit(1);
     }
+    path = strdup(lpath);
     if (path[strlen(path)-1] != '/') {
         syslog(LOG_ERR, "Path does not end with /\n");
         exit(1);
@@ -71,8 +74,8 @@ int getStatNum () {
 
 //Set name of *stat to the ith item of config list
 void setConfName(Status *stat, int i) {
-    stat->name = config_setting_get_string_elem(getSetting("list"), i);
-    stat->ident = config_setting_get_string(getSetting("identifier"));
+    stat->name = strdup(config_setting_get_string_elem(getSetting("list"), i));
+    stat->ident = strdup(config_setting_get_string(getSetting("identifier")));
 }
 
 //Check if *stat is enabled 
@@ -85,10 +88,12 @@ void setConfEnable(Status *stat) {
 
 //Get Command of *stat
 void setConfCmmd(Status *stat) {
-    if (!config_setting_lookup_string(getSetting(stat->name), "cmmd", &stat->cmmd)) {
+    const char *lcmmd;
+    if (!config_setting_lookup_string(getSetting(stat->name), "cmmd", &lcmmd)) {
         syslog(LOG_ERR, "Can't lookup Command of %s\n", stat->name);
         exit(1);
     }
+    stat->cmmd = strdup(lcmmd);
 }
  
 void setCSVtitle(Status *stat) {
