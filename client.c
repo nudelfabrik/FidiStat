@@ -3,6 +3,7 @@
 #include <regex.h>
 #include <stdio.h>
 #include <time.h>
+#include <pcre.h> 
 #include "client.h"
 #include "config.h"
 #include "json.h"
@@ -24,7 +25,7 @@ void client(void) {
     // Setup all config files
     confSetup(stats);
 
-    if (!(dry_flag)) {
+    if (!(dry_flag) && !(now_flag)) {
         fixtime();
     }
     while(1) {
@@ -129,41 +130,26 @@ void timeSet() {
 
 //Get Output from Command
 int processCommand(Status *stat) {
+    syslog(LOG_INFO, "Processing command");
     if( stat->type == 2) {
         return 2;
     }
+
     char raw[OUTPUT_SIZE] = "";
-    char *rawPnt = raw;
     FILE *fp;
 
     fp = popen(stat->cmmd, "r");  
-    if (fgets(raw, sizeof(*raw-1), fp) == NULL) {
-        syslog(LOG_ERR, "Error executing command %s\n", stat->name);
-        return -1;
+    int i = 0;
+    while (fgets(raw, sizeof(raw)-1, fp) != NULL) {
+        stat->result[i] = strtod(raw, NULL);
+        i++;
     }
     if (pclose(fp) != 0) {
         syslog(LOG_ERR, "Command of %s exits != 0\n", stat->name);
         return -1;
     }
-    regex_t regex;
-    int retex;
-    regmatch_t pmatch;
-    char res[OUTPUT_SIZE];
-    int j = 0;
+    syslog(LOG_INFO, "Successfully Loaded command:");
 
-    retex = regcomp( &regex, stat->regex, REG_EXTENDED);
-    if (retex) { 
-        syslog(LOG_ERR, "Could not compile regex\n"); 
-        return -1; 
-    }
-    while (regexec(&regex, rawPnt, 1, &pmatch, 0) == 0) {
-        sprintf(res, "%.*s",  (int)(pmatch.rm_eo - pmatch.rm_so), &raw[pmatch.rm_so]);
-        double value = atof(res);
-        stat->result[j] = &value;
-        rawPnt += pmatch.rm_eo;
-        j++;
-    }
-    regfree(&regex);
     return 0;
 }
 

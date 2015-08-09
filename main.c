@@ -121,7 +121,7 @@ void debug(Status *stat) {
     if (stat->type != 2) {
         int i;
         for (i = 0; i < 4; i++) {
-            syslog(LOG_INFO, "Result %i of %s: %f\n", i, stat->name, *stat->result[i]);
+            syslog(LOG_INFO, "Result %i of %s: %f\n", i, stat->name, stat->result[i]);
         }
     }
 }
@@ -135,6 +135,7 @@ void handleFlags(int argc, const char *argv[]) {
         {"dry", no_argument, &dry_flag, 1},
         {"help", no_argument, 0, 'h'},
         {"clean", no_argument, &clean_flag, 1},
+        {"now", no_argument, &now_flag, 1},
         {"delete", no_argument, &delete_flag, 1},
         {"config", required_argument, 0, 'f'},
         {0, 0, 0, 0}
@@ -147,7 +148,7 @@ void handleFlags(int argc, const char *argv[]) {
     --clean -c:                     remove all files not enabled\n\
     --delete -x:                    remove all files\n"; 
 
-    while ((c = getopt_long(argc, argv, "cdfhvx", long_options, NULL)) != -1) {
+    while ((c = getopt_long(argc, argv, "cdfhnvx", long_options, NULL)) != -1) {
         switch (c) {
         case 'v':
             verbose_flag = 1;
@@ -158,6 +159,9 @@ void handleFlags(int argc, const char *argv[]) {
             break;
         case 'd':
             dry_flag = 1;
+            break;
+        case 'n':
+            now_flag = 1;
             break;
         case 'f':
             setLocation(optarg);
