@@ -7,20 +7,25 @@
 #include "json.h"
 
 int makeJansson(Status *stat) {
-    json_t *newval;
-    if (stat->type == 0) {
-        int j;
-        for (j = 0; j < json_array_size(dataseq); j++) {
+    json_t *newval, *values;
+    values = json_array();
+
+    int j;
+    for (j = 0; j < 10/* TODO Sizeof Results */; j++) {
+        if (stat->type == 0) {
             newval = json_pack("{sssf}", "title", zeit, "value", stat->result[j]);
-            if (!newval) {
-                syslog(LOG_ERR, "error in creating new entry for %s.json\n", stat->name);
-                return 0;
-            }
+        } else {
+            json_real_set(newval, stat->result[j]);
         }
+        if (!newval) {
+            syslog(LOG_ERR, "error in creating new entry for %s.json\n", stat->name);
+            return 0;
+        }
+        json_array_append_new(values, newval);
     }
     // send json
     if (!dry_flag) {
-        sendJSON(newval, stat->name);
+        sendJSON(values, stat->name);
     }
     return 1;
         
@@ -51,14 +56,14 @@ int pasteJSON(json_t *new, const char *name) {
     for (j = 0; j < json_array_size(dataseq); j++) {
         // If Type is 0 /Line (standard case) append new value at the bottom 
         arry = getSingleSeqeunce(dataseq, j);
-        if (stat->type == 0) {
+        if (strcmp(getType(root), "line")) {
             if (json_array_size(arry) >= maxCount) {
                  if (json_array_remove(arry,0)) {
                      syslog(LOG_ERR, "error in processing %s.json\n", name);
                      return 0;
                  }
             }
-            if (json_array_append_new(arry, newval)) {
+            if (json_array_append_new(arry, json_array_get(new, j))) {
                 syslog(LOG_ERR, "error in appending new entry in %s.json\n", name);
                 return 0;
             }
@@ -66,7 +71,7 @@ int pasteJSON(json_t *new, const char *name) {
         } else {
             int k;
             for (k = 0; k < json_array_size(arry); k++) {
-                if (json_real_set(json_object_get(json_array_get(arry, k), "value"), stat->result[k])) {
+                if (json_real_set(json_object_get(json_array_get(arry, k), "value"), json_real_value(json_array_get(new, k))) ) {
                     return 0;
                 }
                     syslog(LOG_ERR, "error in changing entry in %s.json\n", name);
@@ -100,6 +105,10 @@ json_t* getDataSequences(json_t* graph) {
 
 const char* getTitle(json_t* root) {
     return json_string_value(json_object_get(json_object_get(root, "graph"), "title"));
+}
+
+const char* getType(json_t* root) {
+    return json_string_value(json_object_get(json_object_get(root, "graph"), "type"));
 }
 
 json_t* getSingleSeqeunce(json_t* sequences, int i) {
