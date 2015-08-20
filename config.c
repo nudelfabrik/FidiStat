@@ -24,6 +24,7 @@ void initConf (const char * path) {
     getPath();
     getMaxCount();
     getLocalBool();
+    getClientName();
 
 }
 
@@ -66,6 +67,18 @@ void getLocalBool() {
         exit(1);
     }
 }
+
+// Get Name of this Client
+void getClientName() {
+    const char *lname;
+
+    if (!config_lookup_string(&config, "clientName", &lname)) {
+        syslog(LOG_ERR, "Can't lookup name\n");
+        exit(1);
+    }
+    clientName = strdup(lname);
+}
+
 //get number of Stats
 int getStatNum () {
     return config_setting_length(getSetting("list"));

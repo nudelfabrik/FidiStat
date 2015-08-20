@@ -10,6 +10,7 @@ char zeit[10];
 const char *path;
 int maxCount;
 int local;
+const char *clientName;
 
 void client(void);
 
