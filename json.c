@@ -36,6 +36,13 @@ void sendJSON(json_t *array, const char *name) {
         pasteJSON(array, name);
     } else {
         // Send JSON to Server
+        // Prepare json 
+        json_t *root = json_object();
+        json_object_set(root, "from", json_string(clientName));
+        json_object_set(root, "type", json_string("update"));
+        json_object_set(root, "statName", json_string(name));
+        json_object_set(root, "payload", array);
+
     }
 }
 
