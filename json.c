@@ -64,7 +64,7 @@ int pasteJSON(json_t *array, const char *name) {
     for (j = 0; j < json_array_size(dataseq); j++) {
         // If Type is 0 /Line (standard case) append new value at the bottom 
         arry = getSingleSeqeunce(dataseq, j);
-        if (strcmp(getType(root), "line")) {
+        if (strncmp(getType(root), "line", 2) == 0) {
             if (json_array_size(arry) >= maxCount) {
                  if (json_array_remove(arry,0)) {
                      syslog(LOG_ERR, "error in processing %s.json\n", name);
