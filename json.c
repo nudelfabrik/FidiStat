@@ -31,7 +31,15 @@ int makeJansson(Status *stat) {
         
 }
 
-int pasteJSON(json_t *new, const char *name) {
+void sendJSON(json_t *array, const char *name) {
+    if (local) {
+        pasteJSON(array, name);
+    } else {
+        // Send JSON to Server
+    }
+}
+
+int pasteJSON(json_t *array, const char *name) {
     json_t *root, *dataseq, *graph, *arry, *newval;
     json_error_t error;
 
@@ -63,7 +71,7 @@ int pasteJSON(json_t *new, const char *name) {
                      return 0;
                  }
             }
-            if (json_array_append_new(arry, json_array_get(new, j))) {
+            if (json_array_append_new(arry, json_array_get(array, j))) {
                 syslog(LOG_ERR, "error in appending new entry in %s.json\n", name);
                 return 0;
             }
@@ -71,23 +79,15 @@ int pasteJSON(json_t *new, const char *name) {
         } else {
             int k;
             for (k = 0; k < json_array_size(arry); k++) {
-                if (json_real_set(json_object_get(json_array_get(arry, k), "value"), json_real_value(json_array_get(new, k))) ) {
+                if (json_real_set(json_object_get(json_array_get(arry, k), "value"), json_real_value(json_array_get(array, k))) ) {
                     return 0;
                 }
                     syslog(LOG_ERR, "error in changing entry in %s.json\n", name);
             }
         }
     }
+    dumpJSON(root, name);
 
-}
-
-
-void sendJSON(json_t *root, const char *name) {
-    if (local) {
-        dumpJSON(root, name);
-    } else {
-        // Send JSON to Server
-    }
 }
 
 void dumpJSON(json_t *root, const char *name) {
@@ -116,12 +116,11 @@ json_t* getSingleSeqeunce(json_t* sequences, int i) {
 }
 
 int check(json_t* object) {
-
-        if (!object) {
-            return 0;
-        } else {
-            return 1;
-        }
+    if (!object) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 void makeStat(Status *stat) {
