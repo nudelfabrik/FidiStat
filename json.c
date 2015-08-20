@@ -45,7 +45,7 @@ int pasteJSON(json_t *array, const char *name) {
 
     char file[strlen(path)+strlen(name)+6];
 
-    sprintf(file, "%s%s.json",path, stat->name);
+    sprintf(file, "%s%s.json",path, name);
     // Load *.json
     root = json_load_file(file, 0, &error);
     // CHeck for Errors
@@ -87,6 +87,7 @@ int pasteJSON(json_t *array, const char *name) {
         }
     }
     dumpJSON(root, name);
+    return 1;
 
 }
 
