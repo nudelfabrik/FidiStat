@@ -27,10 +27,11 @@ void bootstrap(Status* status) {
 int checkForBootstrap(const char* name) {
     if (local) {
         char file[strlen(path)+strlen(name)+6];
-        sprintf(file, "%s%s.json",path, status->name);
+        sprintf(file, "%s%s.json",path, name);
         return (access( file, F_OK ) == -1);
     } else {
         // Ask Server, if bootstrap is needed
+        return 0;
     }
 
 }
