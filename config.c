@@ -79,6 +79,24 @@ void getClientName() {
     clientName = strdup(lname);
 }
 
+const char* getClientCertFile() {
+    const char *lfile;
+    if (!config_lookup_string(&config, "clientCertFile", &lfile)) {
+        syslog(LOG_ERR, "Can't lookup name\n");
+        exit(1);
+    }
+    return lfile;
+}
+
+const char* getClientServerURL() {
+    const char *lfile;
+    if (!config_lookup_string(&config, "serverURL", &lfile)) {
+        syslog(LOG_ERR, "Can't lookup name\n");
+        exit(1);
+    }
+    return lfile;
+}
+
 //get number of Stats
 int getStatNum () {
     return config_setting_length(getSetting("list"));
