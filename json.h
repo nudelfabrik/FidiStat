@@ -3,9 +3,9 @@
 #include "main.h"
 #include <jansson.h>
 
-int makeJansson(Status *Stat);
+json_t* makeJansson(Status *Stat);
 void makeCSV(Status *Stat);
-void makeStat(Status *Stat);
+json_t* makeStat(Status *Stat);
 void sendJSON(json_t *array, const char *name);
 int  pasteJSON(json_t *array, const char *name);
 void dumpJSON(json_t *root, const char *name);

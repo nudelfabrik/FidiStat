@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <pcre.h> 
+#include <jansson.h>
 #include "client.h"
 #include "config.h"
 #include "json.h"
@@ -54,16 +55,20 @@ void client(void) {
 }
 
 void sendStat(Status *stats, int statNum) {
+    json_t *arrays[statNum];
+    for (int i = 0; i < statNum; i++) {
+        //Make Pointer point to current status
+        Status *statsPtr = &stats[i]; 
+
+        if (statsPtr != NULL) {
+            if (statsPtr->enabled) {
+                arrays[i] = makeStat(statsPtr);
+            }
+        }
+    }
     if (local) {
         for (int i = 0; i < statNum; i++) {
-            //Make Pointer point to current status
-            Status *statsPtr = &stats[i]; 
-
-            if (statsPtr != NULL) {
-                if (statsPtr->enabled) {
-                    makeStat(statsPtr);
-                }
-            }
+            pasteJSON(arrays[i], stats[i].name);
         }
     } else {
         //open Socket and Send
