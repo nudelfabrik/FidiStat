@@ -6,7 +6,7 @@
 #include "client.h"
 #include "json.h"
 
-int makeJansson(Status *stat) {
+json_t* makeJansson(Status *stat) {
     json_t *newval, *values;
     values = json_array();
 
@@ -23,11 +23,7 @@ int makeJansson(Status *stat) {
         }
         json_array_append_new(values, newval);
     }
-    // send json
-    if (!dry_flag) {
-        sendJSON(values, stat->name);
-    }
-    return 1;
+    return values;
         
 }
 
@@ -131,17 +127,19 @@ int check(json_t* object) {
     }
 }
 
-void makeStat(Status *stat) {
+json_t* makeStat(Status *stat) {
     if (stat->type == 2) {
         if (verbose_flag) {
             debug(stat);
         }
         makeCSV(stat);
+        //TODO
+        return NULL;
     } else {
         if (verbose_flag) {
             debug(stat);
         }
-        makeJansson(stat);
+        return makeJansson(stat);
     }
 }
 
