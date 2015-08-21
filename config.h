@@ -9,6 +9,8 @@ void getPath();
 void getMaxCount();
 void getLocalBool();
 void getClientName();
+const char* getClientCertFile();
+const char* getClientServerURL();
 void setConfName(Status *Stat, int i);
 void setConfEnable(Status *Stat);
 void setConfType(Status *Stat);

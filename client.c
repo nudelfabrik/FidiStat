@@ -9,6 +9,7 @@
 #include "config.h"
 #include "json.h"
 #include "bootstrap.h"
+#include "tls.h"
 // Default Config Location
 
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
@@ -16,6 +17,7 @@ void client(void) {
 
     // load Config File and Settings
     initConf(cfgLocation);
+    initTLS();
 
     // Get max number of Settings
     int statNum = getStatNum();
@@ -52,6 +54,7 @@ void client(void) {
         sendStat(stats, statNum);
         sleep(600);
     }
+    deinitTLS();
 }
 
 void sendStat(Status *stats, int statNum) {
@@ -71,8 +74,32 @@ void sendStat(Status *stats, int statNum) {
             pasteJSON(arrays[i], stats[i].name);
         }
     } else {
-        //open Socket and Send
+        // Create Header object
+        json_t *header = json_object();
+        json_object_set(header, "from", json_string(clientName));
+        json_object_set(header, "type", json_string("update"));
+        char * headerStr = json_dumps(header, JSON_COMPACT);
+
+        // Initiate TLS Session
+        struct tls* ctx = tls_client();
+        tls_configure(ctx, tlsClient_conf);
+        if (tls_connect(ctx, serverURL, NULL) == -1) {
+            printf("%s", tls_error(ctx));
+            return;
+        }
+        // Send Header
+        size_t length = strlen(headerStr);
+        sendOverTLS(ctx, &length, 1);
+        sendOverTLS(ctx, headerStr, strlen(headerStr));
+        waitforACK();
+
+        for (int i = 0; i < statNum; i++) {
+
+        }
+
+
     }
+
 
 }
 
@@ -118,6 +145,14 @@ void confSetup(Status stats[]) {
         exit(0);
     }
 
+}
+
+void initTLS(void) {
+    tls_init();
+    tlsClient_conf = tls_config_new();
+    tls_config_set_cert_file(tlsClient_conf, getClientCertFile());
+    tls_config_insecure_noverifyname(tlsClient_conf);
+    serverURL = getClientServerURL();
 }
 
 // Wait to a round time for execution

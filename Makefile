@@ -15,14 +15,14 @@ INS_DIR=/usr/local/etc
 
 all: fidistat
 
-fidistat: main.o client.o config.o json.o bootstrap.o
-	$(CC) $(CFLAGS) -lutil -L $(LIB_DIR)/lib main.o client.o config.o json.o bootstrap.o -o fidistat -lconfig -ljansson
+fidistat: main.o client.o config.o json.o bootstrap.o tls.o
+	$(CC) $(CFLAGS) -lutil -L $(LIB_DIR)/lib main.o client.o config.o json.o bootstrap.o tls.o -o fidistat -lconfig -ljansson -ltls
 
 main.o: main.c
 	$(CC) $(CFLAGS) -c main.c 
 
 client.o: client.c
-	$(CC) $(CFLAGS) -c client.c
+	$(CC) $(CFLAGS) -ltls -c client.c
 
 config.o: config.c 
 	@if [ ! -f $(LIB_DIR)/lib/libconfig.a ]; then \
@@ -49,6 +49,9 @@ json.o: json.c
 
 bootstrap.o: bootstrap.c
 	$(CC) $(CFLAGS) -c bootstrap.c
+
+tls.o: tls.c
+	$(CC) $(CFLAGS) -c tls.c
 
 install: all
 	install -m 0755 fidistat $(LIB_DIR)/bin

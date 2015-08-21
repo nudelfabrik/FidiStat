@@ -1,6 +1,7 @@
 #ifndef CLIENT
 #define CLIENT
 #include "main.h"
+#include <tls.h>
 
 int verbose_flag;
 int dry_flag;
@@ -11,9 +12,13 @@ const char *path;
 int maxCount;
 int local;
 const char *clientName;
+const char *serverURL;
+struct tls_config* tlsClient_conf;
 
 void client(void);
 
+void initTLS(void);
+void deinitTLS(void);
 void sendStat(Status *stat, int statNum);
 void confSetup(Status stats[]);
 void fixtime(void);
