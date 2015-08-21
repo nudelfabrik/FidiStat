@@ -14,7 +14,7 @@ const char *clientName;
 
 void client(void);
 
-void sendStat(Status *stat);
+void sendStat(Status *stat, int statNum);
 void confSetup(Status stats[]);
 void fixtime(void);
 int processCommand(Status *stat);

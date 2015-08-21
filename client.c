@@ -45,17 +45,26 @@ void client(void) {
                     // Execute Command and save Output
                     processCommand(statsPtr);
                     // Send Status to Server
-                    sendStat(statsPtr);
                 }
             }
         }
+        sendStat(stats, statNum);
         sleep(600);
     }
 }
 
-void sendStat(Status *stat) {
+void sendStat(Status *stats, int statNum) {
     if (local) {
-        makeStat(stat);
+        for (int i = 0; i < statNum; i++) {
+            //Make Pointer point to current status
+            Status *statsPtr = &stats[i]; 
+
+            if (statsPtr != NULL) {
+                if (statsPtr->enabled) {
+                    makeStat(statsPtr);
+                }
+            }
+        }
     } else {
         //open Socket and Send
     }
