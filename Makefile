@@ -15,14 +15,17 @@ INS_DIR=/usr/local/etc
 
 all: fidistat
 
-fidistat: main.o client.o config.o json.o bootstrap.o tls.o
-	$(CC) $(CFLAGS) -lutil -L $(LIB_DIR)/lib main.o client.o config.o json.o bootstrap.o tls.o -o fidistat -lconfig -ljansson -ltls
+fidistat: main.o client.o server.o config.o json.o bootstrap.o tls.o 
+	$(CC) $(CFLAGS) -lutil -L $(LIB_DIR)/lib main.o client.o server.o config.o json.o bootstrap.o tls.o -o fidistat -lconfig -ljansson -ltls
 
 main.o: main.c
 	$(CC) $(CFLAGS) -c main.c 
 
 client.o: client.c
 	$(CC) $(CFLAGS) -ltls -c client.c
+
+server.o: server.c
+	$(CC) $(CFLAGS) -ltls -c server.c
 
 config.o: config.c 
 	@if [ ! -f $(LIB_DIR)/lib/libconfig.a ]; then \
