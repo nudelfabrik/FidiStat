@@ -82,11 +82,30 @@ void getClientName() {
 const char* getClientCertFile() {
     const char *lfile;
     if (!config_lookup_string(&config, "clientCertFile", &lfile)) {
-        syslog(LOG_ERR, "Can't lookup name\n");
+        syslog(LOG_ERR, "Can't lookup Client Cert\n");
         exit(1);
     }
     return lfile;
 }
+
+const char* getServerCertFile() {
+    const char *lfile;
+    if (!config_lookup_string(&config, "ServerCertFile", &lfile)) {
+        syslog(LOG_ERR, "Can't lookup Server Cert\n");
+        exit(1);
+    }
+    return lfile;
+}
+
+int getServerPort() {
+    int port;
+    if (!config_lookup_int(&config, "ServerCertFile", &port)) {
+        syslog(LOG_ERR, "Can't lookup Server Port\n");
+        exit(1);
+    }
+    return port;
+}
+
 
 const char* getClientServerURL() {
     const char *lfile;

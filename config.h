@@ -4,12 +4,14 @@
 
 void initConf(const char * path);
 void destroyConf();
-int getStatNum ();
+int getStatNum();
 void getPath();
 void getMaxCount();
 void getLocalBool();
 void getClientName();
 const char* getClientCertFile();
+const char* getServerCertFile();
+int getServerPort();
 const char* getClientServerURL();
 void setConfName(Status *Stat, int i);
 void setConfEnable(Status *Stat);

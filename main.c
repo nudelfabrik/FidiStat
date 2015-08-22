@@ -32,6 +32,7 @@
 #include <syslog.h>
 #include "main.h"
 #include "client.h"
+#include "server.h"
 #include "config.h"
 
 int main(int argc, const char *argv[])
@@ -114,6 +115,17 @@ void client_restart() {
     client_start();
 }
 
+void server_start() {
+    server();
+
+}
+void server_stop() {
+
+}
+void server_restart() {
+    server_stop();
+    server_start();
+}
 void debug(Status *stat) {
     //syslog(LOG_INFO, "\nOutput of %s:\n%s\n", stat->name, stat->raw);
     if (stat->type != 2) {
@@ -183,17 +195,32 @@ void handleFlags(int argc, const char *argv[]) {
     // Handle Daemon Controls
     int i;
     for (i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "start")) {
-            client_start();
-            exit(0);
-        }
-        if (!strcmp(argv[i], "stop")) {
-            client_stop();
-            exit(0);
-        }
-        if (!strcmp(argv[i], "restart")) {
-            client_restart();
-            exit(0);
+        if (!strcmp(argv[i], "client")) {
+            if (!strcmp(argv[i+1], "start")) {
+                client_start();
+                exit(0);
+            }
+            if (!strcmp(argv[i+1], "stop")) {
+                client_stop();
+                exit(0);
+            }
+            if (!strcmp(argv[i+1], "restart")) {
+                client_restart();
+                exit(0);
+            }
+        } else if (!strcmp(argv[i], "server")) {
+            if (!strcmp(argv[i+1], "start")) {
+                server_start();
+                exit(0);
+            }
+            if (!strcmp(argv[i+1], "stop")) {
+                server_stop();
+                exit(0);
+            }
+            if (!strcmp(argv[i+1], "restart")) {
+                server_restart();
+                exit(0);
+            }
         }
     }
 }

@@ -19,6 +19,10 @@ void client_start();
 void client_stop();
 void client_restart();
 
+void server_start();
+void server_stop();
+void server_restart();
+
 void debug(Status *stat);
 void handleFlags(int argc, const char *argv[]);
 
