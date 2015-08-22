@@ -3,7 +3,7 @@
 #include <tls.h>
 
 void sendOverTLS(struct tls* ctx, const char *buf);
-void recvOverTLS(struct tls*ctx, size_t size, void *buf);
+char* recvOverTLS(struct tls*ctx);
 void waitforACK();
 
 #endif
