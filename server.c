@@ -13,19 +13,35 @@ void server() {
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
     // load Config File and Settings
     initConf(cfgLocation);
+    tls_init();
     struct tls* ctx = tls_server();
     int sock = initTLS_S(ctx);
 
     int connfd;
     if (verbose_flag || now_flag) {
+        listen(sock, 10);
         while(1)
         {
             connfd = accept(sock, (struct sockaddr*) NULL, NULL); 
+            printf("test\n");
             struct tls* cctx = NULL;
             tls_accept_socket(ctx, &cctx, connfd);
             size_t getSize, size;
-            int ret = tls_read(ctx, &getSize, 1, &size); 
+            size_t len = sizeof(getSize);
 
+            while (len > 0) {
+                int ret = tls_read(cctx, &getSize, len, &size); 
+         
+                if (ret == TLS_READ_AGAIN || ret == TLS_WRITE_AGAIN) { 
+                    /* retry.  May use select to wait for nonblocking */ 
+                } else if (ret < 0) { 
+                    printf("%s\n", tls_error(cctx));
+                    break;
+                } else { 
+                    len -= size; 
+                } 
+            }
+            printf("%zu\n", getSize);
             char buffer[1024];
             char* buf = buffer;
 
@@ -35,7 +51,7 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
                 if (ret == TLS_READ_AGAIN || ret == TLS_WRITE_AGAIN) { 
                     /* retry.  May use select to wait for nonblocking */ 
                 } else if (ret < 0) { 
-                    printf("%s\n", tls_error(ctx));
+                    printf("%s\n", tls_error(cctx));
                     break;
                 } else { 
                     buf += size; 
@@ -48,25 +64,25 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 }
 
 int initTLS_S(struct tls* ctx) {
-    tls_init();
     tlsServer_conf = tls_config_new();
+    printf("Cert: %s\n", getServerCertFile());
     tls_config_set_cert_file(tlsServer_conf, getServerCertFile());
     tls_config_set_key_file(tlsServer_conf, getServerCertFile());
 
-    ctx = tls_server();
     tls_configure(ctx, tlsServer_conf);
 
     int sock;
-    struct sockaddr_in6 serv_addr;
-    if ((sock = socket(PF_INET6, SOCK_STREAM, 0)) < 0) {
-        printf("socket conn failed");
+    struct sockaddr_in serv_addr;
+    if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+        printf("socket conn failed\n");
     }
-    serv_addr.sin6_family = AF_INET6;
-    serv_addr.sin6_addr = in6addr_any;
-    serv_addr.sin6_port = htons(getServerPort());
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    //serv_addr.sin6_port = htons(getServerPort());
+    serv_addr.sin_port = htons(4242);
     if (bind(sock, (struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) {
-        printf("ERROR on binding");
+        printf("ERROR on binding\n");
     }
-    listen(sock, 10);
+    printf("start socket\n");
     return sock;
 }

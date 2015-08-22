@@ -116,6 +116,8 @@ void client_restart() {
 }
 
 void server_start() {
+    openlog("fidistat-server", LOG_PID, LOG_DAEMON);
+    syslog(LOG_INFO, "Started Fidistat Server");
     server();
 
 }
