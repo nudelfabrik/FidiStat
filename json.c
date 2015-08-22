@@ -81,18 +81,16 @@ int pasteJSON(json_t *payload, const char *clientName) {
             }
         }
     }
-    dumpJSON(root, name);
+    dumpJSON(root, file);
     return 1;
 
 }
 
-void dumpJSON(json_t *root, const char *name) {
-    char file[strlen(path)+strlen(name)+6];
-    sprintf(file, "%s%s.json",path, name);
+void dumpJSON(json_t *root, const char *file) {
     if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2))) {
-        syslog(LOG_ERR, "error in writing back to %s.json", name);
+        syslog(LOG_ERR, "error in writing back to %s", file);
     }
-    syslog(LOG_DEBUG, "written to %s.json", name);
+    syslog(LOG_DEBUG, "written to %s", file);
 }
 
 json_t* getDataSequences(json_t* graph) {
