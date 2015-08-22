@@ -59,7 +59,7 @@ void createFile(Status* status) {
     json_object_set(root, "graph", graph);
 
     // Print created JSON
-    sendJSON(root, status->name);
+    dumpJSON(root, status->name);
 }
 
 // Adds new SubObject under "Graph"

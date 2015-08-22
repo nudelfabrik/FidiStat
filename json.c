@@ -23,32 +23,24 @@ json_t* makeJansson(Status *stat) {
         }
         json_array_append_new(values, newval);
     }
-    return values;
+    json_t *payload = json_object();
+    json_object_set(payload, "name", json_string(stat->name));
+    json_object_set(payload, "payload", values);
+    return payload;
         
 }
 
-void sendJSON(json_t *array, const char *name) {
-    if (local) {
-        pasteJSON(array, name);
-    } else {
-        // Send JSON to Server
-        // Prepare json 
-        json_t *root = json_object();
-        json_object_set(root, "from", json_string(clientName));
-        json_object_set(root, "type", json_string("update"));
-        json_object_set(root, "statName", json_string(name));
-        json_object_set(root, "payload", array);
+int pasteJSON(json_t *payload, const char *clientName) {
+    // Extract data from payload
+    json_t *array = json_object_get(payload, "payload");
+    const char * name = json_string_value(json_object_get(payload, "name"));
 
-    }
-}
-
-int pasteJSON(json_t *array, const char *name) {
     json_t *root, *dataseq, *graph, *arry, *newval;
     json_error_t error;
 
-    char file[strlen(path)+strlen(name)+6];
+    char file[strlen(path)+ strlen(clientName)+strlen(name)+6];
 
-    sprintf(file, "%s%s.json",path, name);
+    sprintf(file, "%s%s-%s.json",path, clientName, name);
     // Load *.json
     root = json_load_file(file, 0, &error);
     // CHeck for Errors
