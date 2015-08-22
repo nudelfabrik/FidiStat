@@ -14,6 +14,14 @@ struct statStruct {
     float result[MAXSTAT];
 };
 
+enum connectionEnum {
+    FALSE,
+    UPDATE,
+    REPLACE,
+    DELETE
+};
+
+typedef enum connectionEnum connType;
 typedef struct statStruct Status;
 void client_start();
 void client_stop();

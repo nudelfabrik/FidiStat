@@ -77,7 +77,7 @@ void sendStat(Status *stats, int statNum) {
         // Create Header object
         json_t *header = json_object();
         json_object_set(header, "from", json_string(clientName));
-        json_object_set(header, "type", json_integer(1));
+        json_object_set(header, "type", json_integer(UPDATE));
         json_object_set(header, "size", json_integer(statNum));
         char * headerStr = json_dumps(header, JSON_COMPACT | JSON_REAL_PRECISION(5));
 

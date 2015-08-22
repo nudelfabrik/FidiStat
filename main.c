@@ -116,12 +116,68 @@ void client_restart() {
 }
 
 void server_start() {
+    fprintf(stdout, "Starting fidistat Server...\n");
     openlog("fidistat-server", LOG_PID, LOG_DAEMON);
     syslog(LOG_INFO, "Started Fidistat Server");
+
+    // Daemonize
+    struct pidfh *pfh;
+    pid_t otherpid;
+
+    pfh = pidfile_open("/var/run/fidistatd.pid", 0600, &otherpid);
+    if (pfh == NULL) {
+        if (errno == EEXIST) {
+            fprintf(stdout, "Daemon already running with PID %d\n", otherpid);
+            exit(-1);
+        }
+            fprintf(stdout, "Cannot create pidfile\n");
+    }   
+
+    if  (daemon(0, 0) == -1) {
+        fprintf(stderr, "Cannot daemonize");
+        pidfile_remove(pfh);
+        exit(-1);
+    }
+    pidfile_write(pfh);
+
     server();
 
+    pidfile_remove(pfh);
+    closelog();
+    exit(0);
 }
+
 void server_stop() {
+    struct pidfh *pfh;
+    pid_t otherpid;
+
+    pfh = pidfile_open("/var/run/fidistatd.pid", 0600, &otherpid);
+    if (pfh == NULL) {
+        if (errno == EEXIST) {
+            if (!kill(otherpid, SIGTERM)) {
+                fprintf(stdout, "Stopped FidiStat(%d) Server successfully\n", otherpid);
+                return;
+            } else {
+                switch(errno) {
+                    case EPERM:
+                        fprintf(stderr, "Insufficient rights.\n");
+                        exit(-1);
+                        break;
+                    case ESRCH:
+                        fprintf(stderr, "PID not found, removing pidfile\n");
+                        pidfile_remove(pfh);
+                        exit(-1);
+                        break;
+                    default:
+                        exit(-1);
+                        break;
+                }
+            }
+        }
+    }   
+    pidfile_remove(pfh);
+    fprintf(stdout, "FidiStat not running?\n");
+    exit(-1);
 
 }
 void server_restart() {

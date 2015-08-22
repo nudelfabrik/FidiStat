@@ -50,7 +50,7 @@ void worker(int connfd, struct tls* ctx) {
     json_t *header = json_loads(headerStr, 0, &error);
     const char* clientName = json_string_value(json_object_get(header, "from"));
     int type = json_integer_value(json_object_get(header, "type"));
-    if (type == 1) {
+    if (type == UPDATE) {
         int size = json_integer_value(json_object_get(header, "size"));
 
         for (int i = 0; i < size; i++) {
@@ -60,6 +60,7 @@ void worker(int connfd, struct tls* ctx) {
             pasteJSON(payload, clientName);
         }
     } 
+    if (type == REPLACE)
     tls_close(cctx);
 }
 
