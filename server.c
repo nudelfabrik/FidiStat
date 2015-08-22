@@ -58,7 +58,7 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
                     getSize -= size; 
                 } 
             }
-            printf("%s", buffer);
+            printf("%s\n", buffer);
         }
     }
 }

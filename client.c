@@ -89,12 +89,7 @@ void sendStat(Status *stats, int statNum) {
             return;
         }
         // Send Header
-        size_t length = strlen(headerStr);
-        syslog(LOG_DEBUG, "Sending length\n");
-        syslog(LOG_DEBUG, "Sending: %zu\n", length);
-        sendOverTLS(ctx, &length, 1);
-        syslog(LOG_DEBUG, "Sent");
-        sendOverTLS(ctx, headerStr, strlen(headerStr));
+        sendOverTLS(ctx, headerStr);
         waitforACK();
 
         for (int i = 0; i < statNum; i++) {
