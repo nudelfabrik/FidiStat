@@ -3,10 +3,14 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <syslog.h>
 #include <tls.h>
 #include "server.h"
 #include "config.h"
 #include "client.h"
+#include "tls.h"
 
 void server() {
 
@@ -17,50 +21,29 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
     struct tls* ctx = tls_server();
     int sock = initTLS_S(ctx);
 
-    int connfd;
-    if (verbose_flag || now_flag) {
-        listen(sock, 10);
-        while(1)
-        {
-            connfd = accept(sock, (struct sockaddr*) NULL, NULL); 
-            printf("test\n");
-            struct tls* cctx = NULL;
-            tls_accept_socket(ctx, &cctx, connfd);
-            size_t getSize, size;
-            size_t len = sizeof(getSize);
+    int connfd, pid;
+    listen(sock, 10);
+    while(1) {
+        connfd = accept(sock, (struct sockaddr*) NULL, NULL); 
 
-            while (len > 0) {
-                int ret = tls_read(cctx, &getSize, len, &size); 
-         
-                if (ret == TLS_READ_AGAIN || ret == TLS_WRITE_AGAIN) { 
-                    /* retry.  May use select to wait for nonblocking */ 
-                } else if (ret < 0) { 
-                    printf("%s\n", tls_error(cctx));
-                    break;
-                } else { 
-                    len -= size; 
-                } 
-            }
-            printf("%zu\n", getSize);
-            char buffer[1024];
-            char* buf = buffer;
-
-            while (getSize > 0) {
-                int ret = tls_read(cctx, buf, getSize, &size); 
-         
-                if (ret == TLS_READ_AGAIN || ret == TLS_WRITE_AGAIN) { 
-                    /* retry.  May use select to wait for nonblocking */ 
-                } else if (ret < 0) { 
-                    printf("%s\n", tls_error(cctx));
-                    break;
-                } else { 
-                    buf += size; 
-                    getSize -= size; 
-                } 
-            }
-            printf("%s\n", buffer);
+        pid = fork();
+        if (pid < 0) {
+            syslog(LOG_ERR, "forking new Worker failed");
+        } else if (pid == 0) {
+            close(sock);
+            worker(connfd, ctx);
+            exit(0);
+        } else {
+            close(connfd);
         }
     }
+}
+void worker(int connfd, struct tls* ctx) {
+    struct tls* cctx = NULL;
+    tls_accept_socket(ctx, &cctx, connfd);
+    char* header = recvOverTLS(cctx);
+    syslog(LOG_DEBUG,"Received: %s\n", header);
+
 }
 
 int initTLS_S(struct tls* ctx) {
