@@ -71,14 +71,15 @@ void sendStat(Status *stats, int statNum) {
     }
     if (local) {
         for (int i = 0; i < statNum; i++) {
-            pasteJSON(arrays[i], stats[i].name);
+            pasteJSON(arrays[i], clientName);
         }
     } else {
         // Create Header object
         json_t *header = json_object();
         json_object_set(header, "from", json_string(clientName));
-        json_object_set(header, "type", json_string("update"));
-        char * headerStr = json_dumps(header, JSON_COMPACT);
+        json_object_set(header, "type", json_integer(1));
+        json_object_set(header, "size", json_integer(statNum));
+        char * headerStr = json_dumps(header, JSON_COMPACT | JSON_REAL_PRECISION(5));
 
         // Initiate TLS Session
         struct tls* ctx = tls_client();
@@ -90,11 +91,14 @@ void sendStat(Status *stats, int statNum) {
         }
         // Send Header
         sendOverTLS(ctx, headerStr);
-        waitforACK();
+        free(headerStr);
 
         for (int i = 0; i < statNum; i++) {
-
+            char * payloadStr = json_dumps(arrays[i], JSON_COMPACT);
+            sendOverTLS(ctx, payloadStr);
+            free(payloadStr);
         }
+
         tls_close(ctx);
 
 

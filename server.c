@@ -7,7 +7,9 @@
 #include <stdlib.h>
 #include <syslog.h>
 #include <tls.h>
+#include <jansson.h>
 #include "server.h"
+#include "json.h"
 #include "config.h"
 #include "client.h"
 #include "tls.h"
@@ -38,12 +40,27 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
         }
     }
 }
+
 void worker(int connfd, struct tls* ctx) {
     struct tls* cctx = NULL;
     tls_accept_socket(ctx, &cctx, connfd);
-    char* header = recvOverTLS(cctx);
-    syslog(LOG_DEBUG,"Received: %s\n", header);
+    char* headerStr = recvOverTLS(cctx);
+    syslog(LOG_DEBUG, "%s\n", headerStr);
+    json_error_t error;
+    json_t *header = json_loads(headerStr, 0, &error);
+    const char* clientName = json_string_value(json_object_get(header, "from"));
+    int type = json_integer_value(json_object_get(header, "type"));
+    if (type == 1) {
+        int size = json_integer_value(json_object_get(header, "size"));
 
+        for (int i = 0; i < size; i++) {
+            char* payloadStr = recvOverTLS(cctx);
+            syslog(LOG_DEBUG, "%s\n", payloadStr);
+            json_t *payload = json_loads(payloadStr, 0, &error);
+            pasteJSON(payload, clientName);
+        }
+    } 
+    tls_close(cctx);
 }
 
 int initTLS_S(struct tls* ctx) {
