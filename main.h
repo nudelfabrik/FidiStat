@@ -8,7 +8,6 @@ struct statStruct {
     int enabled;
     int type;
     const char *name;
-    const char *ident;
     const char *cmmd;
     const char *csv;
     float result[MAXSTAT];

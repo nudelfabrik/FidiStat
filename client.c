@@ -133,7 +133,6 @@ void confSetup(Status stats[]) {
                     setCSVtitle(&newStat);
                 }
 
-
                 // Create File if not present
                 bootstrap(&newStat);
             }
