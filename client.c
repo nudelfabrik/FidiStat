@@ -83,19 +83,24 @@ void sendStat(Status *stats, int statNum) {
         // Initiate TLS Session
         struct tls* ctx = tls_client();
         tls_configure(ctx, tlsClient_conf);
-        if (tls_connect(ctx, serverURL, NULL) == -1) {
-            printf("%s", tls_error(ctx));
+
+        if (tls_connect(ctx, "192.168.42.3", "4242") == -1) {
+            syslog(LOG_ERR, "%s\n", tls_error(ctx));
             return;
         }
         // Send Header
         size_t length = strlen(headerStr);
+        syslog(LOG_DEBUG, "Sending length\n");
+        syslog(LOG_DEBUG, "Sending: %zu\n", length);
         sendOverTLS(ctx, &length, 1);
+        syslog(LOG_DEBUG, "Sent");
         sendOverTLS(ctx, headerStr, strlen(headerStr));
         waitforACK();
 
         for (int i = 0; i < statNum; i++) {
 
         }
+        tls_close(ctx);
 
 
     }
@@ -150,7 +155,9 @@ void confSetup(Status stats[]) {
 void initTLS(void) {
     tls_init();
     tlsClient_conf = tls_config_new();
+    syslog(LOG_DEBUG, "Certfile: %s\n", getClientCertFile());
     tls_config_set_cert_file(tlsClient_conf, getClientCertFile());
+    tls_config_set_ca_file(tlsClient_conf, getClientCertFile());
     tls_config_insecure_noverifyname(tlsClient_conf);
     serverURL = getClientServerURL();
 }

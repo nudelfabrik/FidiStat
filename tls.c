@@ -5,11 +5,14 @@
 void sendOverTLS(struct tls* ctx, void *buf, size_t size) {
     size_t toSend = size;
     size_t sent;
+    syslog(LOG_DEBUG, "Sending over TLS\n");
+    syslog(LOG_DEBUG, "sent %zu", size);
     while (toSend > 0) {
-        int ret = tls_read(ctx, buf, size, &sent); 
+        int ret = tls_write(ctx, buf, toSend, &sent); 
+        syslog(LOG_DEBUG, "Sent over TLS\n");
  
         if (ret == TLS_READ_AGAIN || ret == TLS_WRITE_AGAIN) { 
-            // retry.  May use select to wait for nonblocking
+            syslog(LOG_ERR, "READ/WRITE AGAIN\n");
         } else if (ret < 0) { 
             syslog(LOG_ERR, "%s\n", tls_error(ctx));
             break;
