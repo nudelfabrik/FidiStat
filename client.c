@@ -52,6 +52,9 @@ void client(void) {
             }
         }
         sendStat(stats, statNum);
+        if (now_flag) {
+            break;
+        }
         sleep(600);
     }
     deinitTLS();
@@ -100,6 +103,7 @@ void sendStat(Status *stats, int statNum) {
         }
 
         tls_close(ctx);
+        tls_free(ctx);
 
 
     }
@@ -159,6 +163,9 @@ void initTLS(void) {
     tls_config_set_ca_file(tlsClient_conf, getClientCertFile());
     tls_config_insecure_noverifyname(tlsClient_conf);
     serverURL = getClientServerURL();
+}
+void deinitTLS(void) {
+    tls_config_free(tlsClient_conf);
 }
 
 // Wait to a round time for execution
