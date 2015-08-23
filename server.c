@@ -97,8 +97,9 @@ int initTLS_S(struct tls* ctx) {
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC; // use AF_INET6 to force IPv6
     hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE; // use my IP address
 
-    getaddrinfo(NULL, "4242", &hints, &servinfo);
+    getaddrinfo(NULL, getServerPort(), &hints, &servinfo);
 
     for(p = servinfo; p != NULL; p = p->ai_next) {
         if ((sock = socket(p->ai_family, p->ai_socktype,

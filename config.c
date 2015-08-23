@@ -97,9 +97,9 @@ const char* getServerCertFile() {
     return lfile;
 }
 
-int getServerPort() {
-    int port;
-    if (!config_lookup_int(&config, "ServerPort", &port)) {
+const char*  getServerPort() {
+    const char* port;
+    if (!config_lookup_string(&config, "ServerPort", &port)) {
         syslog(LOG_ERR, "Can't lookup Server Port\n");
         exit(1);
     }
