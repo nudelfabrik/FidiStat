@@ -63,7 +63,17 @@ void createFile(Status* status) {
     char file[strlen(path)+ strlen(clientName)+strlen(status->name)+6];
     sprintf(file, "%s%s-%s.json",path, clientName, status->name);
 
-    dumpJSON(root, file);
+    if (local) {
+        dumpJSON(root, file);
+    } else {
+        struct tls* ctx = initCon(CREATE, 1);
+        json_t* payload = json_object();
+        json_object_set(payload, "name", json_string(status->name));
+        json_object_set(payload, "payload", root);
+        char * payloadStr = json_dumps(payload, JSON_COMPACT);
+        sendOverTLS(ctx, payloadStr);
+        free(payloadStr);
+    }
 }
 
 //--------------------------
