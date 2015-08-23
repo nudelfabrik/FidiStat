@@ -106,23 +106,23 @@ const char* getServerCertFile() {
     return lfile;
 }
 
-const char*  getServerPort() {
+void getServerPort() {
     const char* port;
     if (!config_lookup_string(&config, "ServerPort", &port)) {
         syslog(LOG_ERR, "Can't lookup Server Port\n");
         exit(1);
     }
-    return port;
+    serverPort = port;
 }
 
 
-const char* getClientServerURL() {
-    const char *lfile;
-    if (!config_lookup_string(&config, "serverURL", &lfile)) {
+void getClientServerURL() {
+    const char *url;
+    if (!config_lookup_string(&config, "serverURL", &url)) {
         syslog(LOG_ERR, "Can't lookup name\n");
         exit(1);
     }
-    return lfile;
+    serverURL = url;
 }
 
 //get number of Stats
@@ -134,7 +134,6 @@ int getStatNum () {
 //Set name of *stat to the ith item of config list
 void setConfName(Status *stat, int i) {
     stat->name = strdup(config_setting_get_string_elem(getSetting("list"), i));
-    stat->ident = strdup(config_setting_get_string(getSetting("identifier")));
 }
 
 //Check if *stat is enabled 

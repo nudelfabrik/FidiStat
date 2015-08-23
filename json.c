@@ -45,7 +45,6 @@ int pasteJSON(json_t *payload, const char *clientName) {
         const char * output = json_string_value(json_object_get(payload, "payload"));
         fp = fopen(file, "w");
         fprintf(fp, "%s",output); 
-        free(output);
         fclose(fp);
         return 1;
     }
