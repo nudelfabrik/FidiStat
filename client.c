@@ -11,14 +11,10 @@
 #include "json.h"
 #include "bootstrap.h"
 #include "tls.h"
+#include "main.h"
 // Default Config Location
 
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
-volatile sig_atomic_t term = 0;
-
-void handleSigterm(int sig) {
-    term = 1;
-}
 void client(void) {
 
     // load Config File and Settings
@@ -69,6 +65,7 @@ void client(void) {
         }
     }
     deinitTLS();
+    syslog(LOG_INFO, "Shutting down Client");
 }
 
 void sendStat(Status *stats, int statNum) {
@@ -115,11 +112,7 @@ void sendStat(Status *stats, int statNum) {
 
         tls_close(ctx);
         tls_free(ctx);
-
-
     }
-
-
 }
 
 void confSetup(Status stats[]) {
