@@ -11,15 +11,16 @@ json_t* makeJansson(Status *stat) {
     values = json_array();
 
     int j;
-    for (j = 0; j < 10/* TODO Sizeof Results */; j++) {
+    for (j = 0; j < 5/* TODO Sizeof Results */; j++) {
         if (stat->type == 0) {
             newval = json_pack("{sssf}", "title", zeit, "value", stat->result[j]);
+
         } else {
             json_real_set(newval, stat->result[j]);
         }
         if (!newval) {
             syslog(LOG_ERR, "error in creating new entry for %s.json\n", stat->name);
-            return 0;
+            return NULL;
         }
         json_array_append_new(values, newval);
     }
@@ -158,7 +159,6 @@ json_t * makeCSV(Status *stat) {
     FILE *cmd;
     cmd = popen(stat->cmmd, "r");  
     while (fgets(raw, sizeof(char) * OUTPUT_SIZE, cmd) != NULL) {
-        syslog(LOG_DEBUG, "%s\n", raw);
         strcat(output, raw);
     }
     if (pclose(cmd) != 0) {
