@@ -60,8 +60,10 @@ void worker(int connfd, struct tls* ctx) {
             pasteJSON(payload, clientName);
         }
     } 
-    if (type == REPLACE)
+    if (type == REPLACE) {
+    }
     tls_close(cctx);
+    tls_free(cctx);
 }
 
 int initTLS_S(struct tls* ctx) {
