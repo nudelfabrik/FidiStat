@@ -68,6 +68,15 @@ void getLocalBool() {
     }
 }
 
+int getIPv6Bool() {
+    int v6;
+    if (!config_lookup_bool(&config, "ipv6", &v6)) {
+        syslog(LOG_ERR, "Can't find local");
+        exit(1);
+    }
+    return v6;
+}
+
 // Get Name of this Client
 void getClientName() {
     const char *lname;
@@ -97,9 +106,9 @@ const char* getServerCertFile() {
     return lfile;
 }
 
-int getServerPort() {
-    int port;
-    if (!config_lookup_int(&config, "ServerPort", &port)) {
+const char*  getServerPort() {
+    const char* port;
+    if (!config_lookup_string(&config, "ServerPort", &port)) {
         syslog(LOG_ERR, "Can't lookup Server Port\n");
         exit(1);
     }

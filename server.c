@@ -1,8 +1,10 @@
 #include <sys/types.h> 
 #include <stdio.h>
 #include <sys/socket.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <syslog.h>
@@ -13,9 +15,9 @@
 #include "config.h"
 #include "client.h"
 #include "tls.h"
+#include "main.h"
 
 void server() {
-
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
     // load Config File and Settings
     initConf(cfgLocation);
@@ -25,9 +27,18 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 
     int connfd, pid;
     listen(sock, 10);
-    while(1) {
-        connfd = accept(sock, (struct sockaddr*) NULL, NULL); 
 
+    // Destroy Config
+    destroyConf(); 
+
+    //signal(SIGTERM, handleSigterm);
+    while(!term) {
+        connfd = accept(sock, (struct sockaddr*) NULL, NULL); 
+        syslog(LOG_DEBUG, "socket: %d", connfd);
+
+        if (term) {
+            break;
+        }
         pid = fork();
         if (pid < 0) {
             syslog(LOG_ERR, "forking new Worker failed");
@@ -39,6 +50,11 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
             close(connfd);
         }
     }
+    syslog(LOG_INFO, "Shutting down Server");
+    close(sock);
+    tls_close(ctx);
+    tls_free(ctx);
+    tls_config_free(tlsServer_conf);
 }
 
 void worker(int connfd, struct tls* ctx) {
@@ -60,30 +76,52 @@ void worker(int connfd, struct tls* ctx) {
             pasteJSON(payload, clientName);
         }
     } 
-    if (type == REPLACE)
+    if (type == REPLACE) {
+    }
     tls_close(cctx);
+    tls_free(cctx);
 }
 
 int initTLS_S(struct tls* ctx) {
     tlsServer_conf = tls_config_new();
-    printf("Cert: %s\n", getServerCertFile());
+    syslog(LOG_DEBUG,"Cert: %s\n", getServerCertFile());
     tls_config_set_cert_file(tlsServer_conf, getServerCertFile());
     tls_config_set_key_file(tlsServer_conf, getServerCertFile());
 
     tls_configure(ctx, tlsServer_conf);
 
     int sock;
-    struct sockaddr_in serv_addr;
-    if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("socket conn failed\n");
+
+    struct addrinfo hints, *servinfo, *p;
+
+    memset(&hints, 0, sizeof hints);
+    if(getIPv6Bool()) {
+        hints.ai_family =  AF_INET6;
+    } else {
+        hints.ai_family =  AF_INET;
     }
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-    //serv_addr.sin6_port = htons(getServerPort());
-    serv_addr.sin_port = htons(4242);
-    if (bind(sock, (struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) {
-        printf("ERROR on binding\n");
+
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE; // use my IP address
+
+    getaddrinfo(NULL, getServerPort(), &hints, &servinfo);
+
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((sock = socket(p->ai_family, p->ai_socktype,
+                p->ai_protocol)) == -1) {
+            syslog(LOG_ERR, "socket error");
+            continue;
+        }
+
+        if (bind(sock, p->ai_addr, p->ai_addrlen) == -1) {
+            close(sock);
+            syslog(LOG_ERR, "bind error");
+            continue;
+        }
+        break; // if we get here, we must have connected successfully
     }
-    printf("start socket\n");
+
+    freeaddrinfo(servinfo);
+    syslog(LOG_DEBUG, "start socket\n");
     return sock;
 }

@@ -1,6 +1,8 @@
 #ifndef MAIN
 #define MAIN
 
+#include <signal.h>
+
 #define OUTPUT_SIZE 1024
 #define MAXSTAT 10
 
@@ -20,6 +22,8 @@ enum connectionEnum {
     DELETE
 };
 
+extern volatile sig_atomic_t term;
+void handleSigterm(int sig);
 typedef enum connectionEnum connType;
 typedef struct statStruct Status;
 void client_start();

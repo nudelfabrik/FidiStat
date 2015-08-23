@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <time.h>
 #include <pcre.h> 
+#include <signal.h>
 #include <jansson.h>
 #include "client.h"
 #include "config.h"
 #include "json.h"
 #include "bootstrap.h"
 #include "tls.h"
+#include "main.h"
 // Default Config Location
 
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
@@ -31,10 +33,12 @@ void client(void) {
     // Destroy Config
     destroyConf(); 
 
+    signal(SIGTERM, handleSigterm);
+
     if (!(dry_flag) && !(now_flag)) {
         fixtime();
     }
-    while(1) {
+    while(!term) {
         // Set zeit to current time    
         timeSet();
         // Main Loop, go over every Status
@@ -52,9 +56,16 @@ void client(void) {
             }
         }
         sendStat(stats, statNum);
-        sleep(600);
+        if (now_flag) {
+            break;
+        }
+
+        if (!term) {
+            sleep(600);
+        }
     }
     deinitTLS();
+    syslog(LOG_INFO, "Shutting down Client");
 }
 
 void sendStat(Status *stats, int statNum) {
@@ -85,7 +96,7 @@ void sendStat(Status *stats, int statNum) {
         struct tls* ctx = tls_client();
         tls_configure(ctx, tlsClient_conf);
 
-        if (tls_connect(ctx, "192.168.42.3", "4242") == -1) {
+        if (tls_connect(ctx, getClientServerURL(), getServerPort()) == -1) {
             syslog(LOG_ERR, "%s\n", tls_error(ctx));
             return;
         }
@@ -100,11 +111,8 @@ void sendStat(Status *stats, int statNum) {
         }
 
         tls_close(ctx);
-
-
+        tls_free(ctx);
     }
-
-
 }
 
 void confSetup(Status stats[]) {
@@ -158,6 +166,9 @@ void initTLS(void) {
     tls_config_set_ca_file(tlsClient_conf, getClientCertFile());
     tls_config_insecure_noverifyname(tlsClient_conf);
     serverURL = getClientServerURL();
+}
+void deinitTLS(void) {
+    tls_config_free(tlsClient_conf);
 }
 
 // Wait to a round time for execution
