@@ -8,6 +8,7 @@ int getStatNum();
 void getPath();
 void getMaxCount();
 void getLocalBool();
+int getIPv6Bool();
 void getClientName();
 const char* getClientCertFile();
 const char* getServerCertFile();
