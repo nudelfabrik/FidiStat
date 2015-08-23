@@ -95,7 +95,12 @@ int initTLS_S(struct tls* ctx) {
     struct addrinfo hints, *servinfo, *p;
 
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC; // use AF_INET6 to force IPv6
+    if(ipv6) {
+        hints.ai_family =  AF_INET6;
+    } else {
+        hints.ai_family =  AF_INET;
+    }
+
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE; // use my IP address
 
@@ -113,7 +118,7 @@ int initTLS_S(struct tls* ctx) {
             syslog(LOG_ERR, "bind error");
             continue;
         }
-        //break; // if we get here, we must have connected successfully
+        break; // if we get here, we must have connected successfully
     }
 
     freeaddrinfo(servinfo);
