@@ -4,7 +4,7 @@
 #include <jansson.h>
 
 json_t* makeJansson(Status *Stat);
-void makeCSV(Status *Stat);
+json_t* makeCSV(Status *Stat);
 json_t* makeStat(Status *Stat);
 void sendJSON(json_t *array, const char *name);
 int  pasteJSON(json_t *array, const char *clientName);
