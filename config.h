@@ -1,7 +1,9 @@
 #ifndef CONFIG
 #define CONFIG
 #include "main.h"
+#include <libconfig.h>
 
+extern config_t config;
 void initConf(const char * path);
 void destroyConf();
 int getStatNum();
@@ -20,7 +22,4 @@ void setConfType(Status *Stat);
 void setConfCmmd(Status *Stat);
 void setConfRegex(Status *Stat);
 void setCSVtitle(Status *stat);
-void getDisplaySettings(const char* name, const char* subSetting);
-void getSequences(const char* name);
-void getBarTitles(const char* name);
 #endif
