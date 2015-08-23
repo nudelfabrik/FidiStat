@@ -35,6 +35,10 @@
 #include "server.h"
 #include "config.h"
 
+void handleChild(int sig) {
+    wait();
+}
+
 int main(int argc, const char *argv[])
 {
     // Set Flags if some are set
@@ -127,6 +131,7 @@ void server_start() {
     syslog(LOG_INFO, "Started Fidistat Server");
 
     // Daemonize
+    signal(SIGCHLD, handleChild);
     struct pidfh *pfh;
     pid_t otherpid;
 
