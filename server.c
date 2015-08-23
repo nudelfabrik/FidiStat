@@ -95,7 +95,7 @@ int initTLS_S(struct tls* ctx) {
     struct addrinfo hints, *servinfo, *p;
 
     memset(&hints, 0, sizeof hints);
-    if(ipv6) {
+    if(getIPv6Bool()) {
         hints.ai_family =  AF_INET6;
     } else {
         hints.ai_family =  AF_INET;
