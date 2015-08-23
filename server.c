@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <signal.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <syslog.h>
@@ -17,6 +18,12 @@
 #include "tls.h"
 #include "main.h"
 
+int sckt;
+void handleSigterm_S(int sig) {
+    term = 1;
+    shutdown(sckt,SHUT_RDWR);
+}
+
 void server() {
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
     // load Config File and Settings
@@ -24,6 +31,8 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
     tls_init();
     struct tls* ctx = tls_server();
     int sock = initTLS_S(ctx);
+    sckt = sock;
+
 
     int connfd, pid;
     listen(sock, 10);
@@ -31,10 +40,9 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
     // Destroy Config
     destroyConf(); 
 
-    //signal(SIGTERM, handleSigterm);
+    signal(SIGTERM, handleSigterm_S);
     while(!term) {
         connfd = accept(sock, (struct sockaddr*) NULL, NULL); 
-        syslog(LOG_DEBUG, "socket: %d", connfd);
 
         if (term) {
             break;
@@ -92,19 +100,8 @@ int initTLS_S(struct tls* ctx) {
 
     int sock;
 
-    struct addrinfo hints, *servinfo, *p;
-
-    memset(&hints, 0, sizeof hints);
-    if(getIPv6Bool()) {
-        hints.ai_family =  AF_INET6;
-    } else {
-        hints.ai_family =  AF_INET;
-    }
-
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE; // use my IP address
-
-    getaddrinfo(NULL, getServerPort(), &hints, &servinfo);
+    struct addrinfo *servinfo, *p;
+    servinfo = getAddrInfo();
 
     for(p = servinfo; p != NULL; p = p->ai_next) {
         if ((sock = socket(p->ai_family, p->ai_socktype,
@@ -124,4 +121,23 @@ int initTLS_S(struct tls* ctx) {
     freeaddrinfo(servinfo);
     syslog(LOG_DEBUG, "start socket\n");
     return sock;
+}
+
+struct addrinfo* getAddrInfo() {
+    struct addrinfo hints, *servinfo, *p;
+
+    memset(&hints, 0, sizeof hints);
+    if(getIPv6Bool()) {
+        hints.ai_family =  AF_INET6;
+    } else {
+        hints.ai_family =  AF_INET;
+    }
+
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE; // use my IP address
+
+    getaddrinfo(NULL, getServerPort(), &hints, &servinfo);
+    
+    return servinfo;
+
 }
