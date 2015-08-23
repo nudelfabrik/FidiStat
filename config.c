@@ -25,6 +25,8 @@ void initConf (const char * path) {
     getMaxCount();
     getLocalBool();
     getClientName();
+    getServerPort();
+    getClientServerURL();
 
 }
 
@@ -112,7 +114,7 @@ void getServerPort() {
         syslog(LOG_ERR, "Can't lookup Server Port\n");
         exit(1);
     }
-    serverPort = port;
+    serverPort = strdup(port);
 }
 
 
@@ -122,7 +124,7 @@ void getClientServerURL() {
         syslog(LOG_ERR, "Can't lookup name\n");
         exit(1);
     }
-    serverURL = url;
+    serverURL = strdup(url);
 }
 
 //get number of Stats
