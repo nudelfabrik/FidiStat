@@ -96,7 +96,7 @@ void sendStat(Status *stats, int statNum) {
         struct tls* ctx = tls_client();
         tls_configure(ctx, tlsClient_conf);
 
-        if (tls_connect(ctx, "192.168.42.3", "4242") == -1) {
+        if (tls_connect(ctx, getClientServerURL(), getServerPort()) == -1) {
             syslog(LOG_ERR, "%s\n", tls_error(ctx));
             return;
         }
