@@ -73,9 +73,9 @@ void worker(int connfd, struct tls* ctx) {
     json_error_t error;
     json_t *header = json_loads(headerStr, 0, &error);
     const char* clientName = json_string_value(json_object_get(header, "from"));
-    int type = json_integer_value(json_object_get(header, "type"));
+    connType type = json_integer_value(json_object_get(header, "type"));
+    int size = json_integer_value(json_object_get(header, "size"));
     if (type == UPDATE) {
-        int size = json_integer_value(json_object_get(header, "size"));
 
         for (int i = 0; i < size; i++) {
             char* payloadStr = recvOverTLS(cctx);
@@ -84,7 +84,13 @@ void worker(int connfd, struct tls* ctx) {
             pasteJSON(payload, clientName);
         }
     } 
-    if (type == REPLACE) {
+    if (type == CREATE) {
+        for (int i = 0; i < size; i++) {
+            char* payloadStr = recvOverTLS(cctx);
+            syslog(LOG_DEBUG, "%s\n", payloadStr);
+            json_t *payload = json_loads(payloadStr, 0, &error);
+            //TODO Process payload
+        }
     }
     tls_close(cctx);
     tls_free(cctx);
@@ -140,4 +146,9 @@ struct addrinfo* getAddrInfo() {
     
     return servinfo;
 
+}
+void delete(const char *client, const char *name) {
+    char file[strlen(path) + strlen(client) + strlen(name) + 6];
+    sprintf(file, "%s%s-%s.json", path, client, name);
+    remove(file);
 }

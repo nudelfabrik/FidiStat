@@ -18,6 +18,7 @@ struct tls_config* tlsClient_conf;
 
 void client(void);
 
+struct tls* initCon(connType type, int size);
 void initTLS(void);
 void deinitTLS(void);
 void sendStat(Status *stat, int statNum);

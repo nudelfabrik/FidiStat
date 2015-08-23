@@ -16,9 +16,9 @@ struct statStruct {
 };
 
 enum connectionEnum {
-    FALSE,
+    HELLO,
     UPDATE,
-    REPLACE,
+    CREATE,
     DELETE
 };
 

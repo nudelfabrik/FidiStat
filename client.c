@@ -85,24 +85,7 @@ void sendStat(Status *stats, int statNum) {
             pasteJSON(arrays[i], clientName);
         }
     } else {
-        // Create Header object
-        json_t *header = json_object();
-        json_object_set(header, "from", json_string(clientName));
-        json_object_set(header, "type", json_integer(UPDATE));
-        json_object_set(header, "size", json_integer(statNum));
-        char * headerStr = json_dumps(header, JSON_COMPACT | JSON_REAL_PRECISION(5));
-
-        // Initiate TLS Session
-        struct tls* ctx = tls_client();
-        tls_configure(ctx, tlsClient_conf);
-
-        if (tls_connect(ctx, serverURL, serverPort) == -1) {
-            syslog(LOG_ERR, "%s\n", tls_error(ctx));
-            return;
-        }
-        // Send Header
-        sendOverTLS(ctx, headerStr);
-        free(headerStr);
+        struct tls* ctx = initCon(UPDATE, statNum);
 
         for (int i = 0; i < statNum; i++) {
             char * payloadStr = json_dumps(arrays[i], JSON_COMPACT);
@@ -114,6 +97,30 @@ void sendStat(Status *stats, int statNum) {
         tls_free(ctx);
     }
 }
+
+struct tls* initCon(connType type, int size) {
+    // Create Header object
+    json_t *header = json_object();
+    json_object_set(header, "from", json_string(clientName));
+    json_object_set(header, "type", json_integer(type));
+    json_object_set(header, "size", json_integer(size));
+    char * headerStr = json_dumps(header, JSON_COMPACT | JSON_REAL_PRECISION(5));
+
+    // Initiate TLS Session
+    struct tls* ctx = tls_client();
+    tls_configure(ctx, tlsClient_conf);
+
+    if (tls_connect(ctx, serverURL, serverPort) == -1) {
+        syslog(LOG_ERR, "%s\n", tls_error(ctx));
+        return NULL;
+    }
+    // Send Header
+    sendOverTLS(ctx, headerStr);
+    free(headerStr);
+    return ctx;
+
+}
+
 
 void confSetup(Status stats[]) {
     int i = 0;
