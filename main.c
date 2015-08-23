@@ -35,8 +35,14 @@
 #include "server.h"
 #include "config.h"
 
+volatile sig_atomic_t term = 0;
+
 void handleChild(int sig) {
     wait();
+}
+
+void handleSigterm(int sig) {
+    term = 1;
 }
 
 int main(int argc, const char *argv[])

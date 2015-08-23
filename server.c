@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <syslog.h>
@@ -13,9 +14,9 @@
 #include "config.h"
 #include "client.h"
 #include "tls.h"
+#include "main.h"
 
 void server() {
-
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
     // load Config File and Settings
     initConf(cfgLocation);
@@ -25,7 +26,12 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 
     int connfd, pid;
     listen(sock, 10);
-    while(1) {
+
+    // Destroy Config
+    destroyConf(); 
+
+    signal(SIGTERM, handleSigterm);
+    while(!term) {
         connfd = accept(sock, (struct sockaddr*) NULL, NULL); 
 
         pid = fork();
@@ -39,6 +45,11 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
             close(connfd);
         }
     }
+    syslog(LOG_INFO, "Shutting down Server");
+    close(sock);
+    tls_close(ctx);
+    tls_free(ctx);
+    tls_config_free(tlsServer_conf);
 }
 
 void worker(int connfd, struct tls* ctx) {
