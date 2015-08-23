@@ -136,7 +136,7 @@ struct addrinfo* getAddrInfo() {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE; // use my IP address
 
-    getaddrinfo(NULL, getServerPort(), &hints, &servinfo);
+    getaddrinfo(NULL, serverPort, &hints, &servinfo);
     
     return servinfo;
 

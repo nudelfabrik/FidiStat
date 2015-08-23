@@ -1,4 +1,5 @@
 #include <jansson.h>
+#include <libconfig.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +10,6 @@
 #include "config.h"
 #include "json.h"
 
-json_t *root, *graph, *sequences;
 json_error_t error;
 
 // Check if File exist and  create if needed
@@ -35,23 +35,24 @@ int checkForBootstrap(const char* name) {
     }
 
 }
+
+// --------------------
 // Create new JSON File
+// --------------------
 void createFile(Status* status) {
     if (status->type == 2) {
         return;
     }
-    root = json_object();
-    graph = json_object();
-    sequences = json_array();
+    json_t *root = json_object();
 
-    getDisplaySettings(status->name, "graph");
+    json_t *graph = getDisplaySettings(status->name, "graph");
 
     // Create Datasequences
-    getSequences(status->name);
+    json_t *sequences = getSequences(status->name);
 
     // If Type is Bar, load Bartitles
     if (status->type == 1) {
-        getBarTitles(status->name);
+        getBarTitles(sequences, status->name);
     }
 
     // Build json Object
@@ -62,13 +63,53 @@ void createFile(Status* status) {
     dumpJSON(root, status->name);
 }
 
+//--------------------------
+// Create JSON with settings
+//--------------------------
+json_t* getDisplaySettings(const char* name, const char* subSetting) {
+
+    json_t *graph = json_object();
+    char path[strlen(name)+20];
+    if (!strcmp(subSetting,  "graph")) {
+        sprintf(path, "%s.display" , name);
+    } else {
+        sprintf(path, "%s.display.%s", name, subSetting);
+    }
+    // Get Display Setting of name
+    config_setting_t* display = config_lookup(&config, path);
+    int numSettings = config_setting_length(display);
+
+    // Add every Setting of Display to json file
+    for (int i = 0; i < numSettings; i++) {
+        config_setting_t* sett = config_setting_get_elem(display, i);
+
+        // Int and String Settings
+        if (config_setting_type(sett) == CONFIG_TYPE_INT) {
+            addNewInt(graph, config_setting_name(sett),config_setting_get_int(sett), subSetting);
+        }
+        if (config_setting_type(sett) == CONFIG_TYPE_STRING) {
+            addNewString(graph, config_setting_name(sett),config_setting_get_string(sett), subSetting);
+        }
+
+        // Object Settings
+        if (config_setting_type(sett) == CONFIG_TYPE_GROUP) {
+            const char* subName = config_setting_name(sett);
+            addNewSubSetting(graph, subName);
+
+            // Add all other 
+            getDisplaySettings(name, subName);
+        }
+    }
+    return graph;
+}
+
 // Adds new SubObject under "Graph"
-void addNewSubSetting(const char* subObj) {
+void addNewSubSetting(json_t* graph, const char* subObj) {
     json_object_set(graph, subObj, json_object());
 }
 
 // Adds new String Key/Value pair to Graph or a SubObject of Graph
-void addNewString(const char* key, const char* value, const char* subObj) {
+void addNewString(json_t* graph, const char* key, const char* value, const char* subObj) {
     if (!strcmp(subObj,  "graph")) {
         json_object_set(graph, key, json_string(value)); 
     } else {
@@ -77,7 +118,7 @@ void addNewString(const char* key, const char* value, const char* subObj) {
 }
 
 // Adds new Integer Key/Value pair to Graph or a SubObject of Graph
-void addNewInt(const char* key, int value, const char* subObj) {
+void addNewInt(json_t* graph, const char* key, int value, const char* subObj) {
     if (!strcmp(subObj, "graph")) {
         json_object_set(graph, key, json_integer(value)); 
     } else {
@@ -85,22 +126,48 @@ void addNewInt(const char* key, int value, const char* subObj) {
     }
 }
 
-// Add new Sequence to "sequences"
-void addNewSequence(const char* title, const char* colour) {
-    json_t* newSeq = json_object();
-    json_object_set(newSeq, "title", json_string(title));
-    // If Colour is specified, set colour
-    if (colour) {
-        json_object_set(newSeq, "color", json_string(colour));
+//-----------------------------------
+// Create JSON with all Datasequences
+//-----------------------------------
+json_t* getSequences(const char* name) {
+    json_t* sequences_j = json_array();
+    char path[strlen(name)+20];
+    sprintf(path, "%s.sequencetitles" , name);
+    config_setting_t* sequences_c = config_lookup(&config, path);
+
+    sprintf(path, "%s.sequencecolors" , name);
+    config_setting_t* colours_c = config_lookup(&config, path);
+
+    int numSeq = config_setting_length(sequences_c);
+
+    // Add every Setting of Display to json file
+    for (int i = 0; i < numSeq; i++) {
+        json_t* newSeq_j = json_object();
+        json_object_set(newSeq_j, "title", json_string(config_setting_get_string_elem(sequences_c, i)));
+        if (colours_c) {
+            json_object_set(newSeq_j, "color", json_string(config_setting_get_string_elem(colours_c, i)));
+        }
+        json_object_set(newSeq_j, "datapoints", json_array());
+        json_array_append(sequences_j, newSeq_j);
     }
-    json_object_set(newSeq, "datapoints", json_array());
-    json_array_append(sequences, newSeq);
+    return sequences_j;
 }
 
-// Add new Title/value Object to datapoints for Bar Graph
-void addNewBarTitle(const char* title) {
-    json_t* newTitle = json_object();
-    json_object_set(newTitle, "title", json_string(title));
-    json_object_set(newTitle, "value", json_real(0));
-    json_array_append(json_object_get(json_array_get(sequences, 0), "datapoints"), newTitle);
+
+//------------------
+// Create Bar titles
+//------------------
+//
+void getBarTitles(json_t* sequences_j, const char* name) {
+    char path[strlen(name)+20];
+    sprintf(path, "%s.bartitles" , name);
+    config_setting_t* sequences_c = config_lookup(&config, path);
+    int numSeq = config_setting_length(sequences_c);
+
+    for (int i = 0; i < numSeq; i++) {
+        json_t* newTitle = json_object();
+        json_object_set(newTitle, "title", json_string(config_setting_get_string_elem(sequences_c, i)));
+        json_object_set(newTitle, "value", json_real(0));
+        json_array_append(json_object_get(json_array_get(sequences_j, 0), "datapoints"), newTitle);
+    }
 }
