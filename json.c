@@ -25,6 +25,7 @@ json_t* makeJansson(Status *stat) {
     }
     json_t *payload = json_object();
     json_object_set(payload, "name", json_string(stat->name));
+    json_object_set(payload, "type", json_integer(stat->type));
     json_object_set(payload, "payload", values);
     return payload;
         
@@ -32,15 +33,28 @@ json_t* makeJansson(Status *stat) {
 
 int pasteJSON(json_t *payload, const char *clientName) {
     // Extract data from payload
-    json_t *array = json_object_get(payload, "payload");
     const char * name = json_string_value(json_object_get(payload, "name"));
-
-    json_t *root, *dataseq, *graph, *arry, *newval;
-    json_error_t error;
-
+    int type = json_integer_value(json_object_get(payload, "type"));
+    
     char file[strlen(path)+ strlen(clientName)+strlen(name)+6];
 
     sprintf(file, "%s%s-%s.json",path, clientName, name);
+
+    if (type == 2) {
+        FILE *fp;
+        const char * output = json_string_value(json_object_get(payload, "payload"));
+        fp = fopen(file, "w");
+        fprintf(fp, "%s",output); 
+        free(output);
+        fclose(fp);
+        return 1;
+    }
+
+    json_t *array = json_object_get(payload, "payload");
+    
+    json_t *root, *dataseq, *graph, *arry, *newval;
+    json_error_t error;
+
     // Load *.json
     root = json_load_file(file, 0, &error);
     // CHeck for Errors
@@ -122,9 +136,7 @@ json_t* makeStat(Status *stat) {
         if (verbose_flag) {
             debug(stat);
         }
-        makeCSV(stat);
-        //TODO
-        return NULL;
+        return makeCSV(stat);
     } else {
         if (verbose_flag) {
             debug(stat);
@@ -137,8 +149,7 @@ void printError(const char* name) {
     syslog(LOG_ERR, "Can't get data from %s.json\n", name);
 }
 // If type is 2, create a new .csv evertime the command runs
-void makeCSV(Status *stat) {
-    FILE *fp;
+json_t * makeCSV(Status *stat) {
     char file[OUTPUT_SIZE];
     char output[OUTPUT_SIZE] = "";
     strcat(output, stat->csv);
@@ -155,10 +166,9 @@ void makeCSV(Status *stat) {
     }
     strcat(output, raw);
 
-    if (!dry_flag) {
-        sprintf(file, "%s%s.csv",path, stat->name);
-        fp = fopen(file, "w");
-        fprintf(fp, "%s",output); 
-        fclose(fp);
-    }
+    json_t *payload = json_object();
+    json_object_set(payload, "name", json_string(stat->name));
+    json_object_set(payload, "type", json_integer(stat->type));
+    json_object_set(payload, "payload", json_string(output));
+    return payload;
 }
