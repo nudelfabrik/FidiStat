@@ -79,6 +79,7 @@ void client_start() {
 
     pidfile_remove(pfh);
 
+    syslog(LOG_INFO, "Stopped Fidistat Client");
     closelog();
     exit(0);
 }

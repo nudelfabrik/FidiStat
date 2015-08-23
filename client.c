@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <pcre.h> 
+#include <signal.h>
 #include <jansson.h>
 #include "client.h"
 #include "config.h"
@@ -13,6 +14,11 @@
 // Default Config Location
 
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
+volatile sig_atomic_t term = 0;
+
+void handleSigterm(int sig) {
+    term = 1;
+}
 void client(void) {
 
     // load Config File and Settings
@@ -31,10 +37,12 @@ void client(void) {
     // Destroy Config
     destroyConf(); 
 
+    signal(SIGTERM, handleSigterm);
+
     if (!(dry_flag) && !(now_flag)) {
         fixtime();
     }
-    while(1) {
+    while(!term) {
         // Set zeit to current time    
         timeSet();
         // Main Loop, go over every Status
@@ -52,7 +60,10 @@ void client(void) {
             }
         }
         sendStat(stats, statNum);
-        sleep(600);
+
+        if (!term) {
+            sleep(600);
+        }
     }
     deinitTLS();
 }
