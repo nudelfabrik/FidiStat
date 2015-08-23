@@ -47,7 +47,13 @@ void client_start() {
     fprintf(stdout, "Starting fidistat...\n");
     openlog("fidistat-client", LOG_PID, LOG_DAEMON);
     syslog(LOG_INFO, "Started Fidistat Client");
+    syslog(LOG_INFO, "Running once");
 
+    if (now_flag) {
+        client();
+        closelog();
+        exit(0);
+    }
     // Daemonize
     struct pidfh *pfh;
     pid_t otherpid;
