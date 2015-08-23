@@ -11,7 +11,7 @@ void getLocalBool();
 void getClientName();
 const char* getClientCertFile();
 const char* getServerCertFile();
-int getServerPort();
+const char*  getServerPort();
 const char* getClientServerURL();
 void setConfName(Status *Stat, int i);
 void setConfEnable(Status *Stat);
