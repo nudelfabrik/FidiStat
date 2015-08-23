@@ -35,6 +35,16 @@
 #include "server.h"
 #include "config.h"
 
+volatile sig_atomic_t term = 0;
+
+void handleChild(int sig) {
+    wait();
+}
+
+void handleSigterm(int sig) {
+    term = 1;
+}
+
 int main(int argc, const char *argv[])
 {
     // Set Flags if some are set
@@ -47,7 +57,13 @@ void client_start() {
     fprintf(stdout, "Starting fidistat...\n");
     openlog("fidistat-client", LOG_PID, LOG_DAEMON);
     syslog(LOG_INFO, "Started Fidistat Client");
+    syslog(LOG_INFO, "Running once");
 
+    if (now_flag) {
+        client();
+        closelog();
+        exit(0);
+    }
     // Daemonize
     struct pidfh *pfh;
     pid_t otherpid;
@@ -73,6 +89,7 @@ void client_start() {
 
     pidfile_remove(pfh);
 
+    syslog(LOG_INFO, "Stopped Fidistat Client");
     closelog();
     exit(0);
 }
@@ -121,6 +138,7 @@ void server_start() {
     syslog(LOG_INFO, "Started Fidistat Server");
 
     // Daemonize
+    signal(SIGCHLD, handleChild);
     struct pidfh *pfh;
     pid_t otherpid;
 
@@ -143,6 +161,7 @@ void server_start() {
     server();
 
     pidfile_remove(pfh);
+    syslog(LOG_INFO, "Stopped Fidistat Server");
     closelog();
     exit(0);
 }
