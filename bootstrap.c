@@ -26,8 +26,8 @@ void bootstrap(Status* status) {
 
 int checkForBootstrap(const char* name) {
     if (local) {
-        char file[strlen(path)+strlen(name)+6];
-        sprintf(file, "%s%s.json",path, name);
+        char file[strlen(path)+strlen(name)+strlen(clientName)+6];
+        sprintf(file, "%s%s-%s.json",path, clientName, name);
         return (access( file, F_OK ) == -1);
     } else {
         // Ask Server, if bootstrap is needed
@@ -60,7 +60,10 @@ void createFile(Status* status) {
     json_object_set(root, "graph", graph);
 
     // Print created JSON
-    dumpJSON(root, status->name);
+    char file[strlen(path)+ strlen(clientName)+strlen(status->name)+6];
+    sprintf(file, "%s%s-%s.json",path, clientName, status->name);
+
+    dumpJSON(root, file);
 }
 
 //--------------------------
