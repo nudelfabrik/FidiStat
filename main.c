@@ -161,6 +161,7 @@ void server_start() {
     server();
 
     pidfile_remove(pfh);
+    syslog(LOG_INFO, "Stopped Fidistat Server");
     closelog();
     exit(0);
 }
