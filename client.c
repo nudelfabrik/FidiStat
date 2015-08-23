@@ -31,7 +31,7 @@ void client(void) {
     confSetup(stats);
 
     // Destroy Config
-    destroyConf(); 
+    //destroyConf(); 
 
     signal(SIGTERM, handleSigterm);
 
