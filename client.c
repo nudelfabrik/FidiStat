@@ -165,7 +165,6 @@ void initTLS(void) {
     tls_config_set_cert_file(tlsClient_conf, getClientCertFile());
     tls_config_set_ca_file(tlsClient_conf, getClientCertFile());
     tls_config_insecure_noverifyname(tlsClient_conf);
-    serverURL = getClientServerURL();
 }
 void deinitTLS(void) {
     tls_config_free(tlsClient_conf);
