@@ -36,6 +36,6 @@ void server_restart();
 
 void debug(Status *stat);
 void handleFlags(int argc, const char *argv[]);
-char* composeFileName(const char* prefix, const char* name, const char* type);
+char composeFileName(const char* prefix, const char* name, const char* type);
 
 #endif

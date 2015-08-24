@@ -29,7 +29,7 @@ void client(void) {
 
     // Setup all config files
     confSetup(stats);
-    if (!local) {
+    if (!getLocal()) {
         sendHello(stats);
     }
 
@@ -110,10 +110,10 @@ void sendStat(Status *stats, int statNum) {
             }
         }
     }
-    if (local) {
+    if (getLocal()) {
         for (int i = 0; i < statNum; i++) {
             if (stats[i].enabled) {
-                pasteJSON(arrays[i], clientName);
+                pasteJSON(arrays[i], getClientName());
             }
         }
     } else {
@@ -142,7 +142,7 @@ void sendStat(Status *stats, int statNum) {
 struct tls* initCon(connType type, int size) {
     // Create Header object
     json_t *header = json_object();
-    json_object_set(header, "from", json_string(clientName));
+    json_object_set(header, "from", json_string(getClientName()));
     json_object_set(header, "type", json_integer(type));
     json_object_set(header, "size", json_integer(size));
     char * headerStr = json_dumps(header, JSON_COMPACT | JSON_REAL_PRECISION(5));
@@ -151,7 +151,7 @@ struct tls* initCon(connType type, int size) {
     struct tls* ctx = tls_client();
     tls_configure(ctx, tlsClient_conf);
 
-    if (tls_connect(ctx, serverURL, serverPort) == -1) {
+    if (tls_connect(ctx, getClientServerURL(), getServerPort()) == -1) {
         syslog(LOG_ERR, "%s\n", tls_error(ctx));
         return NULL;
     }
@@ -190,7 +190,7 @@ void confSetup(Status stats[]) {
                 }
 
                 // Create File if not present
-                if (local) {
+                if (getLocal()) {
                     bootstrap(&newStat);
                 }
             }
@@ -279,7 +279,7 @@ void setLocation(char* loc) {
 
 
 void del(Status *stat) {
-    char file[strlen(path) + strlen(stat->name) + 6];
-    sprintf(file, "%s%s.json", path, stat->name);
+    char file[strlen(getPath()) + strlen(stat->name) + 6];
+    sprintf(file, "%s%s.json", getPath(), stat->name);
     remove(file);
 }
