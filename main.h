@@ -1,7 +1,17 @@
 #ifndef MAIN
 #define MAIN
 
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <time.h>
+#include <getopt.h>
+#include <errno.h>
+#include <libutil.h>
 #include <signal.h>
+#include <syslog.h>
+#include <tls.h>
 
 #define OUTPUT_SIZE 1024
 #define MAXSTAT 10
