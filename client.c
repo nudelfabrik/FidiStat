@@ -112,15 +112,26 @@ void sendStat(Status *stats, int statNum) {
     }
     if (local) {
         for (int i = 0; i < statNum; i++) {
-            pasteJSON(arrays[i], clientName);
+            if (stats[i].enabled) {
+                pasteJSON(arrays[i], clientName);
+            }
         }
     } else {
-        struct tls* ctx = initCon(UPDATE, statNum);
+        int statActive = 0;
+        for (int i = 0; i < statNum; i++) {
+            if (stats[i].enabled) {
+                statActive++;
+            }
+        }
+
+        struct tls* ctx = initCon(UPDATE, statActive);
 
         for (int i = 0; i < statNum; i++) {
-            char * payloadStr = json_dumps(arrays[i], JSON_COMPACT);
-            sendOverTLS(ctx, payloadStr);
-            free(payloadStr);
+            if (stats[i].enabled) {
+                char * payloadStr = json_dumps(arrays[i], JSON_COMPACT);
+                sendOverTLS(ctx, payloadStr);
+                free(payloadStr);
+            }
         }
 
         tls_close(ctx);
