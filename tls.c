@@ -2,6 +2,7 @@
 #include <syslog.h>
 #include <string.h>
 #include <stdlib.h>
+#include <jansson.h>
 #include "tls.h"
 
 void sendOverTLS(struct tls* ctx, const char *buf) {
@@ -40,7 +41,8 @@ void sendOverTLS(struct tls* ctx, const char *buf) {
     }
 }
 
-char* recvOverTLS(struct tls*ctx) {
+json_t* recvOverTLS(struct tls*ctx) {
+    json_error_t error;
     size_t getSize, size;
     size_t len = sizeof(getSize);
 
@@ -72,9 +74,9 @@ char* recvOverTLS(struct tls*ctx) {
             getSize -= size; 
         } 
     }
-    return buffer;
-}
-
-void waitforACK() {
-
+    json_t *json = json_loads(buffer, JSON_DISABLE_EOF_CHECK, &error);
+    if (verbose_flag) {
+        syslog(LOG_DEBUG, "%s\n", buffer);
+    }
+    return json;
 }
