@@ -1,11 +1,3 @@
-#include <syslog.h>
-#include <string.h>
-#include <regex.h>
-#include <stdio.h>
-#include <time.h>
-#include <pcre.h> 
-#include <signal.h>
-#include <jansson.h>
 #include "client.h"
 #include "config.h"
 #include "json.h"
