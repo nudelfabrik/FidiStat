@@ -72,17 +72,31 @@ void client(void) {
 }
 
 void sendHello(Status stat[]) {
+    json_error_t error;
     json_t *list = json_array();
     for (int i = 0; i < getStatNum(); i++) {
         json_array_append_new(list, json_string(stat[i].name));
     }
     struct tls* ctx = initCon(HELLO, getStatNum());
     char * payloadStr = json_dumps(list, JSON_COMPACT);
-    syslog(LOG_DEBUG,"%s\n", payloadStr);
     sendOverTLS(ctx, payloadStr);
     free(payloadStr);
     char* relistStr = recvOverTLS(ctx);
-    syslog(LOG_DEBUG,"%s\n", relistStr);
+    syslog(LOG_DEBUG, "%s", relistStr);
+    json_t *relist = json_loads(relistStr, JSON_DISABLE_EOF_CHECK, &error);
+    for (int i = 0; i < json_array_size(relist); i++) {
+        const char *name = json_string_value(json_array_get(relist, i));
+        for (int j = 0; j < getStatNum(); j++) {
+            if (strcmp(stat[j].name, name) == 0) {
+                syslog(LOG_DEBUG, "creating %s.json", name);
+                createFile(&stat[j]);
+                break;
+            }
+        }
+    }
+
+    tls_close(ctx);
+    tls_free(ctx);
 
 }
 

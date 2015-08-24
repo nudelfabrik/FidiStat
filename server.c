@@ -103,7 +103,6 @@ void worker(int connfd, struct tls* ctx) {
         json_t *relist = json_array();
 
         char* listStr = recvOverTLS(cctx);
-        syslog(LOG_DEBUG,"%s\n", listStr);
         json_t *list = json_loads(listStr, 0, &error);
 
         for (int i = 0; i < size; i++) {
@@ -115,8 +114,9 @@ void worker(int connfd, struct tls* ctx) {
             }
         }
         char * relistStr = json_dumps(relist, JSON_COMPACT);
-        sendOverTLS(ctx, relistStr);
+        sendOverTLS(cctx, relistStr);
         free(relistStr);
+        //char* ack = recvOverTLS(cctx);
 
     }
     tls_close(cctx);
