@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <syslog.h>
+#include <unistd.h>
+#include <string.h>
 #include <tls.h>
 #include <jansson.h>
 #include "server.h"
@@ -89,7 +91,12 @@ void worker(int connfd, struct tls* ctx) {
             char* payloadStr = recvOverTLS(cctx);
             syslog(LOG_DEBUG, "%s\n", payloadStr);
             json_t *payload = json_loads(payloadStr, 0, &error);
-            //TODO Process payload
+            const char * name = json_string_value(json_object_get(payload, "name"));
+            json_t *root = json_object_get(payload, "payload");
+
+            char file[strlen(path)+ strlen(clientName)+strlen(name)+6];
+            sprintf(file, "%s%s-%s.json",path, clientName, name);
+            dumpJSON(root, file);
         }
     }
     tls_close(cctx);
