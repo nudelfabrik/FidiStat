@@ -29,12 +29,14 @@ void handleSigterm_S(int sig) {
 void server() {
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
     // load Config File and Settings
+
+    signal(SIGTERM, handleSigterm_S);
+
     initConf(cfgLocation);
     tls_init();
     struct tls* ctx = tls_server();
     int sock = initTLS_S(ctx);
     sckt = sock;
-
 
     int connfd, pid;
     listen(sock, 10);
@@ -42,7 +44,6 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
     // Destroy Config
     destroyConf(); 
 
-    signal(SIGTERM, handleSigterm_S);
     while(!term) {
         connfd = accept(sock, (struct sockaddr*) NULL, NULL); 
 
@@ -75,6 +76,12 @@ void worker(int connfd, struct tls* ctx) {
     json_error_t error;
     json_t *header = json_loads(headerStr, 0, &error);
     const char* clientName = json_string_value(json_object_get(header, "from"));
+    for (int i = 0; i < sizeof(clientName); i++) {
+        if (clientName[i] == '/' || clientName[i] == '\\') {
+            syslog(LOG_ERR, "ERROR in clientName!, aborting");
+            return;
+        }
+    }
     connType type = json_integer_value(json_object_get(header, "type"));
     int size = json_integer_value(json_object_get(header, "size"));
     if (type == UPDATE) {
