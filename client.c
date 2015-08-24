@@ -119,7 +119,14 @@ void sendStat(Status *stats, int statNum) {
             }
         }
     } else {
-        struct tls* ctx = initCon(UPDATE, statNum);
+        int statActive = 0;
+        for (int i = 0; i < statNum; i++) {
+            if (stats[i].enabled) {
+                statActive++;
+            }
+        }
+
+        struct tls* ctx = initCon(UPDATE, statActive);
 
         for (int i = 0; i < statNum; i++) {
             if (stats[i].enabled) {
