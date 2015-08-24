@@ -9,6 +9,7 @@
 #include "bootstrap.h"
 #include "config.h"
 #include "json.h"
+#include "tls.h"
 
 json_error_t error;
 
