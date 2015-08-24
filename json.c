@@ -1,8 +1,3 @@
-#include <jansson.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <syslog.h>
 #include "client.h"
 #include "config.h"
 #include "json.h"

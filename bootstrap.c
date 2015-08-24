@@ -1,10 +1,4 @@
-#include <jansson.h>
-#include <libconfig.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <syslog.h>
 #include "client.h"
 #include "bootstrap.h"
 #include "config.h"
