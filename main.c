@@ -302,9 +302,10 @@ void handleFlags(int argc, const char *argv[]) {
     }
 }
 
-char composeFileName(const char* prefix, const char* name, const char* type) {
+char* composeFileName(const char* prefix, const char* name, const char* type) {
     char file[strlen(getPath())+strlen(prefix)+strlen(name)+strlen(type)+3];
     sprintf(file, "%s%s-%s.%s",getPath(), prefix, name, type);
-    return file;
+    char* retFile = strdup(file);
+    return retFile;
 }
 
