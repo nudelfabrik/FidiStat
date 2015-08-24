@@ -15,7 +15,7 @@ json_error_t error;
 
 // Check if File exist and  create if needed
 void bootstrap(Status* status) {
-    if (status->type != 2 && local) {
+    if (status->type != 2) {
         if (checkForBootstrap(status->name)) {
             if(verbose_flag) {  
                 syslog(LOG_INFO, "%s.json not found, creating new File", status->name);
@@ -26,9 +26,8 @@ void bootstrap(Status* status) {
 }
 
 int checkForBootstrap(const char* name) {
-    char file[strlen(path)+strlen(name)+strlen(clientName)+6];
-    sprintf(file, "%s%s-%s.json",path, clientName, name);
-    return (access( file, F_OK ) == -1);
+    char file = composeFileName(getClientName(), name, "json");
+    return (access( &file, F_OK ) == -1);
 }
 
 // --------------------
@@ -55,11 +54,10 @@ void createFile(Status* status) {
     json_object_set(root, "graph", graph);
 
     // Print created JSON
-    char file[strlen(path)+ strlen(clientName)+strlen(status->name)+6];
-    sprintf(file, "%s%s-%s.json",path, clientName, status->name);
+    char file = composeFileName(getClientName(), status->name, "json");
 
-    if (local) {
-        dumpJSON(root, file);
+    if (getLocal()) {
+        dumpJSON(root, &file);
     } else {
         struct tls* ctx = initCon(CREATE, 1);
         json_t* payload = json_object();

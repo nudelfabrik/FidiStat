@@ -7,12 +7,12 @@
 #include "client.h"
 #include "config.h"
 
-config_t config;
-
 //get the config specified in main.h
 void initConf (const char * path) {
     //init config Structure
     config_init(&config);
+    Settings set;
+    setting = &set;
     //parse File and watch for Errors
     if(! config_read_file(&config, path))
     {
@@ -21,14 +21,109 @@ void initConf (const char * path) {
         config_destroy(&config);
         exit(1);
     }
-    getPath();
-    getMaxCount();
-    getLocalBool();
-    getClientName();
-    getServerPort();
-    getClientServerURL();
+    // fill in the SettingsStruct
+    const char *local;
+
+    //get Path to json
+    if (!config_lookup_string(&config, "path", &local)) {
+        syslog(LOG_ERR, "Can't lookup path to .json\n");
+        exit(1);
+    }
+    set.path = strdup(local);
+    if (path[strlen(path)-1] != '/') {
+        syslog(LOG_ERR, "Path does not end with /\n");
+        exit(1);
+    }
+ 
+    // Number of Stats
+    set.statNum = config_setting_length(getSetting("list"));
+
+    //getMaxCount();
+    if (!config_lookup_int(&config, "maxEntrys", &set.maxCount)) {
+        syslog(LOG_ERR, "Can't find maxEntries");
+        exit(1);
+    }
+
+    //getLocalBool();
+    if (!config_lookup_bool(&config, "local", &set.local)) {
+        syslog(LOG_ERR, "Can't find local");
+        exit(1);
+    }
+
+    //getClientName();
+    if (!config_lookup_string(&config, "clientName", &local)) {
+        syslog(LOG_ERR, "Can't lookup name\n");
+        exit(1);
+    }
+    set.clientName = strdup(local);
+
+    //getServerPort();
+    if (!config_lookup_string(&config, "ServerPort", &local)) {
+        syslog(LOG_ERR, "Can't lookup Server Port\n");
+        exit(1);
+    }
+    set.serverPort = strdup(local);
+
+    //getClientServerURL();
+    if (!config_lookup_string(&config, "serverURL", &local)) {
+        syslog(LOG_ERR, "Can't lookup name\n");
+        exit(1);
+    }
+    set.serverURL = strdup(local);
 
 }
+
+int getStatNum() {
+    return setting->statNum
+}
+const char* getPath() {
+    return setting->path
+}
+const char* getClientName() {
+    return setting->clientName;
+}
+int getMaxCount() {
+    return setting->maxCount;
+}
+int getLocal() {
+    return setting->local;
+}
+const char* getServerPort() {
+    return setting->serverPort;
+}
+const char* getClientServerURL() {
+    return setting->serverURL;
+}
+
+const char* getClientCertFile_v() {
+    const char *lfile;
+    if (!config_lookup_string(&config, "clientCertFile", &lfile)) {
+        syslog(LOG_ERR, "Can't lookup Client Cert\n");
+        exit(1);
+    }
+    return lfile;
+}
+
+const char* getServerCertFile_v() {
+    const char *lfile;
+    if (!config_lookup_string(&config, "ServerCertFile", &lfile)) {
+        syslog(LOG_ERR, "Can't lookup Server Cert\n");
+        exit(1);
+    }
+    return lfile;
+}
+int getServerIPv6_v() {
+    int v6;
+    if (!config_lookup_int(&config, "maxEntrys", v6)) {
+        syslog(LOG_ERR, "Can't find maxEntries");
+        exit(1);
+    }
+    return v6;
+}
+
+
+// Functions needed for building Status
+//-------------------------------------
 
 config_setting_t* getSetting(const char * item) {
     config_setting_t *setting = config_lookup(&config, item);
@@ -38,100 +133,6 @@ config_setting_t* getSetting(const char * item) {
     }
     return setting;
 }
-
-//Get Path to .jsons
-void getPath() {
-    const char *lpath;
-
-    if (!config_lookup_string(&config, "path", &lpath)) {
-        syslog(LOG_ERR, "Can't lookup path to .json\n");
-        exit(1);
-    }
-    path = strdup(lpath);
-    if (path[strlen(path)-1] != '/') {
-        syslog(LOG_ERR, "Path does not end with /\n");
-        exit(1);
-    }
-}
-
-// Get max datapoints displayed
-void getMaxCount() {
-    if (!config_lookup_int(&config, "maxEntrys", &maxCount)) {
-        syslog(LOG_ERR, "Can't find maxEntries");
-        exit(1);
-    }
-}
-
-// Check if you should process the data or send it
-void getLocalBool() {
-    if (!config_lookup_bool(&config, "local", &local)) {
-        syslog(LOG_ERR, "Can't find local");
-        exit(1);
-    }
-}
-
-int getIPv6Bool() {
-    int v6;
-    if (!config_lookup_bool(&config, "ipv6", &v6)) {
-        syslog(LOG_ERR, "Can't find local");
-        exit(1);
-    }
-    return v6;
-}
-
-// Get Name of this Client
-void getClientName() {
-    const char *lname;
-
-    if (!config_lookup_string(&config, "clientName", &lname)) {
-        syslog(LOG_ERR, "Can't lookup name\n");
-        exit(1);
-    }
-    clientName = strdup(lname);
-}
-
-const char* getClientCertFile() {
-    const char *lfile;
-    if (!config_lookup_string(&config, "clientCertFile", &lfile)) {
-        syslog(LOG_ERR, "Can't lookup Client Cert\n");
-        exit(1);
-    }
-    return lfile;
-}
-
-const char* getServerCertFile() {
-    const char *lfile;
-    if (!config_lookup_string(&config, "ServerCertFile", &lfile)) {
-        syslog(LOG_ERR, "Can't lookup Server Cert\n");
-        exit(1);
-    }
-    return lfile;
-}
-
-void getServerPort() {
-    const char* port;
-    if (!config_lookup_string(&config, "ServerPort", &port)) {
-        syslog(LOG_ERR, "Can't lookup Server Port\n");
-        exit(1);
-    }
-    serverPort = strdup(port);
-}
-
-
-void getClientServerURL() {
-    const char *url;
-    if (!config_lookup_string(&config, "serverURL", &url)) {
-        syslog(LOG_ERR, "Can't lookup name\n");
-        exit(1);
-    }
-    serverURL = strdup(url);
-}
-
-//get number of Stats
-int getStatNum () {
-    return config_setting_length(getSetting("list"));
-}
-
 
 //Set name of *stat to the ith item of config list
 void setConfName(Status *stat, int i) {

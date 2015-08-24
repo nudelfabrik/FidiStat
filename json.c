@@ -37,19 +37,17 @@ int pasteJSON(json_t *payload, const char *clientName) {
     const char * name = json_string_value(json_object_get(payload, "name"));
     int type = json_integer_value(json_object_get(payload, "type"));
     
-    char file[strlen(path)+ strlen(clientName)+strlen(name)+6];
-
-    sprintf(file, "%s%s-%s.json",path, clientName, name);
-
+    
     if (type == 2) {
         FILE *fp;
-        sprintf(file, "%s%s-%s.csv",path, clientName, name);
+        char file = composeFileName(clientName, name, "csv");
         const char * output = json_string_value(json_object_get(payload, "payload"));
-        fp = fopen(file, "w");
+        fp = fopen(&file, "w");
         fprintf(fp, "%s",output); 
         fclose(fp);
         return 1;
     }
+    char file = composeFileName(clientName, name, "json");
 
     json_t *array = json_object_get(payload, "payload");
     
@@ -57,7 +55,7 @@ int pasteJSON(json_t *payload, const char *clientName) {
     json_error_t error;
 
     // Load *.json
-    root = json_load_file(file, 0, &error);
+    root = json_load_file(&file, 0, &error);
     // CHeck for Errors
     if (!root) {
         syslog(LOG_ERR, "Unable to load json File! error: on line %d: %s\n", error.line, error.text); 
@@ -75,7 +73,7 @@ int pasteJSON(json_t *payload, const char *clientName) {
         // If Type is 0 /Line (standard case) append new value at the bottom 
         arry = getSingleSeqeunce(dataseq, j);
         if (strncmp(getType(root), "line", 2) == 0) {
-            if (json_array_size(arry) >= maxCount) {
+            if (json_array_size(arry) >= getMaxCount()) {
                  if (json_array_remove(arry,0)) {
                      syslog(LOG_ERR, "error in processing %s.json\n", name);
                      return 0;
@@ -96,7 +94,7 @@ int pasteJSON(json_t *payload, const char *clientName) {
             }
         }
     }
-    dumpJSON(root, file);
+    dumpJSON(root, &file);
     return 1;
 
 }
@@ -151,7 +149,6 @@ void printError(const char* name) {
 }
 // If type is 2, create a new .csv evertime the command runs
 json_t * makeCSV(Status *stat) {
-    char file[OUTPUT_SIZE];
     char output[OUTPUT_SIZE] = "";
     strcat(output, stat->csv);
     strcat(output, "\n");
