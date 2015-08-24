@@ -43,6 +43,7 @@ int pasteJSON(json_t *payload, const char *clientName) {
 
     if (type == 2) {
         FILE *fp;
+        sprintf(file, "%s%s-%s.csv",path, clientName, name);
         const char * output = json_string_value(json_object_get(payload, "payload"));
         fp = fopen(file, "w");
         fprintf(fp, "%s",output); 
