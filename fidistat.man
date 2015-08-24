@@ -7,7 +7,7 @@
 .Nd system statistics to JSON
 .Sh SYNOPSIS
 .Nm
-.Op Fl cdvx
+.Op Fl cdnvx
 .Op Fl f Ar config.cfg
 .Sh DESCRIPTION
 Executes commands specified in the config files which output system statistics and
@@ -16,6 +16,8 @@ parses these to a JSON file readable by StatusBoard (panic.com/statusboard)
 .Bl -tag -width indent 
 .It Fl c
 Delete all jsons not enabled.
+.It Fl n
+Execute Client once without delay
 .It Fl d
 Dry run, nothing is written to disk.
 .It Fl v
