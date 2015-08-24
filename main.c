@@ -57,9 +57,9 @@ void client_start() {
     fprintf(stdout, "Starting fidistat...\n");
     openlog("fidistat-client", LOG_PID, LOG_DAEMON);
     syslog(LOG_INFO, "Started Fidistat Client");
-    syslog(LOG_INFO, "Running once");
 
     if (now_flag) {
+        syslog(LOG_INFO, "Running once");
         client();
         closelog();
         exit(0);
