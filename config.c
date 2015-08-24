@@ -1,7 +1,3 @@
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <syslog.h>
 #include <libconfig.h>
 #include "bootstrap.h"
 #include "client.h"

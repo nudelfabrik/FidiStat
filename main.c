@@ -21,15 +21,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <getopt.h>
-#include <errno.h>
-#include <libutil.h>
-#include <signal.h>
-#include <syslog.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "main.h"
 #include "client.h"
 #include "server.h"
@@ -38,7 +31,7 @@
 volatile sig_atomic_t term = 0;
 
 void handleChild(int sig) {
-    wait();
+    wait(NULL);
 }
 
 void handleSigterm(int sig) {
@@ -57,10 +50,11 @@ void client_start() {
     fprintf(stdout, "Starting fidistat...\n");
     openlog("fidistat-client", LOG_PID, LOG_DAEMON);
     syslog(LOG_INFO, "Started Fidistat Client");
-    syslog(LOG_INFO, "Running once");
 
     if (now_flag) {
+        syslog(LOG_INFO, "Running once");
         client();
+        syslog(LOG_INFO, "Stopping Fidistat Client");
         closelog();
         exit(0);
     }
