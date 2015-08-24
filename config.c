@@ -11,8 +11,6 @@
 void initConf (const char * path) {
     //init config Structure
     config_init(&config);
-    Settings set;
-    setting = &set;
     //parse File and watch for Errors
     if(! config_read_file(&config, path))
     {
@@ -29,23 +27,24 @@ void initConf (const char * path) {
         syslog(LOG_ERR, "Can't lookup path to .json\n");
         exit(1);
     }
-    set.path = strdup(local);
-    if (path[strlen(path)-1] != '/') {
+    setting.path = strdup(local);
+    if (local[strlen(local)-1] != '/') {
         syslog(LOG_ERR, "Path does not end with /\n");
         exit(1);
     }
  
     // Number of Stats
-    set.statNum = config_setting_length(getSetting("list"));
+    int nums = config_setting_length(getSetting("list"));
+    setting.statNum = nums;
 
     //getMaxCount();
-    if (!config_lookup_int(&config, "maxEntrys", &set.maxCount)) {
+    if (!config_lookup_int(&config, "maxEntrys", &setting.maxCount)) {
         syslog(LOG_ERR, "Can't find maxEntries");
         exit(1);
     }
 
     //getLocalBool();
-    if (!config_lookup_bool(&config, "local", &set.local)) {
+    if (!config_lookup_bool(&config, "local", &setting.local)) {
         syslog(LOG_ERR, "Can't find local");
         exit(1);
     }
@@ -55,44 +54,44 @@ void initConf (const char * path) {
         syslog(LOG_ERR, "Can't lookup name\n");
         exit(1);
     }
-    set.clientName = strdup(local);
+    setting.clientName = strdup(local);
 
     //getServerPort();
     if (!config_lookup_string(&config, "ServerPort", &local)) {
         syslog(LOG_ERR, "Can't lookup Server Port\n");
         exit(1);
     }
-    set.serverPort = strdup(local);
+    setting.serverPort = strdup(local);
 
     //getClientServerURL();
     if (!config_lookup_string(&config, "serverURL", &local)) {
         syslog(LOG_ERR, "Can't lookup name\n");
         exit(1);
     }
-    set.serverURL = strdup(local);
+    setting.serverURL = strdup(local);
 
 }
 
 int getStatNum() {
-    return setting->statNum
+    return setting.statNum;
 }
 const char* getPath() {
-    return setting->path
+    return setting.path;
 }
 const char* getClientName() {
-    return setting->clientName;
+    return setting.clientName;
 }
 int getMaxCount() {
-    return setting->maxCount;
+    return setting.maxCount;
 }
 int getLocal() {
-    return setting->local;
+    return setting.local;
 }
-const char* getServerPort() {
-    return setting->serverPort;
+const char* getClientServerPort() {
+    return setting.serverPort;
 }
 const char* getClientServerURL() {
-    return setting->serverURL;
+    return setting.serverURL;
 }
 
 const char* getClientCertFile_v() {
@@ -114,7 +113,7 @@ const char* getServerCertFile_v() {
 }
 int getServerIPv6_v() {
     int v6;
-    if (!config_lookup_int(&config, "maxEntrys", v6)) {
+    if (!config_lookup_int(&config, "maxEntrys", &v6)) {
         syslog(LOG_ERR, "Can't find maxEntries");
         exit(1);
     }
@@ -126,12 +125,12 @@ int getServerIPv6_v() {
 //-------------------------------------
 
 config_setting_t* getSetting(const char * item) {
-    config_setting_t *setting = config_lookup(&config, item);
-    if (setting == NULL) {
+    config_setting_t *subSetting = config_lookup(&config, item);
+    if (subSetting == NULL) {
         syslog(LOG_ERR, "Can't find %s\n", item);
         exit(1);
     }
-    return setting;
+    return subSetting;
 }
 
 //Set name of *stat to the ith item of config list
@@ -189,6 +188,10 @@ void setConfType(Status *stat) {
             }
         }
     }
+}
+
+config_setting_t* getLookup(const char *path) {
+    return config_lookup(&config, path);
 }
 
 //Destroy Config

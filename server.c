@@ -94,8 +94,8 @@ void worker(int connfd, struct tls* ctx) {
             const char * name = json_string_value(json_object_get(payload, "name"));
             json_t *root = json_object_get(payload, "payload");
 
-            char file = composeFileName(clientName, name, "json");
-            dumpJSON(root, &file);
+            char* file = composeFileName(clientName, name, "json");
+            dumpJSON(root, file);
         }
     }
     if (type == HELLO) {
@@ -105,8 +105,8 @@ void worker(int connfd, struct tls* ctx) {
 
         for (int i = 0; i < size; i++) {
             const char * name = json_string_value(json_array_get(list, i));
-            char file = composeFileName(clientName, name, "json");
-            if (access( &file, F_OK ) == -1) {
+            char* file = composeFileName(clientName, name, "json");
+            if (access( file, F_OK ) == -1) {
                 json_array_append_new(relist, json_string(name)); 
             }
         }
@@ -121,6 +121,7 @@ void worker(int connfd, struct tls* ctx) {
 
 int initTLS_S(struct tls* ctx) {
     tlsServer_conf = tls_config_new();
+    syslog(LOG_DEBUG, "Certfile: %s", getClientCertFile_v());
     tls_config_set_cert_file(tlsServer_conf, getServerCertFile_v());
     tls_config_set_key_file(tlsServer_conf, getServerCertFile_v());
 
@@ -170,6 +171,6 @@ struct addrinfo* getAddrInfo() {
 
 }
 void delete(const char *client, const char *name) {
-    char file = composeFileName(client, name, "json");
-    remove(&file);
+    char* file = composeFileName(client, name, "json");
+    remove(file);
 }

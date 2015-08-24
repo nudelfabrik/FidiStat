@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <syslog.h>
 #include "client.h"
+#include "config.h"
 #include "json.h"
 
 json_t* makeJansson(Status *stat) {
@@ -40,14 +41,13 @@ int pasteJSON(json_t *payload, const char *clientName) {
     
     if (type == 2) {
         FILE *fp;
-        char file = composeFileName(clientName, name, "csv");
+        char* file = composeFileName(clientName, name, "csv");
         const char * output = json_string_value(json_object_get(payload, "payload"));
-        fp = fopen(&file, "w");
+        fp = fopen(file, "w");
         fprintf(fp, "%s",output); 
         fclose(fp);
         return 1;
     }
-    char file = composeFileName(clientName, name, "json");
 
     json_t *array = json_object_get(payload, "payload");
     
@@ -55,7 +55,9 @@ int pasteJSON(json_t *payload, const char *clientName) {
     json_error_t error;
 
     // Load *.json
-    root = json_load_file(&file, 0, &error);
+    const char* file = composeFileName(clientName, name, "json");
+
+    root = json_load_file(file, 0, &error);
     // CHeck for Errors
     if (!root) {
         syslog(LOG_ERR, "Unable to load json File! error: on line %d: %s\n", error.line, error.text); 
@@ -94,7 +96,7 @@ int pasteJSON(json_t *payload, const char *clientName) {
             }
         }
     }
-    dumpJSON(root, &file);
+    dumpJSON(root, file);
     return 1;
 
 }

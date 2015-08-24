@@ -26,8 +26,8 @@ void bootstrap(Status* status) {
 }
 
 int checkForBootstrap(const char* name) {
-    char file = composeFileName(getClientName(), name, "json");
-    return (access( &file, F_OK ) == -1);
+    char* file = composeFileName(getClientName(), name, "json");
+    return (access( file, F_OK ) == -1);
 }
 
 // --------------------
@@ -54,10 +54,10 @@ void createFile(Status* status) {
     json_object_set(root, "graph", graph);
 
     // Print created JSON
-    char file = composeFileName(getClientName(), status->name, "json");
+    char* file = composeFileName(getClientName(), status->name, "json");
 
     if (getLocal()) {
-        dumpJSON(root, &file);
+        dumpJSON(root, file);
     } else {
         struct tls* ctx = initCon(CREATE, 1);
         json_t* payload = json_object();
@@ -82,7 +82,7 @@ json_t* getDisplaySettings(const char* name, const char* subSetting) {
         sprintf(path, "%s.display.%s", name, subSetting);
     }
     // Get Display Setting of name
-    config_setting_t* display = config_lookup(&config, path);
+    config_setting_t* display = getLookup( path);
     int numSettings = config_setting_length(display);
 
     // Add every Setting of Display to json file
@@ -139,10 +139,10 @@ json_t* getSequences(const char* name) {
     json_t* sequences_j = json_array();
     char path[strlen(name)+20];
     sprintf(path, "%s.sequencetitles" , name);
-    config_setting_t* sequences_c = config_lookup(&config, path);
+    config_setting_t* sequences_c = getLookup(path);
 
     sprintf(path, "%s.sequencecolors" , name);
-    config_setting_t* colours_c = config_lookup(&config, path);
+    config_setting_t* colours_c = getLookup(path);
 
     int numSeq = config_setting_length(sequences_c);
 
@@ -167,7 +167,7 @@ json_t* getSequences(const char* name) {
 void getBarTitles(json_t* sequences_j, const char* name) {
     char path[strlen(name)+20];
     sprintf(path, "%s.bartitles" , name);
-    config_setting_t* sequences_c = config_lookup(&config, path);
+    config_setting_t* sequences_c = getLookup( path);
     int numSeq = config_setting_length(sequences_c);
 
     for (int i = 0; i < numSeq; i++) {

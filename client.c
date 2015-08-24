@@ -21,10 +21,7 @@ void client(void) {
     initConf(cfgLocation);
     initTLS();
 
-    // Get max number of Settings
-    int statNum = getStatNum();
-
-    Status stats[statNum];
+    Status stats[getStatNum()];
     Status *statsPtr;
 
     // Setup all config files
@@ -45,7 +42,7 @@ void client(void) {
         // Set zeit to current time    
         timeSet();
         // Main Loop, go over every Status
-        for (int i = 0; i < statNum; i++) {
+        for (int i = 0; i < getStatNum(); i++) {
             //Make Pointer point to current status
             statsPtr = &stats[i]; 
 
@@ -58,7 +55,7 @@ void client(void) {
                 }
             }
         }
-        sendStat(stats, statNum);
+        sendStat(stats, getStatNum());
         if (now_flag) {
             break;
         }
@@ -151,7 +148,7 @@ struct tls* initCon(connType type, int size) {
     struct tls* ctx = tls_client();
     tls_configure(ctx, tlsClient_conf);
 
-    if (tls_connect(ctx, getClientServerURL(), getServerPort()) == -1) {
+    if (tls_connect(ctx, getClientServerURL(), getClientServerPort()) == -1) {
         syslog(LOG_ERR, "%s\n", tls_error(ctx));
         return NULL;
     }
@@ -211,9 +208,9 @@ void confSetup(Status stats[]) {
 void initTLS(void) {
     tls_init();
     tlsClient_conf = tls_config_new();
-    syslog(LOG_DEBUG, "Certfile: %s\n", getClientCertFile());
-    tls_config_set_cert_file(tlsClient_conf, getClientCertFile());
-    tls_config_set_ca_file(tlsClient_conf, getClientCertFile());
+    syslog(LOG_DEBUG, "Certfile: %s", getClientCertFile_v());
+    tls_config_set_cert_file(tlsClient_conf, getClientCertFile_v());
+    tls_config_set_ca_file(tlsClient_conf, getClientCertFile_v());
     tls_config_insecure_noverifyname(tlsClient_conf);
 }
 void deinitTLS(void) {

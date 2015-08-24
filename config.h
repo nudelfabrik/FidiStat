@@ -16,7 +16,7 @@ struct settingsStruct {
 typedef struct settingsStruct Settings;
 
 static config_t config;
-static Settings* setting;
+static Settings setting;
 
 void initConf(const char * path);
 void destroyConf();
@@ -41,4 +41,5 @@ void setConfType(Status *Stat);
 void setConfCmmd(Status *Stat);
 void setConfRegex(Status *Stat);
 void setCSVtitle(Status *stat);
+config_setting_t* getLookup(const char *path);
 #endif
