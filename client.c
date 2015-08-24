@@ -29,15 +29,18 @@ void client(void) {
 
     // Setup all config files
     confSetup(stats);
+    if (!local) {
+        sendHello(stats);
+    }
 
     // Destroy Config
     destroyConf(); 
 
-    signal(SIGTERM, handleSigterm);
-
     if (!(dry_flag) && !(now_flag)) {
         fixtime();
     }
+
+    signal(SIGTERM, handleSigterm);
     while(!term) {
         // Set zeit to current time    
         timeSet();
@@ -66,6 +69,21 @@ void client(void) {
     }
     deinitTLS();
     syslog(LOG_INFO, "Shutting down Client");
+}
+
+void sendHello(Status stat[]) {
+    json_t *list = json_array();
+    for (int i = 0; i < getStatNum(); i++) {
+        json_array_append_new(list, json_string(stat[i].name));
+    }
+    struct tls* ctx = initCon(HELLO, getStatNum());
+    char * payloadStr = json_dumps(list, JSON_COMPACT);
+    syslog(LOG_DEBUG,"%s\n", payloadStr);
+    sendOverTLS(ctx, payloadStr);
+    free(payloadStr);
+    char* relistStr = recvOverTLS(ctx);
+    syslog(LOG_DEBUG,"%s\n", relistStr);
+
 }
 
 void sendStat(Status *stats, int statNum) {
@@ -149,7 +167,9 @@ void confSetup(Status stats[]) {
                 }
 
                 // Create File if not present
-                bootstrap(&newStat);
+                if (local) {
+                    bootstrap(&newStat);
+                }
             }
             stats[i] = newStat;
         }

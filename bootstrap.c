@@ -15,7 +15,7 @@ json_error_t error;
 
 // Check if File exist and  create if needed
 void bootstrap(Status* status) {
-    if (status->type != 2) {
+    if (status->type != 2 && local) {
         if (checkForBootstrap(status->name)) {
             if(verbose_flag) {  
                 syslog(LOG_INFO, "%s.json not found, creating new File", status->name);
@@ -26,15 +26,9 @@ void bootstrap(Status* status) {
 }
 
 int checkForBootstrap(const char* name) {
-    if (local) {
-        char file[strlen(path)+strlen(name)+strlen(clientName)+6];
-        sprintf(file, "%s%s-%s.json",path, clientName, name);
-        return (access( file, F_OK ) == -1);
-    } else {
-        // Ask Server, if bootstrap is needed
-        return 0;
-    }
-
+    char file[strlen(path)+strlen(name)+strlen(clientName)+6];
+    sprintf(file, "%s%s-%s.json",path, clientName, name);
+    return (access( file, F_OK ) == -1);
 }
 
 // --------------------

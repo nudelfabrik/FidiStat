@@ -99,6 +99,26 @@ void worker(int connfd, struct tls* ctx) {
             dumpJSON(root, file);
         }
     }
+    if (type == HELLO) {
+        json_t *relist = json_array();
+
+        char* listStr = recvOverTLS(cctx);
+        syslog(LOG_DEBUG,"%s\n", listStr);
+        json_t *list = json_loads(listStr, 0, &error);
+
+        for (int i = 0; i < size; i++) {
+            const char * name = json_string_value(json_array_get(list, i));
+            char file[strlen(path)+strlen(name)+strlen(clientName)+6];
+            sprintf(file, "%s%s-%s.json",path, clientName, name);
+            if (access( file, F_OK ) == -1) {
+                json_array_append_new(relist, json_string(name)); 
+            }
+        }
+        char * relistStr = json_dumps(relist, JSON_COMPACT);
+        sendOverTLS(ctx, relistStr);
+        free(relistStr);
+
+    }
     tls_close(cctx);
     tls_free(cctx);
 }
