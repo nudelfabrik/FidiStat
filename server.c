@@ -71,10 +71,7 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 void worker(int connfd, struct tls* ctx) {
     struct tls* cctx = NULL;
     tls_accept_socket(ctx, &cctx, connfd);
-    char* headerStr = recvOverTLS(cctx);
-    syslog(LOG_DEBUG, "%s\n", headerStr);
-    json_error_t error;
-    json_t *header = json_loads(headerStr, 0, &error);
+    json_t *header = recvOverTLS(cctx);
     const char* clientName = json_string_value(json_object_get(header, "from"));
     for (int i = 0; i < sizeof(clientName); i++) {
         if (clientName[i] == '/' || clientName[i] == '\\') {
@@ -87,17 +84,13 @@ void worker(int connfd, struct tls* ctx) {
     if (type == UPDATE) {
 
         for (int i = 0; i < size; i++) {
-            char* payloadStr = recvOverTLS(cctx);
-            syslog(LOG_DEBUG, "%s\n", payloadStr);
-            json_t *payload = json_loads(payloadStr, 0, &error);
+            json_t* payload = recvOverTLS(cctx);
             pasteJSON(payload, clientName);
         }
     } 
     if (type == CREATE) {
         for (int i = 0; i < size; i++) {
-            char* payloadStr = recvOverTLS(cctx);
-            syslog(LOG_DEBUG, "%s\n", payloadStr);
-            json_t *payload = json_loads(payloadStr, 0, &error);
+            json_t* payload = recvOverTLS(cctx);
             const char * name = json_string_value(json_object_get(payload, "name"));
             json_t *root = json_object_get(payload, "payload");
 
@@ -109,8 +102,7 @@ void worker(int connfd, struct tls* ctx) {
     if (type == HELLO) {
         json_t *relist = json_array();
 
-        char* listStr = recvOverTLS(cctx);
-        json_t *list = json_loads(listStr, 0, &error);
+        json_t *list = recvOverTLS(cctx);
 
         for (int i = 0; i < size; i++) {
             const char * name = json_string_value(json_array_get(list, i));
@@ -123,7 +115,6 @@ void worker(int connfd, struct tls* ctx) {
         char * relistStr = json_dumps(relist, JSON_COMPACT);
         sendOverTLS(cctx, relistStr);
         free(relistStr);
-        //char* ack = recvOverTLS(cctx);
 
     }
     tls_close(cctx);

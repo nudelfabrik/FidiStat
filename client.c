@@ -81,9 +81,7 @@ void sendHello(Status stat[]) {
     char * payloadStr = json_dumps(list, JSON_COMPACT);
     sendOverTLS(ctx, payloadStr);
     free(payloadStr);
-    char* relistStr = recvOverTLS(ctx);
-    syslog(LOG_DEBUG, "%s", relistStr);
-    json_t *relist = json_loads(relistStr, JSON_DISABLE_EOF_CHECK, &error);
+    json_t* relist = recvOverTLS(ctx);
     for (int i = 0; i < json_array_size(relist); i++) {
         const char *name = json_string_value(json_array_get(relist, i));
         for (int j = 0; j < getStatNum(); j++) {
