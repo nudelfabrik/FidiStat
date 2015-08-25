@@ -26,6 +26,7 @@
 #include "server.h"
 #include "config.h"
 
+// Terminate daemons
 volatile sig_atomic_t term = 0;
 
 int main(int argc, const char *argv[])
@@ -33,68 +34,6 @@ int main(int argc, const char *argv[])
     // Set Flags if some are set
     handleFlags(argc, argv);
     return -1;
-}
-
-struct pidfh* daemon_start(char who) {
-    char pidp[28];
-    sprintf(pidp, "/var/run/fidistat-%c.pid", who);
-    struct pidfh *pfh;
-    pid_t otherpid;
-
-    pfh = pidfile_open(pidp, 0600, &otherpid);
-    if (pfh == NULL) {
-        if (errno == EEXIST) {
-            fprintf(stdout, "Daemon already running with PID %d\n", otherpid);
-            exit(-1);
-        }
-            fprintf(stdout, "Cannot create pidfile\n");
-    }   
-
-    if  (daemon(0, 0) == -1) {
-        fprintf(stderr, "Cannot daemonize");
-        pidfile_remove(pfh);
-        exit(-1);
-    }
-
-    pidfile_write(pfh);
-    return pfh;
-}
-
-void daemon_stop(char who) {
-    char pidp[28];
-    sprintf(pidp, "/var/run/fidistat-%c.pid", who);
-
-    struct pidfh *pfh;
-    pid_t otherpid;
-
-    pfh = pidfile_open(pidp, 0600, &otherpid);
-    if (pfh == NULL) {
-        if (errno == EEXIST) {
-            if (!kill(otherpid, SIGTERM)) {
-                fprintf(stdout, "Stopped FidiStat(%d) successfully\n", otherpid);
-                return;
-            } else {
-                switch(errno) {
-                    case EPERM:
-                        fprintf(stderr, "Insufficient rights.\n");
-                        exit(-1);
-                        break;
-                    case ESRCH:
-                        fprintf(stderr, "PID not found, removing pidfile\n");
-                        pidfile_remove(pfh);
-                        exit(-1);
-                        break;
-                    default:
-                        exit(-1);
-                        break;
-                }
-            }
-        }
-    }   
-    pidfile_remove(pfh);
-    fprintf(stdout, "FidiStat not running?\n");
-    exit(-1);
-
 }
 
 void handleFlags(int argc, const char *argv[]) {
@@ -186,6 +125,68 @@ void handleFlags(int argc, const char *argv[]) {
             break;
         }
     }
+}
+
+struct pidfh* daemon_start(char who) {
+    char pidp[28];
+    sprintf(pidp, "/var/run/fidistat-%c.pid", who);
+    struct pidfh *pfh;
+    pid_t otherpid;
+
+    pfh = pidfile_open(pidp, 0600, &otherpid);
+    if (pfh == NULL) {
+        if (errno == EEXIST) {
+            fprintf(stdout, "Daemon already running with PID %d\n", otherpid);
+            exit(-1);
+        }
+            fprintf(stdout, "Cannot create pidfile\n");
+    }   
+
+    if  (daemon(0, 0) == -1) {
+        fprintf(stderr, "Cannot daemonize");
+        pidfile_remove(pfh);
+        exit(-1);
+    }
+
+    pidfile_write(pfh);
+    return pfh;
+}
+
+void daemon_stop(char who) {
+    char pidp[28];
+    sprintf(pidp, "/var/run/fidistat-%c.pid", who);
+
+    struct pidfh *pfh;
+    pid_t otherpid;
+
+    pfh = pidfile_open(pidp, 0600, &otherpid);
+    if (pfh == NULL) {
+        if (errno == EEXIST) {
+            if (!kill(otherpid, SIGTERM)) {
+                fprintf(stdout, "Stopped FidiStat(%d) successfully\n", otherpid);
+                return;
+            } else {
+                switch(errno) {
+                    case EPERM:
+                        fprintf(stderr, "Insufficient rights.\n");
+                        exit(-1);
+                        break;
+                    case ESRCH:
+                        fprintf(stderr, "PID not found, removing pidfile\n");
+                        pidfile_remove(pfh);
+                        exit(-1);
+                        break;
+                    default:
+                        exit(-1);
+                        break;
+                }
+            }
+        }
+    }   
+    pidfile_remove(pfh);
+    fprintf(stdout, "FidiStat not running?\n");
+    exit(-1);
+
 }
 
 // Return full path to json/csv

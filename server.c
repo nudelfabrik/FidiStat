@@ -12,6 +12,7 @@
 #include "tls.h"
 #include "main.h"
 
+// signal Handler
 int sckt;
 void handleSigterm_S(int sig) {
     term = 1;
@@ -34,6 +35,7 @@ void server() {
     signal(SIGTERM, handleSigterm_S);
     signal(SIGCHLD, handleChild);
 
+    // Open Socket
     initConf();
     tls_init();
     struct tls* ctx = tls_server();
@@ -78,6 +80,9 @@ void server() {
 }
 
 void worker(int connfd, struct tls* ctx) {
+
+    // Process HEADER
+    //--------------
     struct tls* cctx = NULL;
     tls_accept_socket(ctx, &cctx, connfd);
     json_t *header = recvOverTLS(cctx);
@@ -90,6 +95,9 @@ void worker(int connfd, struct tls* ctx) {
     }
     connType type = json_integer_value(json_object_get(header, "type"));
     int size = json_integer_value(json_object_get(header, "size"));
+
+    // Process Payload
+    //----------------
 
     // new Values for graphs
     if (type == NEWDATA) {
