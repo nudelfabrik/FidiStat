@@ -1,17 +1,9 @@
 #include <sys/types.h> 
-#include <stdio.h>
 #include <sys/socket.h>
-#include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <signal.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <syslog.h>
+#include <netdb.h>
 #include <unistd.h>
-#include <string.h>
-#include <tls.h>
 #include <jansson.h>
 #include "server.h"
 #include "json.h"
@@ -20,19 +12,31 @@
 #include "tls.h"
 #include "main.h"
 
+// signal Handler
 int sckt;
 void handleSigterm_S(int sig) {
     term = 1;
     shutdown(sckt,SHUT_RDWR);
 }
 
+void handleChild(int sig) {
+    wait(NULL);
+}
+
 void server() {
-char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
     // load Config File and Settings
+    fprintf(stdout, "Starting fidistat Server...\n");
+    openlog("fidistat-server", LOG_PID, LOG_DAEMON);
+    syslog(LOG_INFO, "Started Fidistat Server");
 
+    struct pidfh *pfh = daemon_start('s');
+
+    // Handle Signals
     signal(SIGTERM, handleSigterm_S);
+    signal(SIGCHLD, handleChild);
 
-    initConf(cfgLocation);
+    // Open Socket
+    initConf();
     tls_init();
     struct tls* ctx = tls_server();
     int sock = initTLS_S(ctx);
@@ -55,7 +59,9 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
             syslog(LOG_ERR, "forking new Worker failed");
         } else if (pid == 0) {
             close(sock);
+            syslog(LOG_INFO, "New incoming connection");
             worker(connfd, ctx);
+            syslog(LOG_INFO, "Closing connection");
             exit(0);
         } else {
             close(connfd);
@@ -66,15 +72,20 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
     tls_close(ctx);
     tls_free(ctx);
     tls_config_free(tlsServer_conf);
+
+    pidfile_remove(pfh);
+    syslog(LOG_INFO, "Stopped Fidistat Server");
+    closelog();
+    exit(0);
 }
 
 void worker(int connfd, struct tls* ctx) {
+
+    // Process HEADER
+    //--------------
     struct tls* cctx = NULL;
     tls_accept_socket(ctx, &cctx, connfd);
-    char* headerStr = recvOverTLS(cctx);
-    syslog(LOG_DEBUG, "%s\n", headerStr);
-    json_error_t error;
-    json_t *header = json_loads(headerStr, 0, &error);
+    json_t *header = recvOverTLS(cctx);
     const char* clientName = json_string_value(json_object_get(header, "from"));
     for (int i = 0; i < sizeof(clientName); i++) {
         if (clientName[i] == '/' || clientName[i] == '\\') {
@@ -84,38 +95,44 @@ void worker(int connfd, struct tls* ctx) {
     }
     connType type = json_integer_value(json_object_get(header, "type"));
     int size = json_integer_value(json_object_get(header, "size"));
-    if (type == UPDATE) {
+
+    // Process Payload
+    //----------------
+
+    // new Values for graphs
+    if (type == NEWDATA) {
 
         for (int i = 0; i < size; i++) {
-            char* payloadStr = recvOverTLS(cctx);
-            syslog(LOG_DEBUG, "%s\n", payloadStr);
-            json_t *payload = json_loads(payloadStr, 0, &error);
+            json_t* payload = recvOverTLS(cctx);
             pasteJSON(payload, clientName);
         }
     } 
-    if (type == CREATE) {
+
+    // create .json or update displaysettings
+    if (type == CREATE || type == UPDATE) {
         for (int i = 0; i < size; i++) {
-            char* payloadStr = recvOverTLS(cctx);
-            syslog(LOG_DEBUG, "%s\n", payloadStr);
-            json_t *payload = json_loads(payloadStr, 0, &error);
+            json_t* payload = recvOverTLS(cctx);
             const char * name = json_string_value(json_object_get(payload, "name"));
             json_t *root = json_object_get(payload, "payload");
 
-            char file[strlen(path)+ strlen(clientName)+strlen(name)+6];
-            sprintf(file, "%s%s-%s.json",path, clientName, name);
-            dumpJSON(root, file);
+            char* file = composeFileName(clientName, name, "json");
+            if (type == CREATE) {
+                dumpJSON(root, file);
+            } else {
+                mergeJSON(root,file);
+            }
         }
     }
+
+    // Look, which files are not available
     if (type == HELLO) {
         json_t *relist = json_array();
 
-        char* listStr = recvOverTLS(cctx);
-        json_t *list = json_loads(listStr, 0, &error);
+        json_t *list = recvOverTLS(cctx);
 
         for (int i = 0; i < size; i++) {
             const char * name = json_string_value(json_array_get(list, i));
-            char file[strlen(path)+strlen(name)+strlen(clientName)+6];
-            sprintf(file, "%s%s-%s.json",path, clientName, name);
+            char* file = composeFileName(clientName, name, "json");
             if (access( file, F_OK ) == -1) {
                 json_array_append_new(relist, json_string(name)); 
             }
@@ -123,18 +140,27 @@ void worker(int connfd, struct tls* ctx) {
         char * relistStr = json_dumps(relist, JSON_COMPACT);
         sendOverTLS(cctx, relistStr);
         free(relistStr);
-        //char* ack = recvOverTLS(cctx);
-
     }
+    
+    // Delete all files from this client
+    if (type == DELETE) {
+        json_t *list = recvOverTLS(cctx);
+
+        for (int i = 0; i < size; i++) {
+            const char * name = json_string_value(json_array_get(list, i));
+            delete(clientName, name);
+        }
+    }
+
     tls_close(cctx);
     tls_free(cctx);
+
 }
 
 int initTLS_S(struct tls* ctx) {
     tlsServer_conf = tls_config_new();
-    syslog(LOG_DEBUG,"Cert: %s\n", getServerCertFile());
-    tls_config_set_cert_file(tlsServer_conf, getServerCertFile());
-    tls_config_set_key_file(tlsServer_conf, getServerCertFile());
+    tls_config_set_cert_file(tlsServer_conf, getServerCertFile_v());
+    tls_config_set_key_file(tlsServer_conf, getServerCertFile_v());
 
     tls_configure(ctx, tlsServer_conf);
 
@@ -167,7 +193,7 @@ struct addrinfo* getAddrInfo() {
     struct addrinfo hints, *servinfo, *p;
 
     memset(&hints, 0, sizeof hints);
-    if(getIPv6Bool()) {
+    if(getServerIPv6_v()) {
         hints.ai_family =  AF_INET6;
     } else {
         hints.ai_family =  AF_INET;
@@ -176,13 +202,8 @@ struct addrinfo* getAddrInfo() {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE; // use my IP address
 
-    getaddrinfo(NULL, serverPort, &hints, &servinfo);
+    getaddrinfo(NULL, getClientServerPort(), &hints, &servinfo);
     
     return servinfo;
 
-}
-void delete(const char *client, const char *name) {
-    char file[strlen(path) + strlen(client) + strlen(name) + 6];
-    sprintf(file, "%s%s-%s.json", path, client, name);
-    remove(file);
 }

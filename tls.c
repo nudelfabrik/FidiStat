@@ -2,12 +2,13 @@
 #include <syslog.h>
 #include <string.h>
 #include <stdlib.h>
+#include <jansson.h>
 #include "tls.h"
 
 void sendOverTLS(struct tls* ctx, const char *buf) {
     size_t sent;
 
-    // Length of String
+    // send Length of buf
     size_t length = strlen(buf);
 
     size_t len = sizeof(length);
@@ -24,6 +25,7 @@ void sendOverTLS(struct tls* ctx, const char *buf) {
         }
     }
 
+    // send actual buf
     size_t toSend = length;
     while (toSend > 0) {
         int ret = tls_write(ctx, buf, toSend, &sent); 
@@ -40,10 +42,12 @@ void sendOverTLS(struct tls* ctx, const char *buf) {
     }
 }
 
-char* recvOverTLS(struct tls*ctx) {
+json_t* recvOverTLS(struct tls*ctx) {
+    json_error_t error;
     size_t getSize, size;
     size_t len = sizeof(getSize);
 
+    // read length
     while (len > 0) {
         int ret = tls_read(ctx, &getSize, len, &size); 
  
@@ -56,6 +60,8 @@ char* recvOverTLS(struct tls*ctx) {
             len -= size; 
         } 
     }
+
+    // create buffer
     char* buffer = (char*)malloc((getSize +1) *sizeof(char));
     char* buf = buffer;
 
@@ -72,9 +78,11 @@ char* recvOverTLS(struct tls*ctx) {
             getSize -= size; 
         } 
     }
-    return buffer;
-}
 
-void waitforACK() {
-
+    // Process buffer to json
+    json_t *json = json_loads(buffer, JSON_DISABLE_EOF_CHECK, &error);
+    if (verbose_flag) {
+        syslog(LOG_DEBUG, "%s\n", buffer);
+    }
+    return json;
 }

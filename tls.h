@@ -1,9 +1,8 @@
 #ifndef TLSH
 #define TLSH
-#include <tls.h>
+#include "main.h"
 
 void sendOverTLS(struct tls* ctx, const char *buf);
-char* recvOverTLS(struct tls*ctx);
-void waitforACK();
+json_t* recvOverTLS(struct tls*ctx);
 
 #endif
