@@ -29,7 +29,7 @@ void initConf () {
     // Path must have trailing /"
     if (local[strlen(local)-1] != '/') {
         char fixed[strlen(local+1)];
-        sprintf(fixed, "%s/\n", local);
+        sprintf(fixed, "%s/", local);
         setting.path = strdup(fixed);
     }
  
