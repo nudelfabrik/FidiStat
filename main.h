@@ -16,7 +16,7 @@
 #include <tls.h>
 
 #define OUTPUT_SIZE 1024
-int verbose_flag, delete_flag, now_flag;
+int verbose_flag, now_flag;
 
 struct statStruct {
     int id;
@@ -39,12 +39,25 @@ enum connectionEnum {
 
 enum commandEnum {
     START,
-    UPDT
+    UPDT,
+    DEL
+};
+
+enum cliEnum {
+    CSTART,
+    CSTOP,
+    CRESTART,
+    CDELETE,
+    CUPDATE,
+    SSTART,
+    SSTOP,
+    SRESTART
 };
 
 typedef struct statStruct Status;
 typedef enum connectionEnum connType;
 typedef enum commandEnum commandType;
+typedef enum cliEnum cliType;
 
 extern volatile sig_atomic_t term;
 
