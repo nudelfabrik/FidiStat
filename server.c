@@ -93,6 +93,11 @@ void worker(int connfd, struct tls* ctx) {
             return;
         }
     }
+    const char* clientAuth = json_string_value(json_object_get(header, "auth"));
+    if (strcmp(clientAuth, getClientAuth()) != 0) {
+        syslog(LOG_ERR, "Authentication failed");
+        return;
+    }
     connType type = json_integer_value(json_object_get(header, "type"));
     int size = json_integer_value(json_object_get(header, "size"));
 
