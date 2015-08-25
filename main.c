@@ -44,7 +44,6 @@ void handleFlags(int argc, const char *argv[]) {
         {"verbose", no_argument, &verbose_flag, 1},
         {"help", no_argument, 0, 'h'},
         {"now", no_argument, &now_flag, 1},
-        {"delete", no_argument, &delete_flag, 1},
         {"config", required_argument, 0, 'f'},
         {"client", required_argument, 0, 'C'},
         {"server", required_argument, 0, 'S'},
@@ -54,11 +53,11 @@ void handleFlags(int argc, const char *argv[]) {
     int c;
     const char *helptext="--verbose, -v:                  echoes every value to stdout \n\
     --config CFG_File, -f CFG_File: expects path to Config file\n\
-    --delete -d:                    remove all files\n\
-    --client -C: [start|stop|restart|update] : control client\n\
+    --client -C: [start|stop|restart|update|delete] : control client\n\
     --server -S: [start|stop|restart] : control server\n";
 
-    while ((c = getopt_long(argc, argv, "C:df:hnS:v", long_options, NULL)) != -1) {
+    cliType opt;
+    while ((c = getopt_long(argc, argv, "C:f:hnS:v", long_options, NULL)) != -1) {
         switch (c) {
         case 'v':
             verbose_flag = 1;
@@ -67,47 +66,46 @@ void handleFlags(int argc, const char *argv[]) {
             fprintf(stdout, "%s", helptext);
             exit(0);
             break;
+        case 'n':
+            now_flag = 1;
+            break;
         case 'C':
             if (!strcmp(optarg, "start")) {
-                client(START);
-                exit(0);
+                opt = CSTART;
+                break;
             }
             if (!strcmp(optarg, "stop")) {
-                daemon_stop('c');
-                exit(0);
+                opt = CSTOP;
+                break;
             }
             if (!strcmp(optarg, "restart")) {
-                daemon_stop('c');
-                client(START);
-                exit(0);
+                opt = CRESTART;
+                break;
+            }
+            if (!strcmp(optarg, "delete")) {
+                opt = CDELETE;
+                break;
             }
             if (!strcmp(optarg, "update")) {
-                client(UPDT);
-                exit(0);
+                opt = CUPDATE;
+                break;
             } else {
                 fprintf(stderr, "%s not a valid option for --client\n", optarg);
                 exit(-1);
             }
             break;
-        case 'd':
-            delete_flag = 1;
-            break;
-        case 'n':
-            now_flag = 1;
-            break;
         case 'S':
             if (!strcmp(optarg, "start")) {
-                server();
-                exit(0);
+                opt = SSTART;
+                break;
             }
             if (!strcmp(optarg, "stop")) {
-                daemon_stop('s');
-                exit(0);
+                opt = SSTOP;
+                break;
             }
             if (!strcmp(optarg, "restart")) {
-                daemon_stop('s');
-                server();
-                exit(0);
+                opt = SRESTART;
+                break;
             } else {
                 fprintf(stderr, "%s not a valid option for --client\n", optarg);
                 exit(-1);
@@ -124,6 +122,44 @@ void handleFlags(int argc, const char *argv[]) {
             argv[0], optopt);
             break;
         }
+    }
+    switch (opt) {
+    case CSTART:
+        client(START);
+        exit(0);
+        break;
+    case CSTOP:
+        daemon_stop('c');
+        exit(0);
+        break;
+    case CRESTART:
+        daemon_stop('c');
+        client(START);
+        exit(0);
+        break;
+    case CDELETE:
+        client(DEL);
+        exit(0);
+        break;
+    case CUPDATE:
+        client(UPDT);
+        exit(0);
+        break;
+    case SSTART:
+        server();
+        exit(0);
+        break;
+    case SSTOP:
+        daemon_stop('s');
+        exit(0);
+        break;
+    case SRESTART:
+        daemon_stop('s');
+        server();
+        exit(0);
+        break;
+    default:
+        break;
     }
 }
 
@@ -200,7 +236,11 @@ char* composeFileName(const char* prefix, const char* name, const char* type) {
 // Delete File
 void delete(const char *client, const char *name) {
     char* file = composeFileName(client, name, "json");
-    remove(file);
+    if (remove(file) == -1) {
+        file = composeFileName(client, name, "csv");
+        remove(file);
+    }
+
 }
 
 void debug(Status *stat) {

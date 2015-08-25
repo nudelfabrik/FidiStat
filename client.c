@@ -35,7 +35,7 @@ void client(commandType type) {
     }
     
     // Delete all files from this host
-    if (delete_flag) {
+    if (type == DEL) {
         if (!getLocal()) {
             json_t *list = json_array();
             for (int i = 0; i < getStatNum(); i++) {
@@ -70,8 +70,9 @@ void client(commandType type) {
     }
 
     // flags
-    if (!(now_flag)) {
+    if (now_flag) {
         syslog(LOG_INFO, "Running once");
+        sleep(1);
     } else {
         fixtime();
     }
@@ -109,7 +110,9 @@ void client(commandType type) {
     if (!getLocal()) {
         deinitTLS();
     }
-    pidfile_remove(pfh);
+    if (type == START && !now_flag) {
+        pidfile_remove(pfh);
+    }
 
     syslog(LOG_INFO, "Stopped Fidistat Client");
     closelog();
