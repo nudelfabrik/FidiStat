@@ -76,7 +76,7 @@ json_t* getDisplaySettings(const char* name, const char* subSetting) {
         sprintf(path, "%s.display.%s", name, subSetting);
     }
     // Get Display Setting of name
-    config_setting_t* display = getLookup( path);
+    config_setting_t* display = getLookup(path);
     int numSettings = config_setting_length(display);
 
     // Add every Setting of Display to json file
@@ -85,45 +85,24 @@ json_t* getDisplaySettings(const char* name, const char* subSetting) {
 
         // Int and String Settings
         if (config_setting_type(sett) == CONFIG_TYPE_INT) {
-            addNewInt(graph, config_setting_name(sett),config_setting_get_int(sett), subSetting);
+            json_object_set(graph, config_setting_name(sett), json_integer(config_setting_get_int(sett)));
         }
         if (config_setting_type(sett) == CONFIG_TYPE_STRING) {
-            addNewString(graph, config_setting_name(sett),config_setting_get_string(sett), subSetting);
+            json_object_set(graph, config_setting_name(sett), json_string(config_setting_get_string(sett)));
         }
 
         // Object Settings
         if (config_setting_type(sett) == CONFIG_TYPE_GROUP) {
             const char* subName = config_setting_name(sett);
-            addNewSubSetting(graph, subName);
 
             // Add all other 
-            getDisplaySettings(name, subName);
+            json_t *subSettings = getDisplaySettings(name, subName);
+            json_object_set(graph, subName, subSettings);
+            
         }
     }
+
     return graph;
-}
-
-// Adds new SubObject under "Graph"
-void addNewSubSetting(json_t* graph, const char* subObj) {
-    json_object_set(graph, subObj, json_object());
-}
-
-// Adds new String Key/Value pair to Graph or a SubObject of Graph
-void addNewString(json_t* graph, const char* key, const char* value, const char* subObj) {
-    if (!strcmp(subObj,  "graph")) {
-        json_object_set(graph, key, json_string(value)); 
-    } else {
-        json_object_set(json_object_get(graph, subObj), key, json_string(value)); 
-    }
-}
-
-// Adds new Integer Key/Value pair to Graph or a SubObject of Graph
-void addNewInt(json_t* graph, const char* key, int value, const char* subObj) {
-    if (!strcmp(subObj, "graph")) {
-        json_object_set(graph, key, json_integer(value)); 
-    } else {
-        json_object_set(json_object_get(graph, subObj), key, json_integer(value)); 
-    }
 }
 
 //-----------------------------------
