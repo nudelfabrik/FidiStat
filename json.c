@@ -104,7 +104,7 @@ void mergeJSON(json_t *new, const char *file) {
     json_error_t error;
     root = json_load_file(file, 0, &error);
     json_t *sequences = json_object_get(json_object_get(root, "graph"), "datasequences");
-    json_t *newSsequences = json_object_get(json_object_get(new, "graph"), "datasequences");
+    json_t *newSequences = json_object_get(json_object_get(new, "graph"), "datasequences");
     size_t numOfDatapoints = json_array_size(sequences);
 
     for (int i = 0; i < numOfDatapoints; i++) {
@@ -112,9 +112,6 @@ void mergeJSON(json_t *new, const char *file) {
         json_object_set(json_array_get(newSequences, i), "datapoints", points);
     }
     dumpJSON(new, file);
-
-
-    }
 }
 
 void dumpJSON(json_t *root, const char *file) {
