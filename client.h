@@ -10,7 +10,7 @@ int clean_flag, delete_flag, now_flag;
 char zeit[10];
 struct tls_config* tlsClient_conf;
 
-void client(void);
+void client(commandType type);
 
 void sendHello(Status stat[]);
 struct tls* initCon(connType type, int size);

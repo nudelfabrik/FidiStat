@@ -9,6 +9,7 @@
 char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 void client(void) {
 
+
     // load Config File and Settings
     initConf(cfgLocation);
     initTLS();
@@ -77,7 +78,7 @@ void sendHello(Status stat[]) {
         for (int j = 0; j < getStatNum(); j++) {
             if (strcmp(stat[j].name, name) == 0) {
                 syslog(LOG_DEBUG, "creating %s.json", name);
-                createFile(&stat[j]);
+                createFile(&stat[j], CREATE);
                 break;
             }
         }
