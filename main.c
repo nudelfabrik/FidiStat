@@ -68,6 +68,7 @@ void handleFlags(int argc, const char *argv[]) {
             break;
         case 'n':
             now_flag = 1;
+            opt = CSTART;
             break;
         case 'C':
             if (!strcmp(optarg, "start")) {
