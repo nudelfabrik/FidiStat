@@ -3,12 +3,13 @@
 #include "client.h"
 #include "config.h"
 
+static char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 //get the config specified in main.h
-void initConf (const char * path) {
+void initConf () {
     //init config Structure
     config_init(&config);
     //parse File and watch for Errors
-    if(! config_read_file(&config, path))
+    if(! config_read_file(&config, cfgLocation))
     {
         syslog(LOG_ERR, "%s:%d - %s\n", config_error_file(&config),
         config_error_line(&config), config_error_text(&config));
@@ -212,6 +213,10 @@ void setConfType(Status *stat) {
 
 config_setting_t* getLookup(const char *path) {
     return config_lookup(&config, path);
+}
+
+void setLocation(char *loc) {
+    cfgLocation = loc;
 }
 
 //Destroy Config

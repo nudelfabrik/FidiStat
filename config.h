@@ -19,7 +19,7 @@ typedef struct settingsStruct Settings;
 static config_t config;
 static Settings setting;
 
-void initConf(const char * path);
+void initConf();
 void destroyConf();
 
 
@@ -45,4 +45,5 @@ void setConfNum(Status *Stat);
 void setConfRegex(Status *Stat);
 void setCSVtitle(Status *stat);
 config_setting_t* getLookup(const char *path);
+void setLocation(char *loc);
 #endif

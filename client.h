@@ -23,6 +23,5 @@ int processCommand(Status *stat);
 void addMissingJson(void);
 void timeSet();
 void del(Status *stat);
-void setLocation(char* loc);
 
 #endif

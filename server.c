@@ -18,6 +18,10 @@ void handleSigterm_S(int sig) {
     shutdown(sckt,SHUT_RDWR);
 }
 
+void handleChild(int sig) {
+    wait(NULL);
+}
+
 void server() {
     // load Config File and Settings
     fprintf(stdout, "Starting fidistat Server...\n");
@@ -29,7 +33,8 @@ void server() {
     // Handle Signals
     signal(SIGTERM, handleSigterm_S);
     signal(SIGCHLD, handleChild);
-    initConf(cfgLocation);
+
+    initConf();
     tls_init();
     struct tls* ctx = tls_server();
     int sock = initTLS_S(ctx);
@@ -64,6 +69,11 @@ void server() {
     tls_close(ctx);
     tls_free(ctx);
     tls_config_free(tlsServer_conf);
+
+    pidfile_remove(pfh);
+    syslog(LOG_INFO, "Stopped Fidistat Server");
+    closelog();
+    exit(0);
 }
 
 void worker(int connfd, struct tls* ctx) {
@@ -116,10 +126,6 @@ void worker(int connfd, struct tls* ctx) {
     tls_close(cctx);
     tls_free(cctx);
 
-    pidfile_remove(pfh);
-    syslog(LOG_INFO, "Stopped Fidistat Server");
-    closelog();
-    exit(0);
 }
 
 int initTLS_S(struct tls* ctx) {

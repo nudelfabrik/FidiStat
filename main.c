@@ -30,13 +30,6 @@
 
 volatile sig_atomic_t term = 0;
 
-void handleChild(int sig) {
-    wait(NULL);
-}
-
-void handleSigterm(int sig) {
-    term = 1;
-}
 
 int main(int argc, const char *argv[])
 {
@@ -45,8 +38,8 @@ int main(int argc, const char *argv[])
     return -1;
 }
 
-struct *pidfh daemon_start(char who) {
-    char*  pidp[28];
+struct pidfh* daemon_start(char who) {
+    char pidp[28];
     sprintf(pidp, "/var/run/fidistat-%c.pid", who);
     struct pidfh *pfh;
     pid_t otherpid;
@@ -71,10 +64,13 @@ struct *pidfh daemon_start(char who) {
 }
 
 void daemon_stop(char who) {
+    char pidp[28];
+    sprintf(pidp, "/var/run/fidistat-%c.pid", who);
+
     struct pidfh *pfh;
     pid_t otherpid;
 
-    pfh = pidfile_open("/var/run/fidistat.pid", 0600, &otherpid);
+    pfh = pidfile_open(pidp, 0600, &otherpid);
     if (pfh == NULL) {
         if (errno == EEXIST) {
             if (!kill(otherpid, SIGTERM)) {
