@@ -296,5 +296,5 @@ int processCommand(Status *stat) {
         syslog(LOG_INFO, "Successfully processed command %d:", stat->id);
     }
 
-rt:qeturn 0;
+    return 0;
 }
