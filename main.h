@@ -9,6 +9,8 @@
 #include <getopt.h>
 #include <errno.h>
 #include <libutil.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <signal.h>
 #include <syslog.h>
 #include <tls.h>

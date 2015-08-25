@@ -1,6 +1,7 @@
 #ifndef SERVER
 #define SERVER
 #include <tls.h>
+#include "main.h"
 
 void server();
 void worker(int connfd, struct tls* ctx);
