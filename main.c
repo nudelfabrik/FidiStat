@@ -145,6 +145,9 @@ void handleFlags(int argc, const char *argv[]) {
             if (!strcmp(optarg, "update")) {
                 client(UPDT);
                 exit(0);
+            } else {
+                fprintf(stderr, "%s not a valid option for --client\n", optarg);
+                exit(-1);
             }
             break;
         case 'd':
@@ -166,6 +169,9 @@ void handleFlags(int argc, const char *argv[]) {
                 daemon_stop('s');
                 server();
                 exit(0);
+            } else {
+                fprintf(stderr, "%s not a valid option for --client\n", optarg);
+                exit(-1);
             }
             break;
         case 'f':

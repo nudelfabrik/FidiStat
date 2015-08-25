@@ -22,6 +22,5 @@ void fixtime(void);
 int processCommand(Status *stat);
 void addMissingJson(void);
 void timeSet();
-void del(Status *stat);
 
 #endif
