@@ -45,24 +45,13 @@ int main(int argc, const char *argv[])
     return -1;
 }
 
-void client_start() {
-
-    fprintf(stdout, "Starting fidistat...\n");
-    openlog("fidistat-client", LOG_PID, LOG_DAEMON);
-    syslog(LOG_INFO, "Started Fidistat Client");
-
-    if (now_flag) {
-        syslog(LOG_INFO, "Running once");
-        client();
-        syslog(LOG_INFO, "Stopping Fidistat Client");
-        closelog();
-        exit(0);
-    }
-    // Daemonize
+struct *pidfh daemon_start(char who) {
+    char*  pidp[28];
+    sprintf(pidp, "/var/run/fidistat-%c.pid", who);
     struct pidfh *pfh;
     pid_t otherpid;
 
-    pfh = pidfile_open("/var/run/fidistat.pid", 0600, &otherpid);
+    pfh = pidfile_open(pidp, 0600, &otherpid);
     if (pfh == NULL) {
         if (errno == EEXIST) {
             fprintf(stdout, "Daemon already running with PID %d\n", otherpid);
@@ -78,17 +67,10 @@ void client_start() {
     }
 
     pidfile_write(pfh);
-
-    client();
-
-    pidfile_remove(pfh);
-
-    syslog(LOG_INFO, "Stopped Fidistat Client");
-    closelog();
-    exit(0);
+    return pfh;
 }
 
-void client_stop() {
+void daemon_stop(char who) {
     struct pidfh *pfh;
     pid_t otherpid;
 
@@ -119,92 +101,7 @@ void client_stop() {
     pidfile_remove(pfh);
     fprintf(stdout, "FidiStat not running?\n");
     exit(-1);
-}
 
-void client_restart() {
-    client_stop();
-    client_start();
-}
-
-void server_start() {
-    fprintf(stdout, "Starting fidistat Server...\n");
-    openlog("fidistat-server", LOG_PID, LOG_DAEMON);
-    syslog(LOG_INFO, "Started Fidistat Server");
-
-    // Daemonize
-    signal(SIGCHLD, handleChild);
-    struct pidfh *pfh;
-    pid_t otherpid;
-
-    pfh = pidfile_open("/var/run/fidistatd.pid", 0600, &otherpid);
-    if (pfh == NULL) {
-        if (errno == EEXIST) {
-            fprintf(stdout, "Daemon already running with PID %d\n", otherpid);
-            exit(-1);
-        }
-            fprintf(stdout, "Cannot create pidfile\n");
-    }   
-
-    if  (daemon(0, 0) == -1) {
-        fprintf(stderr, "Cannot daemonize");
-        pidfile_remove(pfh);
-        exit(-1);
-    }
-    pidfile_write(pfh);
-
-    server();
-
-    pidfile_remove(pfh);
-    syslog(LOG_INFO, "Stopped Fidistat Server");
-    closelog();
-    exit(0);
-}
-
-void server_stop() {
-    struct pidfh *pfh;
-    pid_t otherpid;
-
-    pfh = pidfile_open("/var/run/fidistatd.pid", 0600, &otherpid);
-    if (pfh == NULL) {
-        if (errno == EEXIST) {
-            if (!kill(otherpid, SIGTERM)) {
-                fprintf(stdout, "Stopped FidiStat(%d) Server successfully\n", otherpid);
-                return;
-            } else {
-                switch(errno) {
-                    case EPERM:
-                        fprintf(stderr, "Insufficient rights.\n");
-                        exit(-1);
-                        break;
-                    case ESRCH:
-                        fprintf(stderr, "PID not found, removing pidfile\n");
-                        pidfile_remove(pfh);
-                        exit(-1);
-                        break;
-                    default:
-                        exit(-1);
-                        break;
-                }
-            }
-        }
-    }   
-    pidfile_remove(pfh);
-    fprintf(stdout, "FidiStat not running?\n");
-    exit(-1);
-
-}
-void server_restart() {
-    server_stop();
-    server_start();
-}
-void debug(Status *stat) {
-    //syslog(LOG_INFO, "\nOutput of %s:\n%s\n", stat->name, stat->raw);
-    if (stat->type != 2) {
-        int i;
-        for (i = 0; i < stat->num; i++) {
-            syslog(LOG_INFO, "Result %i of %s: %f\n", i, stat->name, stat->result[i]);
-        }
-    }
 }
 
 void handleFlags(int argc, const char *argv[]) {
@@ -268,28 +165,30 @@ void handleFlags(int argc, const char *argv[]) {
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "client")) {
             if (!strcmp(argv[i+1], "start")) {
-                client_start();
+                client(START);
                 exit(0);
             }
             if (!strcmp(argv[i+1], "stop")) {
-                client_stop();
+                daemon_stop('c');
                 exit(0);
             }
             if (!strcmp(argv[i+1], "restart")) {
-                client_restart();
+                daemon_stop('c');
+                client(START);
                 exit(0);
             }
         } else if (!strcmp(argv[i], "server")) {
             if (!strcmp(argv[i+1], "start")) {
-                server_start();
+                server();
                 exit(0);
             }
             if (!strcmp(argv[i+1], "stop")) {
-                server_stop();
+                daemon_stop('s');
                 exit(0);
             }
             if (!strcmp(argv[i+1], "restart")) {
-                server_restart();
+                daemon_stop('s');
+                server();
                 exit(0);
             }
         }
@@ -303,3 +202,12 @@ char* composeFileName(const char* prefix, const char* name, const char* type) {
     return retFile;
 }
 
+void debug(Status *stat) {
+    //syslog(LOG_INFO, "\nOutput of %s:\n%s\n", stat->name, stat->raw);
+    if (stat->type != 2) {
+        int i;
+        for (i = 0; i < stat->num; i++) {
+            syslog(LOG_INFO, "Result %i of %s: %f\n", i, stat->name, stat->result[i]);
+        }
+    }
+}
