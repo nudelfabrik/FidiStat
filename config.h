@@ -22,7 +22,8 @@ static Settings setting;
 void initConf();
 void destroyConf();
 
-
+// Getter for Configs
+// _v: volatile, not safe after destroyConf()
 int getStatNum();
 const char* getPath();
 const char* getClientName();
@@ -32,10 +33,10 @@ int getInterval();
 const char* getClientServerPort();
 const char* getClientServerURL();
 const char* getClientCertFile_v();
-
-int getServerIPv6_v();
 const char* getServerCertFile_v();
+int getServerIPv6_v();
 
+// Extract Stat Configs
 config_setting_t* getSetting(int id);
 void setConfName(Status *Stat, int i);
 void setConfEnable(Status *Stat);

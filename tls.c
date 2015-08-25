@@ -8,7 +8,7 @@
 void sendOverTLS(struct tls* ctx, const char *buf) {
     size_t sent;
 
-    // Length of String
+    // send Length of buf
     size_t length = strlen(buf);
 
     size_t len = sizeof(length);
@@ -25,6 +25,7 @@ void sendOverTLS(struct tls* ctx, const char *buf) {
         }
     }
 
+    // send actual buf
     size_t toSend = length;
     while (toSend > 0) {
         int ret = tls_write(ctx, buf, toSend, &sent); 
@@ -46,6 +47,7 @@ json_t* recvOverTLS(struct tls*ctx) {
     size_t getSize, size;
     size_t len = sizeof(getSize);
 
+    // read length
     while (len > 0) {
         int ret = tls_read(ctx, &getSize, len, &size); 
  
@@ -58,6 +60,8 @@ json_t* recvOverTLS(struct tls*ctx) {
             len -= size; 
         } 
     }
+
+    // create buffer
     char* buffer = (char*)malloc((getSize +1) *sizeof(char));
     char* buf = buffer;
 
@@ -74,6 +78,8 @@ json_t* recvOverTLS(struct tls*ctx) {
             getSize -= size; 
         } 
     }
+
+    // Process buffer to json
     json_t *json = json_loads(buffer, JSON_DISABLE_EOF_CHECK, &error);
     if (verbose_flag) {
         syslog(LOG_DEBUG, "%s\n", buffer);

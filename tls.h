@@ -1,8 +1,6 @@
 #ifndef TLSH
 #define TLSH
-#include <tls.h>
-#include <jansson.h>
-#include "client.h"
+#include "main.h"
 
 void sendOverTLS(struct tls* ctx, const char *buf);
 json_t* recvOverTLS(struct tls*ctx);

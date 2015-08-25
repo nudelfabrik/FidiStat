@@ -2,6 +2,7 @@
 #include "config.h"
 #include "json.h"
 
+// Create a payload with new values
 json_t* makeJansson(Status *stat) {
     json_t *newval, *values;
     values = json_array();
@@ -31,12 +32,15 @@ json_t* makeJansson(Status *stat) {
         
 }
 
+
+// paste payload into existing .json
 int pasteJSON(json_t *payload, const char *clientName) {
     // Extract data from payload
     const char * name = json_string_value(json_object_get(payload, "name"));
     int type = json_integer_value(json_object_get(payload, "type"));
     
     
+    // Type 2: CSV
     if (type == 2) {
         FILE *fp;
         char* file = composeFileName(clientName, name, "csv");
@@ -56,7 +60,7 @@ int pasteJSON(json_t *payload, const char *clientName) {
     const char* file = composeFileName(clientName, name, "json");
 
     root = json_load_file(file, 0, &error);
-    // CHeck for Errors
+    // Check for Errors
     if (!root) {
         syslog(LOG_ERR, "Unable to load json File! error: on line %d: %s\n", error.line, error.text); 
         exit(1);
@@ -99,6 +103,7 @@ int pasteJSON(json_t *payload, const char *clientName) {
 
 }
 
+// get file.json, migrate datapoints to new and write that back to disk.
 void mergeJSON(json_t *new, const char *file) {
     json_t *root;
     json_error_t error;
@@ -114,6 +119,7 @@ void mergeJSON(json_t *new, const char *file) {
     dumpJSON(new, file);
 }
 
+// Write json_t to file
 void dumpJSON(json_t *root, const char *file) {
     if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2) | JSON_REAL_PRECISION(5))) {
         syslog(LOG_ERR, "error in writing back to %s", file);
@@ -144,6 +150,7 @@ int check(json_t* object) {
     }
 }
 
+// makeCSV or makeJansson
 json_t* makeStat(Status *stat) {
     if (stat->type == 2) {
         if (verbose_flag) {
@@ -161,6 +168,7 @@ json_t* makeStat(Status *stat) {
 void printError(const char* name) {
     syslog(LOG_ERR, "Can't get data from %s.json\n", name);
 }
+
 // If type is 2, create a new .csv evertime the command runs
 json_t * makeCSV(Status *stat) {
     char output[OUTPUT_SIZE] = "";

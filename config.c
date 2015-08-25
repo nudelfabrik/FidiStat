@@ -78,6 +78,7 @@ void initConf () {
 
 }
 
+// getter of Setting struct
 int getStatNum() {
     return setting.statNum;
 }
@@ -103,6 +104,8 @@ const char* getClientServerURL() {
     return setting.serverURL;
 }
 
+
+// _v: not safe after config destroyed
 const char* getClientCertFile_v() {
     const char *lfile;
     if (!config_lookup_string(&config, "clientCertFile", &lfile)) {

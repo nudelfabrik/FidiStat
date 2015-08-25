@@ -9,13 +9,11 @@ json_error_t error;
 
 // Check if File exist and  create if needed
 void bootstrap(Status* status) {
-    if (status->type != 2) {
-        if (checkForBootstrap(status->name)) {
-            if(verbose_flag) {  
-                syslog(LOG_INFO, "%s.json not found, creating new File", status->name);
-            }
-            createFile(status, CREATE);
+    if (checkForBootstrap(status->name)) {
+        if(verbose_flag) {  
+            syslog(LOG_INFO, "%s.json not found, creating new File", status->name);
         }
+        createFile(status, CREATE);
     }
 }
 
@@ -50,9 +48,11 @@ void createFile(Status* status, int type) {
     // Print created JSON
     char* file = composeFileName(getClientName(), status->name, "json");
 
+    // Send/dump created .json
     if (getLocal()) {
         dumpJSON(root, file);
     } else {
+        // Type either CREATE or UPDATE
         struct tls* ctx = initCon(type, 1);
         json_t* payload = json_object();
         json_object_set(payload, "name", json_string(status->name));
@@ -70,6 +70,8 @@ json_t* getDisplaySettings(int id, const char* subSetting) {
 
     json_t *graph = json_object();
     char path[25+ strlen(subSetting)];
+
+    // compose path to this Settings location
     if (!strcmp(subSetting,  "graph")) {
         sprintf(path, "settings.[%d].display" , id);
     } else {
@@ -101,7 +103,6 @@ json_t* getDisplaySettings(int id, const char* subSetting) {
             
         }
     }
-
     return graph;
 }
 
@@ -132,12 +133,11 @@ json_t* getSequences(int id) {
     return sequences_j;
 }
 
-
 //------------------
 // Create Bar titles
 //------------------
 //
-void getBarTitles(json_t* sequences_j, int id) {
+void getBarTitles(int id, json_t* sequences_j) {
     char path[25];
     sprintf(path, "settings.[%d].bartitles" , id);
     config_setting_t* sequences_c = getLookup( path);

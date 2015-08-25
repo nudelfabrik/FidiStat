@@ -42,7 +42,6 @@ enum commandEnum {
     UPDT
 };
 
-
 typedef struct statStruct Status;
 typedef enum connectionEnum connType;
 typedef enum commandEnum commandType;

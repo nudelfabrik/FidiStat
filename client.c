@@ -10,7 +10,6 @@ void handleSigterm(int sig) {
 }
 
 void client(commandType type) {
-
     // open Log
     fprintf(stdout, "Starting fidistat...\n");
     openlog("fidistat-client", LOG_PID, LOG_DAEMON);
@@ -27,12 +26,15 @@ void client(commandType type) {
     Status *statsPtr;
     confSetup(stats);
 
+    // manual resend the displaysettings
     if (type == UPDT) {
         for (int i = 0; i < getStatNum(); i++) {
             createFile(&stats[i], UPDATE);
         }
         return;
     }
+    
+    // Delete all files from this host
     if (delete_flag) {
         if (!getLocal()) {
             json_t *list = json_array();
@@ -53,6 +55,7 @@ void client(commandType type) {
         return;
     }
 
+    // Check server if he needs a new .json
     if (!getLocal()) {
         sendHello(stats);
     }
@@ -60,6 +63,7 @@ void client(commandType type) {
     // Destroy Config
     destroyConf(); 
 
+    //daemonize
     struct pidfh *pfh;
     if (type == START && !now_flag) {
         pfh = daemon_start('c');
@@ -86,13 +90,13 @@ void client(commandType type) {
                 if (statsPtr->enabled) {
                     // Execute Command and save Output
                     processCommand(statsPtr);
-                    // Send Status to Server
                 }
             }
         }
-        if (!dry_flag) {
-            sendStat(stats, getStatNum());
-        }
+        // Send Status to Server
+        sendStat(stats, getStatNum());
+
+        // Run only once
         if (now_flag) {
             break;
         }
@@ -112,16 +116,23 @@ void client(commandType type) {
     exit(0);
 }
 
+// Send all available settings, bootstrap if necessary
 void sendHello(Status stat[]) {
+
+    // Compose list
     json_error_t error;
     json_t *list = json_array();
     for (int i = 0; i < getStatNum(); i++) {
         json_array_append_new(list, json_string(stat[i].name));
     }
+
+    // Send header
     struct tls* ctx = initCon(HELLO, getStatNum());
     char * payloadStr = json_dumps(list, JSON_COMPACT);
     sendOverTLS(ctx, payloadStr);
     free(payloadStr);
+
+    // check answer and bootstrap necessary files
     json_t* relist = recvOverTLS(ctx);
     for (int i = 0; i < json_array_size(relist); i++) {
         const char *name = json_string_value(json_array_get(relist, i));
@@ -138,6 +149,7 @@ void sendHello(Status stat[]) {
 
 }
 
+// dump/send all Stats
 void sendStat(Status *stats, int statNum) {
     json_t *arrays[statNum];
     for (int i = 0; i < statNum; i++) {
@@ -179,6 +191,7 @@ void sendStat(Status *stats, int statNum) {
     }
 }
 
+// Send header over TCP
 struct tls* initCon(connType type, int size) {
     // Create Header object
     json_t *header = json_object();
@@ -202,7 +215,7 @@ struct tls* initCon(connType type, int size) {
 
 }
 
-
+// Read config of Stats
 void confSetup(Status stats[]) {
     int i = 0;
     for (i = 0; i < getStatNum(); i++) {
