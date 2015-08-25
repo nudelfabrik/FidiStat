@@ -14,7 +14,7 @@ void bootstrap(Status* status) {
             if(verbose_flag) {  
                 syslog(LOG_INFO, "%s.json not found, creating new File", status->name);
             }
-            createFile(status);
+            createFile(status, CREATE);
         }
     }
 }
@@ -27,7 +27,7 @@ int checkForBootstrap(const char* name) {
 // --------------------
 // Create new JSON File
 // --------------------
-void createFile(Status* status) {
+void createFile(Status* status, int type) {
     if (status->type == 2) {
         return;
     }
@@ -53,7 +53,7 @@ void createFile(Status* status) {
     if (getLocal()) {
         dumpJSON(root, file);
     } else {
-        struct tls* ctx = initCon(CREATE, 1);
+        struct tls* ctx = initCon(type, 1);
         json_t* payload = json_object();
         json_object_set(payload, "name", json_string(status->name));
         json_object_set(payload, "payload", root);
