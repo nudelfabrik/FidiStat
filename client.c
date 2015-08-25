@@ -33,6 +33,25 @@ void client(commandType type) {
         }
         return;
     }
+    if (delete_flag) {
+        if (!getLocal()) {
+            json_t *list = json_array();
+            for (int i = 0; i < getStatNum(); i++) {
+                json_array_append_new(list, json_string(stats[i].name));
+            }
+            struct tls* ctx = initCon(DELETE, getStatNum());
+            char * payloadStr = json_dumps(list, JSON_COMPACT);
+            sendOverTLS(ctx, payloadStr);
+            free(payloadStr);
+            tls_close(ctx);
+            tls_free(ctx);
+        } else {
+            for (int i = 0; i < getStatNum(); i++) {
+                delete(getClientName(), stats[i].name);
+            }
+        }
+        return;
+    }
 
     if (!getLocal()) {
         sendHello(stats);
@@ -47,11 +66,10 @@ void client(commandType type) {
     }
 
     // flags
-    if (!(dry_flag) && !(now_flag)) {
-        fixtime();
-    }
-    if (now_flag) {
+    if (!(now_flag)) {
         syslog(LOG_INFO, "Running once");
+    } else {
+        fixtime();
     }
 
 // MAIN LOOP
@@ -192,41 +210,24 @@ void confSetup(Status stats[]) {
         setConfName(&newStat, i);
         setConfEnable(&newStat);
 
-        // delete .jsons if flags are set
-        if (delete_flag) {
-            del(&newStat);
-            syslog(LOG_INFO, "Removed %s.json\n", newStat.name);
-        } else {
-            if (newStat.enabled) {
-                if (clean_flag) {
-                    del(&newStat);
-                    fprintf(stdout, "Removed %s.json\n", newStat.name);
-                }
+        if (newStat.enabled) {
+            // Load Remaining Config Settings
+            setConfType(&newStat);
+            setConfCmmd(&newStat);
 
-                // Load Remaining Config Settings
-                setConfType(&newStat);
-                setConfCmmd(&newStat);
-
-                if (newStat.type == 2) {
-                    setCSVtitle(&newStat);
-                } else {
-                    setConfNum(&newStat);
-                }
-
-                // Create File if not present
-                if (getLocal()) {
-                    bootstrap(&newStat);
-                }
+            if (newStat.type == 2) {
+                setCSVtitle(&newStat);
+            } else {
+                setConfNum(&newStat);
             }
-            stats[i] = newStat;
+
+            // Create File if not present
+            if (getLocal()) {
+                bootstrap(&newStat);
+            }
         }
-            
+        stats[i] = newStat;
     }
-
-    if (delete_flag || clean_flag) {
-        exit(0);
-    }
-
 }
 
 void initTLS(void) {
@@ -295,11 +296,5 @@ int processCommand(Status *stat) {
         syslog(LOG_INFO, "Successfully processed command %d:", stat->id);
     }
 
-    return 0;
-}
-
-void del(Status *stat) {
-    char file[strlen(getPath()) + strlen(stat->name) + 6];
-    sprintf(file, "%s%s.json", getPath(), stat->name);
-    remove(file);
+rt:qeturn 0;
 }

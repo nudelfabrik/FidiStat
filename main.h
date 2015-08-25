@@ -16,6 +16,7 @@
 #include <tls.h>
 
 #define OUTPUT_SIZE 1024
+int verbose_flag, delete_flag, now_flag;
 
 struct statStruct {
     int id;
@@ -51,8 +52,9 @@ extern volatile sig_atomic_t term;
 struct pidfh* daemon_start(char who);
 void daemon_stop(char who);
 
-void debug(Status *stat);
 void handleFlags(int argc, const char *argv[]);
 char* composeFileName(const char* prefix, const char* name, const char* type);
+void delete(const char *client, const char *name);
+void debug(Status *stat);
 
 #endif

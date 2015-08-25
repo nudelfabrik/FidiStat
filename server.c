@@ -133,6 +133,16 @@ void worker(int connfd, struct tls* ctx) {
         sendOverTLS(cctx, relistStr);
         free(relistStr);
     }
+    
+    // Delete all files from this client
+    if (type == DELETE) {
+        json_t *list = recvOverTLS(cctx);
+
+        for (int i = 0; i < size; i++) {
+            const char * name = json_string_value(json_array_get(list, i));
+            delete(clientName, name);
+        }
+    }
 
     tls_close(cctx);
     tls_free(cctx);
@@ -188,8 +198,4 @@ struct addrinfo* getAddrInfo() {
     
     return servinfo;
 
-}
-void delete(const char *client, const char *name) {
-    char* file = composeFileName(client, name, "json");
-    remove(file);
 }
