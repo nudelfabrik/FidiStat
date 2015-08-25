@@ -59,6 +59,7 @@ void server() {
             close(sock);
             syslog(LOG_INFO, "New incoming connection");
             worker(connfd, ctx);
+            syslog(LOG_INFO, "Closing connection");
             exit(0);
         } else {
             close(connfd);
