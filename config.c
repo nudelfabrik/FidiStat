@@ -39,6 +39,12 @@ void initConf (const char * path) {
         exit(1);
     }
 
+    // Interval of CLient
+    if (!config_lookup_int(&config, "interval", &setting.interval)) {
+        syslog(LOG_ERR, "Can't find interval");
+        exit(1);
+    }
+
     //getLocalBool();
     if (!config_lookup_bool(&config, "local", &setting.local)) {
         syslog(LOG_ERR, "Can't find local");
@@ -82,6 +88,9 @@ int getMaxCount() {
 }
 int getLocal() {
     return setting.local;
+}
+int getInterval() {
+    return setting.interval;
 }
 const char* getClientServerPort() {
     return setting.serverPort;
