@@ -38,7 +38,7 @@ void createFile(Status* status, int type) {
 
     // If Type is Bar, load Bartitles
     if (status->type == 1) {
-        getBarTitles(sequences, status->id);
+        getBarTitles(status->id, sequences);
     }
 
     // Build json Object
