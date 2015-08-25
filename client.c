@@ -46,7 +46,9 @@ void client(void) {
                 }
             }
         }
-        sendStat(stats, getStatNum());
+        if (!dry_flag) {
+            sendStat(stats, getStatNum());
+        }
         if (now_flag) {
             break;
         }
