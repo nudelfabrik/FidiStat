@@ -47,6 +47,7 @@ char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
             syslog(LOG_ERR, "forking new Worker failed");
         } else if (pid == 0) {
             close(sock);
+            syslog(LOG_INFO, "New incoming connection");
             worker(connfd, ctx);
             exit(0);
         } else {
@@ -113,7 +114,6 @@ void worker(int connfd, struct tls* ctx) {
 
 int initTLS_S(struct tls* ctx) {
     tlsServer_conf = tls_config_new();
-    syslog(LOG_DEBUG, "Certfile: %s", getClientCertFile_v());
     tls_config_set_cert_file(tlsServer_conf, getServerCertFile_v());
     tls_config_set_key_file(tlsServer_conf, getServerCertFile_v());
 

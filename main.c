@@ -201,7 +201,7 @@ void debug(Status *stat) {
     //syslog(LOG_INFO, "\nOutput of %s:\n%s\n", stat->name, stat->raw);
     if (stat->type != 2) {
         int i;
-        for (i = 0; i < 4; i++) {
+        for (i = 0; i < stat->num; i++) {
             syslog(LOG_INFO, "Result %i of %s: %f\n", i, stat->name, stat->result[i]);
         }
     }

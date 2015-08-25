@@ -33,14 +33,14 @@ void createFile(Status* status) {
     }
     json_t *root = json_object();
 
-    json_t *graph = getDisplaySettings(status->name, "graph");
+    json_t *graph = getDisplaySettings(status->id, "graph");
 
     // Create Datasequences
-    json_t *sequences = getSequences(status->name);
+    json_t *sequences = getSequences(status->id);
 
     // If Type is Bar, load Bartitles
     if (status->type == 1) {
-        getBarTitles(sequences, status->name);
+        getBarTitles(sequences, status->id);
     }
 
     // Build json Object
@@ -66,14 +66,14 @@ void createFile(Status* status) {
 //--------------------------
 // Create JSON with settings
 //--------------------------
-json_t* getDisplaySettings(const char* name, const char* subSetting) {
+json_t* getDisplaySettings(int id, const char* subSetting) {
 
     json_t *graph = json_object();
-    char path[strlen(name)+20];
+    char path[25+ strlen(subSetting)];
     if (!strcmp(subSetting,  "graph")) {
-        sprintf(path, "%s.display" , name);
+        sprintf(path, "settings.[%d].display" , id);
     } else {
-        sprintf(path, "%s.display.%s", name, subSetting);
+        sprintf(path, "settings.[%d].display.%s", id, subSetting);
     }
     // Get Display Setting of name
     config_setting_t* display = getLookup(path);
@@ -96,7 +96,7 @@ json_t* getDisplaySettings(const char* name, const char* subSetting) {
             const char* subName = config_setting_name(sett);
 
             // Add all other 
-            json_t *subSettings = getDisplaySettings(name, subName);
+            json_t *subSettings = getDisplaySettings(id, subName);
             json_object_set(graph, subName, subSettings);
             
         }
@@ -108,13 +108,13 @@ json_t* getDisplaySettings(const char* name, const char* subSetting) {
 //-----------------------------------
 // Create JSON with all Datasequences
 //-----------------------------------
-json_t* getSequences(const char* name) {
+json_t* getSequences(int id) {
     json_t* sequences_j = json_array();
-    char path[strlen(name)+20];
-    sprintf(path, "%s.sequencetitles" , name);
+    char path[25];
+    sprintf(path, "settings.[%d].sequencetitles" , id);
     config_setting_t* sequences_c = getLookup(path);
 
-    sprintf(path, "%s.sequencecolors" , name);
+    sprintf(path, "settings.[%d].sequencecolors" , id);
     config_setting_t* colours_c = getLookup(path);
 
     int numSeq = config_setting_length(sequences_c);
@@ -137,9 +137,9 @@ json_t* getSequences(const char* name) {
 // Create Bar titles
 //------------------
 //
-void getBarTitles(json_t* sequences_j, const char* name) {
-    char path[strlen(name)+20];
-    sprintf(path, "%s.bartitles" , name);
+void getBarTitles(json_t* sequences_j, int id) {
+    char path[25];
+    sprintf(path, "settings.[%d].bartitles" , id);
     config_setting_t* sequences_c = getLookup( path);
     int numSeq = config_setting_length(sequences_c);
 
