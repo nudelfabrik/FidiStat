@@ -21,7 +21,6 @@ static Settings setting;
 void initConf(const char * path);
 void destroyConf();
 
-config_setting_t* getSetting(const char* item);
 
 int getStatNum();
 const char* getPath();
@@ -35,10 +34,12 @@ const char* getClientCertFile_v();
 int getServerIPv6_v();
 const char* getServerCertFile_v();
 
+config_setting_t* getSetting(int id);
 void setConfName(Status *Stat, int i);
 void setConfEnable(Status *Stat);
 void setConfType(Status *Stat);
 void setConfCmmd(Status *Stat);
+void setConfNum(Status *Stat);
 void setConfRegex(Status *Stat);
 void setCSVtitle(Status *stat);
 config_setting_t* getLookup(const char *path);

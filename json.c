@@ -7,7 +7,7 @@ json_t* makeJansson(Status *stat) {
     values = json_array();
 
     int j;
-    for (j = 0; j < 5/* TODO Sizeof Results */; j++) {
+    for (j = 0; j < stat->num; j++) {
         if (stat->type == 0) {
             newval = json_pack("{sssf}", "title", zeit, "value", stat->result[j]);
 
@@ -19,6 +19,9 @@ json_t* makeJansson(Status *stat) {
             return NULL;
         }
         json_array_append_new(values, newval);
+    }
+    if (stat->type != 2) {
+        free(stat->result);
     }
     json_t *payload = json_object();
     json_object_set(payload, "name", json_string(stat->name));
@@ -100,7 +103,6 @@ void dumpJSON(json_t *root, const char *file) {
     if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2))) {
         syslog(LOG_ERR, "error in writing back to %s", file);
     }
-    syslog(LOG_DEBUG, "written to %s", file);
 }
 
 json_t* getDataSequences(json_t* graph) {

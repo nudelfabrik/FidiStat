@@ -14,15 +14,16 @@
 #include <tls.h>
 
 #define OUTPUT_SIZE 1024
-#define MAXSTAT 10
 
 struct statStruct {
+    int id;
     int enabled;
     int type;
+    int num;
     const char *name;
     const char *cmmd;
     const char *csv;
-    float result[MAXSTAT];
+    float *result;
 };
 
 enum connectionEnum {

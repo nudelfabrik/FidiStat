@@ -30,7 +30,7 @@ void initConf (const char * path) {
     }
  
     // Number of Stats
-    int nums = config_setting_length(getSetting("list"));
+    int nums = config_setting_length(config_lookup(&config, "settings"));
     setting.statNum = nums;
 
     //getMaxCount();
@@ -109,8 +109,8 @@ const char* getServerCertFile_v() {
 }
 int getServerIPv6_v() {
     int v6;
-    if (!config_lookup_int(&config, "maxEntrys", &v6)) {
-        syslog(LOG_ERR, "Can't find maxEntries");
+    if (!config_lookup_bool(&config, "ipv6", &v6)) {
+        syslog(LOG_ERR, "Can't find ipv6");
         exit(1);
     }
     return v6;
@@ -120,23 +120,29 @@ int getServerIPv6_v() {
 // Functions needed for building Status
 //-------------------------------------
 
-config_setting_t* getSetting(const char * item) {
-    config_setting_t *subSetting = config_lookup(&config, item);
-    if (subSetting == NULL) {
-        syslog(LOG_ERR, "Can't find %s\n", item);
+config_setting_t* getSetting(int id) {
+    config_setting_t *setting = config_setting_get_elem(config_lookup(&config, "settings"), id);
+    if (setting == NULL) {
+        syslog(LOG_ERR, "Can't find %d\n", id);
         exit(1);
     }
-    return subSetting;
+    return setting;
 }
 
 //Set name of *stat to the ith item of config list
 void setConfName(Status *stat, int i) {
-    stat->name = strdup(config_setting_get_string_elem(getSetting("list"), i));
+    stat->id = i;
+    const char *lname;
+    if (!config_setting_lookup_string(getSetting(stat->id), "name", &lname)) {
+        syslog(LOG_ERR, "Can't lookup Name of %s\n", stat->name);
+        exit(1);
+    }
+    stat->name = strdup(lname);
 }
 
 //Check if *stat is enabled 
 void setConfEnable(Status *stat) {
-    if (!config_setting_lookup_bool(getSetting(stat->name), "enabled", &stat->enabled)) {
+    if (!config_setting_lookup_bool(getSetting(stat->id), "enabled", &stat->enabled)) {
         syslog(LOG_ERR, "Can't lookup enabled of %s\n", stat->name);
         exit(1);
     }
@@ -145,16 +151,22 @@ void setConfEnable(Status *stat) {
 //Get Command of *stat
 void setConfCmmd(Status *stat) {
     const char *lcmmd;
-    if (!config_setting_lookup_string(getSetting(stat->name), "cmmd", &lcmmd)) {
+    if (!config_setting_lookup_string(getSetting(stat->id), "cmmd", &lcmmd)) {
         syslog(LOG_ERR, "Can't lookup Command of %s\n", stat->name);
         exit(1);
     }
     stat->cmmd = strdup(lcmmd);
 }
+
+void setConfNum(Status *stat) {
+    char path[25];
+    sprintf(path, "settings.[%d].sequencetitles" , stat->id);
+    stat->num = config_setting_length(getLookup(path));
+}
  
 void setCSVtitle(Status *stat) {
     const char* title;
-    config_setting_t *setting = config_lookup(&config, stat->name);
+    config_setting_t *setting = getSetting(stat->id);
     if (!config_setting_lookup_string(config_setting_get_member(setting, "display"), "title", &title)) {
         syslog(LOG_ERR, "Can't lookup Title of %s\n", stat->name);
         exit(1);
@@ -165,7 +177,7 @@ void setCSVtitle(Status *stat) {
 //Get Type of *stat
 void setConfType(Status *stat) {
     const char* type;
-    config_setting_t *setting = config_lookup(&config, stat->name);
+    config_setting_t *setting = getSetting(stat->id);
     if (!config_setting_lookup_string(config_setting_get_member(setting, "display"), "type", &type)) {
         syslog(LOG_ERR, "Can't lookup Config Type of %s\n", stat->name);
         exit(1);

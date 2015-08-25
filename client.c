@@ -39,7 +39,6 @@ void client(void) {
             statsPtr = &stats[i]; 
 
             if (statsPtr != NULL) {
-                syslog(LOG_DEBUG, "checking: %s", statsPtr->name);
                 if (statsPtr->enabled) {
                     // Execute Command and save Output
                     processCommand(statsPtr);
@@ -170,12 +169,14 @@ void confSetup(Status stats[]) {
                     fprintf(stdout, "Removed %s.json\n", newStat.name);
                 }
 
-                syslog(LOG_DEBUG, "added: %s", newStat.name);
                 // Load Remaining Config Settings
                 setConfType(&newStat);
                 setConfCmmd(&newStat);
+
                 if (newStat.type == 2) {
                     setCSVtitle(&newStat);
+                } else {
+                    setConfNum(&newStat);
                 }
 
                 // Create File if not present
@@ -188,9 +189,6 @@ void confSetup(Status stats[]) {
             
     }
 
-    for (i = 0; i < getStatNum(); i++) {
-        syslog(LOG_DEBUG, "%i: %s", i,stats[i].name);
-    }
     if (delete_flag || clean_flag) {
         exit(0);
     }
@@ -200,7 +198,6 @@ void confSetup(Status stats[]) {
 void initTLS(void) {
     tls_init();
     tlsClient_conf = tls_config_new();
-    syslog(LOG_DEBUG, "Certfile: %s", getClientCertFile_v());
     tls_config_set_cert_file(tlsClient_conf, getClientCertFile_v());
     tls_config_set_ca_file(tlsClient_conf, getClientCertFile_v());
     tls_config_insecure_noverifyname(tlsClient_conf);
@@ -239,10 +236,10 @@ void timeSet() {
 
 //Get Output from Command
 int processCommand(Status *stat) {
-    syslog(LOG_INFO, "Processing command");
     if( stat->type == 2) {
         return 2;
     }
+    stat->result = (float *) malloc(stat->num * sizeof(float));
 
     char raw[OUTPUT_SIZE] = "";
     FILE *fp;
@@ -257,7 +254,10 @@ int processCommand(Status *stat) {
         syslog(LOG_ERR, "Command of %s exits != 0\n", stat->name);
         return -1;
     }
-    syslog(LOG_INFO, "Successfully Loaded command:");
+
+    if (verbose_flag) {
+        syslog(LOG_INFO, "Successfully processed command %d:", stat->id);
+    }
 
     return 0;
 }
