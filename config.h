@@ -8,6 +8,7 @@ struct settingsStruct {
     int statNum;
     int maxCount;
     int local;
+    int interval;
     const char *clientName;
     const char *serverURL;
     const char *serverPort;
@@ -27,6 +28,7 @@ const char* getPath();
 const char* getClientName();
 int getMaxCount();
 int getLocal();
+int getInterval();
 const char* getClientServerPort();
 const char* getClientServerURL();
 const char* getClientCertFile_v();

@@ -52,7 +52,7 @@ void client(void) {
         }
 
         if (!term) {
-            sleep(600);
+            sleep(getInterval() * 60);
         }
     }
     deinitTLS();
@@ -216,10 +216,12 @@ void fixtime(void) {
     if (tm_p->tm_sec > 40) {
         sleep(22);
     }
-    // TODO: 10 is depened on the interval
-    if ( (tm_p->tm_min % 10) != 0) {
-        int min = 10 - (tm_p->tm_min % 10);
-        sleep(min*60);
+    // If 60 minutes dividable by interval
+    if ((60 % getInterval()) == 0) {
+        if ( (tm_p->tm_min % getInterval()) != 0) {
+            int min = getInterval() - (tm_p->tm_min % getInterval());
+            sleep(min*60);
+        }
     }
     return;
 }
