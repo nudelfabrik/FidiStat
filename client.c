@@ -4,7 +4,10 @@
 #include "bootstrap.h"
 #include "tls.h"
 #include "main.h"
-// Default Config Location
+
+void handleSigterm(int sig) {
+    term = 1;
+}
 
 void client(commandType type) {
 
@@ -14,7 +17,7 @@ void client(commandType type) {
     syslog(LOG_INFO, "Started Fidistat Client");
 
     // load Config File and Settings
-    initConf(cfgLocation);
+    initConf();
     if (!getLocal()) {
         initTLS();
     }
@@ -38,9 +41,9 @@ void client(commandType type) {
     // Destroy Config
     destroyConf(); 
 
+    struct pidfh *pfh;
     if (type == START && !now_flag) {
-        struct pidfh *pfh = daemon_start('c');
-        signal(SIGTERM, handleSigterm);
+        pfh = daemon_start('c');
     }
 
     // flags
@@ -106,7 +109,6 @@ void sendHello(Status stat[]) {
         const char *name = json_string_value(json_array_get(relist, i));
         for (int j = 0; j < getStatNum(); j++) {
             if (strcmp(stat[j].name, name) == 0) {
-                syslog(LOG_DEBUG, "creating %s.json", name);
                 createFile(&stat[j], CREATE);
                 break;
             }
@@ -295,11 +297,6 @@ int processCommand(Status *stat) {
 
     return 0;
 }
-
-void setLocation(char* loc) {
-    cfgLocation = loc;
-}
-
 
 void del(Status *stat) {
     char file[strlen(getPath()) + strlen(stat->name) + 6];

@@ -37,17 +37,16 @@ enum connectionEnum {
 enum commandEnum {
     START,
     UPDT
-}
-char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
+};
+
 
 typedef struct statStruct Status;
 typedef enum connectionEnum connType;
 typedef enum commandEnum commandType;
 
 extern volatile sig_atomic_t term;
-void handleSigterm(int sig);
 
-struct *pidfh daemon_start(char who);
+struct pidfh* daemon_start(char who);
 void daemon_stop(char who);
 
 void debug(Status *stat);
