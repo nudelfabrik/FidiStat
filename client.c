@@ -199,6 +199,7 @@ struct tls* initCon(connType type, int size) {
     // Create Header object
     json_t *header = json_object();
     json_object_set(header, "from", json_string(getClientName()));
+    json_object_set(header, "auth", json_string(getClientAuth()));
     json_object_set(header, "type", json_integer(type));
     json_object_set(header, "size", json_integer(size));
     char * headerStr = json_dumps(header, JSON_COMPACT | JSON_REAL_PRECISION(5));
