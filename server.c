@@ -19,11 +19,16 @@ void handleSigterm_S(int sig) {
 }
 
 void server() {
-char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
     // load Config File and Settings
+    fprintf(stdout, "Starting fidistat Server...\n");
+    openlog("fidistat-server", LOG_PID, LOG_DAEMON);
+    syslog(LOG_INFO, "Started Fidistat Server");
 
+    struct pidfh *pfh = daemon_start('s');
+
+    // Handle Signals
     signal(SIGTERM, handleSigterm_S);
-
+    signal(SIGCHLD, handleChild);
     initConf(cfgLocation);
     tls_init();
     struct tls* ctx = tls_server();
@@ -110,6 +115,11 @@ void worker(int connfd, struct tls* ctx) {
     }
     tls_close(cctx);
     tls_free(cctx);
+
+    pidfile_remove(pfh);
+    syslog(LOG_INFO, "Stopped Fidistat Server");
+    closelog();
+    exit(0);
 }
 
 int initTLS_S(struct tls* ctx) {

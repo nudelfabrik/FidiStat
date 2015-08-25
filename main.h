@@ -28,22 +28,27 @@ struct statStruct {
 
 enum connectionEnum {
     HELLO,
-    UPDATE,
+    NEWDATA,
     CREATE,
+    UPDATE,
     DELETE
 };
 
+enum commandEnum {
+    START,
+    UPDT
+}
+char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
+
+typedef struct statStruct Status;
+typedef enum connectionEnum connType;
+typedef enum commandEnum commandType;
+
 extern volatile sig_atomic_t term;
 void handleSigterm(int sig);
-typedef enum connectionEnum connType;
-typedef struct statStruct Status;
-void client_start();
-void client_stop();
-void client_restart();
 
-void server_start();
-void server_stop();
-void server_restart();
+struct *pidfh daemon_start(char who);
+void daemon_stop(char who);
 
 void debug(Status *stat);
 void handleFlags(int argc, const char *argv[]);

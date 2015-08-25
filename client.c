@@ -6,19 +6,31 @@
 #include "main.h"
 // Default Config Location
 
-char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
-void client(void) {
+void client(commandType type) {
 
+    // open Log
+    fprintf(stdout, "Starting fidistat...\n");
+    openlog("fidistat-client", LOG_PID, LOG_DAEMON);
+    syslog(LOG_INFO, "Started Fidistat Client");
 
     // load Config File and Settings
     initConf(cfgLocation);
-    initTLS();
-
-    Status stats[getStatNum()];
-    Status *statsPtr;
+    if (!getLocal()) {
+        initTLS();
+    }
 
     // Setup all config files
+    Status stats[getStatNum()];
+    Status *statsPtr;
     confSetup(stats);
+
+    if (type == UPDT) {
+        for (int i = 0; i < getStatNum(); i++) {
+            createFile(&stats[i], UPDATE);
+        }
+        return;
+    }
+
     if (!getLocal()) {
         sendHello(stats);
     }
@@ -26,10 +38,20 @@ void client(void) {
     // Destroy Config
     destroyConf(); 
 
+    if (type == START && !now_flag) {
+        struct pidfh *pfh = daemon_start('c');
+        signal(SIGTERM, handleSigterm);
+    }
+
+    // flags
     if (!(dry_flag) && !(now_flag)) {
         fixtime();
     }
+    if (now_flag) {
+        syslog(LOG_INFO, "Running once");
+    }
 
+// MAIN LOOP
     signal(SIGTERM, handleSigterm);
     while(!term) {
         // Set zeit to current time    
@@ -58,8 +80,15 @@ void client(void) {
             sleep(getInterval() * 60);
         }
     }
-    deinitTLS();
-    syslog(LOG_INFO, "Shutting down Client");
+// MAIN LOOP
+    if (!getLocal()) {
+        deinitTLS();
+    }
+    pidfile_remove(pfh);
+
+    syslog(LOG_INFO, "Stopped Fidistat Client");
+    closelog();
+    exit(0);
 }
 
 void sendHello(Status stat[]) {
