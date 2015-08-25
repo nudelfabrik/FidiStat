@@ -1,95 +1,147 @@
-#include <syslog.h>
-#include <string.h>
-#include <regex.h>
-#include <stdio.h>
-#include <time.h>
-#include <pcre.h> 
-#include <signal.h>
-#include <jansson.h>
 #include "client.h"
 #include "config.h"
 #include "json.h"
 #include "bootstrap.h"
 #include "tls.h"
 #include "main.h"
-// Default Config Location
 
-char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
-void client(void) {
+void handleSigterm(int sig) {
+    term = 1;
+}
+
+void client(commandType type) {
+    // open Log
+    fprintf(stdout, "Starting fidistat...\n");
+    openlog("fidistat-client", LOG_PID, LOG_DAEMON);
+    syslog(LOG_INFO, "Started Fidistat Client");
 
     // load Config File and Settings
-    initConf(cfgLocation);
-    initTLS();
-
-    // Get max number of Settings
-    int statNum = getStatNum();
-
-    Status stats[statNum];
-    Status *statsPtr;
+    initConf();
+    if (!getLocal()) {
+        initTLS();
+    }
 
     // Setup all config files
+    Status stats[getStatNum()];
+    Status *statsPtr;
     confSetup(stats);
-    if (!local) {
+
+    // manual resend the displaysettings
+    if (type == UPDT) {
+        for (int i = 0; i < getStatNum(); i++) {
+            createFile(&stats[i], UPDATE);
+        }
+        return;
+    }
+    
+    // Delete all files from this host
+    if (type == DEL) {
+        if (!getLocal()) {
+            json_t *list = json_array();
+            for (int i = 0; i < getStatNum(); i++) {
+                json_array_append_new(list, json_string(stats[i].name));
+            }
+            struct tls* ctx = initCon(DELETE, getStatNum());
+            char * payloadStr = json_dumps(list, JSON_COMPACT);
+            sendOverTLS(ctx, payloadStr);
+            free(payloadStr);
+            tls_close(ctx);
+            tls_free(ctx);
+        } else {
+            for (int i = 0; i < getStatNum(); i++) {
+                delete(getClientName(), stats[i].name);
+            }
+        }
+        return;
+    }
+
+    // Check server if he needs a new .json
+    if (!getLocal()) {
         sendHello(stats);
     }
 
     // Destroy Config
     destroyConf(); 
 
-    if (!(dry_flag) && !(now_flag)) {
+    //daemonize
+    struct pidfh *pfh;
+    if (type == START && !now_flag) {
+        pfh = daemon_start('c');
+    }
+
+    // flags
+    if (now_flag) {
+        syslog(LOG_INFO, "Running once");
+        sleep(1);
+    } else {
         fixtime();
     }
 
+// MAIN LOOP
     signal(SIGTERM, handleSigterm);
     while(!term) {
         // Set zeit to current time    
         timeSet();
         // Main Loop, go over every Status
-        for (int i = 0; i < statNum; i++) {
+        for (int i = 0; i < getStatNum(); i++) {
             //Make Pointer point to current status
             statsPtr = &stats[i]; 
 
             if (statsPtr != NULL) {
-                syslog(LOG_DEBUG, "checking: %s", statsPtr->name);
                 if (statsPtr->enabled) {
                     // Execute Command and save Output
                     processCommand(statsPtr);
-                    // Send Status to Server
                 }
             }
         }
-        sendStat(stats, statNum);
+        // Send Status to Server
+        sendStat(stats, getStatNum());
+
+        // Run only once
         if (now_flag) {
             break;
         }
 
         if (!term) {
-            sleep(600);
+            sleep(getInterval() * 60);
         }
     }
-    deinitTLS();
-    syslog(LOG_INFO, "Shutting down Client");
+// MAIN LOOP
+    if (!getLocal()) {
+        deinitTLS();
+    }
+    if (type == START && !now_flag) {
+        pidfile_remove(pfh);
+    }
+
+    syslog(LOG_INFO, "Stopped Fidistat Client");
+    closelog();
+    exit(0);
 }
 
+// Send all available settings, bootstrap if necessary
 void sendHello(Status stat[]) {
+
+    // Compose list
     json_error_t error;
     json_t *list = json_array();
     for (int i = 0; i < getStatNum(); i++) {
         json_array_append_new(list, json_string(stat[i].name));
     }
+
+    // Send header
     struct tls* ctx = initCon(HELLO, getStatNum());
     char * payloadStr = json_dumps(list, JSON_COMPACT);
     sendOverTLS(ctx, payloadStr);
     free(payloadStr);
-    char* relistStr = recvOverTLS(ctx);
-    syslog(LOG_DEBUG, "%s", relistStr);
-    json_t *relist = json_loads(relistStr, JSON_DISABLE_EOF_CHECK, &error);
+
+    // check answer and bootstrap necessary files
+    json_t* relist = recvOverTLS(ctx);
     for (int i = 0; i < json_array_size(relist); i++) {
         const char *name = json_string_value(json_array_get(relist, i));
         for (int j = 0; j < getStatNum(); j++) {
             if (strcmp(stat[j].name, name) == 0) {
-                syslog(LOG_DEBUG, "creating %s.json", name);
-                createFile(&stat[j]);
+                createFile(&stat[j], CREATE);
                 break;
             }
         }
@@ -100,6 +152,7 @@ void sendHello(Status stat[]) {
 
 }
 
+// dump/send all Stats
 void sendStat(Status *stats, int statNum) {
     json_t *arrays[statNum];
     for (int i = 0; i < statNum; i++) {
@@ -112,10 +165,10 @@ void sendStat(Status *stats, int statNum) {
             }
         }
     }
-    if (local) {
+    if (getLocal()) {
         for (int i = 0; i < statNum; i++) {
             if (stats[i].enabled) {
-                pasteJSON(arrays[i], clientName);
+                pasteJSON(arrays[i], getClientName());
             }
         }
     } else {
@@ -126,7 +179,7 @@ void sendStat(Status *stats, int statNum) {
             }
         }
 
-        struct tls* ctx = initCon(UPDATE, statActive);
+        struct tls* ctx = initCon(NEWDATA, statActive);
 
         for (int i = 0; i < statNum; i++) {
             if (stats[i].enabled) {
@@ -141,10 +194,11 @@ void sendStat(Status *stats, int statNum) {
     }
 }
 
+// Send header over TCP
 struct tls* initCon(connType type, int size) {
     // Create Header object
     json_t *header = json_object();
-    json_object_set(header, "from", json_string(clientName));
+    json_object_set(header, "from", json_string(getClientName()));
     json_object_set(header, "type", json_integer(type));
     json_object_set(header, "size", json_integer(size));
     char * headerStr = json_dumps(header, JSON_COMPACT | JSON_REAL_PRECISION(5));
@@ -153,7 +207,7 @@ struct tls* initCon(connType type, int size) {
     struct tls* ctx = tls_client();
     tls_configure(ctx, tlsClient_conf);
 
-    if (tls_connect(ctx, serverURL, serverPort) == -1) {
+    if (tls_connect(ctx, getClientServerURL(), getClientServerPort()) == -1) {
         syslog(LOG_ERR, "%s\n", tls_error(ctx));
         return NULL;
     }
@@ -164,7 +218,7 @@ struct tls* initCon(connType type, int size) {
 
 }
 
-
+// Read config of Stats
 void confSetup(Status stats[]) {
     int i = 0;
     for (i = 0; i < getStatNum(); i++) {
@@ -172,50 +226,31 @@ void confSetup(Status stats[]) {
         setConfName(&newStat, i);
         setConfEnable(&newStat);
 
-        // delete .jsons if flags are set
-        if (delete_flag) {
-            del(&newStat);
-            syslog(LOG_INFO, "Removed %s.json\n", newStat.name);
-        } else {
-            if (newStat.enabled) {
-                if (clean_flag) {
-                    del(&newStat);
-                    fprintf(stdout, "Removed %s.json\n", newStat.name);
-                }
+        if (newStat.enabled) {
+            // Load Remaining Config Settings
+            setConfType(&newStat);
+            setConfCmmd(&newStat);
 
-                syslog(LOG_DEBUG, "added: %s", newStat.name);
-                // Load Remaining Config Settings
-                setConfType(&newStat);
-                setConfCmmd(&newStat);
-                if (newStat.type == 2) {
-                    setCSVtitle(&newStat);
-                }
-
-                // Create File if not present
-                if (local) {
-                    bootstrap(&newStat);
-                }
+            if (newStat.type == 2) {
+                setCSVtitle(&newStat);
+            } else {
+                setConfNum(&newStat);
             }
-            stats[i] = newStat;
+
+            // Create File if not present
+            if (getLocal()) {
+                bootstrap(&newStat);
+            }
         }
-            
+        stats[i] = newStat;
     }
-
-    for (i = 0; i < getStatNum(); i++) {
-        syslog(LOG_DEBUG, "%i: %s", i,stats[i].name);
-    }
-    if (delete_flag || clean_flag) {
-        exit(0);
-    }
-
 }
 
 void initTLS(void) {
     tls_init();
     tlsClient_conf = tls_config_new();
-    syslog(LOG_DEBUG, "Certfile: %s\n", getClientCertFile());
-    tls_config_set_cert_file(tlsClient_conf, getClientCertFile());
-    tls_config_set_ca_file(tlsClient_conf, getClientCertFile());
+    tls_config_set_cert_file(tlsClient_conf, getClientCertFile_v());
+    tls_config_set_ca_file(tlsClient_conf, getClientCertFile_v());
     tls_config_insecure_noverifyname(tlsClient_conf);
 }
 void deinitTLS(void) {
@@ -232,10 +267,12 @@ void fixtime(void) {
     if (tm_p->tm_sec > 40) {
         sleep(22);
     }
-    // TODO: 10 is depened on the interval
-    if ( (tm_p->tm_min % 10) != 0) {
-        int min = 10 - (tm_p->tm_min % 10);
-        sleep(min*60);
+    // If 60 minutes dividable by interval
+    if ((60 % getInterval()) == 0) {
+        if ( (tm_p->tm_min % getInterval()) != 0) {
+            int min = getInterval() - (tm_p->tm_min % getInterval());
+            sleep(min*60);
+        }
     }
     return;
 }
@@ -252,10 +289,10 @@ void timeSet() {
 
 //Get Output from Command
 int processCommand(Status *stat) {
-    syslog(LOG_INFO, "Processing command");
     if( stat->type == 2) {
         return 2;
     }
+    stat->result = (float *) malloc(stat->num * sizeof(float));
 
     char raw[OUTPUT_SIZE] = "";
     FILE *fp;
@@ -270,18 +307,10 @@ int processCommand(Status *stat) {
         syslog(LOG_ERR, "Command of %s exits != 0\n", stat->name);
         return -1;
     }
-    syslog(LOG_INFO, "Successfully Loaded command:");
+
+    if (verbose_flag) {
+        syslog(LOG_INFO, "Successfully processed command %d:", stat->id);
+    }
 
     return 0;
-}
-
-void setLocation(char* loc) {
-    cfgLocation = loc;
-}
-
-
-void del(Status *stat) {
-    char file[strlen(path) + strlen(stat->name) + 6];
-    sprintf(file, "%s%s.json", path, stat->name);
-    remove(file);
 }

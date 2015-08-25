@@ -1,96 +1,112 @@
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <syslog.h>
 #include <libconfig.h>
 #include "bootstrap.h"
 #include "client.h"
 #include "config.h"
 
-config_t config;
-
+static char *cfgLocation = "/usr/local/etc/fidistat/config.cfg";
 //get the config specified in main.h
-void initConf (const char * path) {
+void initConf () {
     //init config Structure
     config_init(&config);
     //parse File and watch for Errors
-    if(! config_read_file(&config, path))
+    if(! config_read_file(&config, cfgLocation))
     {
         syslog(LOG_ERR, "%s:%d - %s\n", config_error_file(&config),
         config_error_line(&config), config_error_text(&config));
         config_destroy(&config);
         exit(1);
     }
-    getPath();
-    getMaxCount();
-    getLocalBool();
-    getClientName();
-    getServerPort();
-    getClientServerURL();
+    // fill in the SettingsStruct
+    const char *local;
 
-}
-
-config_setting_t* getSetting(const char * item) {
-    config_setting_t *setting = config_lookup(&config, item);
-    if (setting == NULL) {
-        syslog(LOG_ERR, "Can't find %s\n", item);
-        exit(1);
-    }
-    return setting;
-}
-
-//Get Path to .jsons
-void getPath() {
-    const char *lpath;
-
-    if (!config_lookup_string(&config, "path", &lpath)) {
+    //get Path to json
+    if (!config_lookup_string(&config, "path", &local)) {
         syslog(LOG_ERR, "Can't lookup path to .json\n");
         exit(1);
     }
-    path = strdup(lpath);
-    if (path[strlen(path)-1] != '/') {
-        syslog(LOG_ERR, "Path does not end with /\n");
-        exit(1);
-    }
-}
+    setting.path = strdup(local);
 
-// Get max datapoints displayed
-void getMaxCount() {
-    if (!config_lookup_int(&config, "maxEntrys", &maxCount)) {
+    // Path must have trailing /"
+    if (local[strlen(local)-1] != '/') {
+        char fixed[strlen(local+1)];
+        sprintf(fixed, "%s/", local);
+        setting.path = strdup(fixed);
+    }
+ 
+    // Number of Stats
+    int nums = config_setting_length(config_lookup(&config, "settings"));
+    setting.statNum = nums;
+
+    //getMaxCount();
+    if (!config_lookup_int(&config, "maxEntrys", &setting.maxCount)) {
         syslog(LOG_ERR, "Can't find maxEntries");
         exit(1);
     }
-}
 
-// Check if you should process the data or send it
-void getLocalBool() {
-    if (!config_lookup_bool(&config, "local", &local)) {
+    // Interval of CLient
+    if (!config_lookup_int(&config, "interval", &setting.interval)) {
+        syslog(LOG_ERR, "Can't find interval");
+        exit(1);
+    }
+
+    //getLocalBool();
+    if (!config_lookup_bool(&config, "local", &setting.local)) {
         syslog(LOG_ERR, "Can't find local");
         exit(1);
     }
-}
 
-int getIPv6Bool() {
-    int v6;
-    if (!config_lookup_bool(&config, "ipv6", &v6)) {
-        syslog(LOG_ERR, "Can't find local");
-        exit(1);
-    }
-    return v6;
-}
-
-// Get Name of this Client
-void getClientName() {
-    const char *lname;
-
-    if (!config_lookup_string(&config, "clientName", &lname)) {
+    //getClientName();
+    if (!config_lookup_string(&config, "clientName", &local)) {
         syslog(LOG_ERR, "Can't lookup name\n");
         exit(1);
     }
-    clientName = strdup(lname);
+    setting.clientName = strdup(local);
+
+    //getServerPort();
+    if (!config_lookup_string(&config, "ServerPort", &local)) {
+        syslog(LOG_ERR, "Can't lookup Server Port\n");
+        exit(1);
+    }
+    setting.serverPort = strdup(local);
+
+    //getClientServerURL();
+    if (!config_lookup_string(&config, "serverURL", &local)) {
+        syslog(LOG_ERR, "Can't lookup name\n");
+        exit(1);
+    }
+    setting.serverURL = strdup(local);
+
 }
 
-const char* getClientCertFile() {
+// getter of Setting struct
+int getStatNum() {
+    return setting.statNum;
+}
+const char* getPath() {
+    return setting.path;
+}
+const char* getClientName() {
+    return setting.clientName;
+}
+int getMaxCount() {
+    return setting.maxCount;
+}
+int getLocal() {
+    return setting.local;
+}
+int getInterval() {
+    return setting.interval;
+}
+const char* getClientServerPort() {
+    return setting.serverPort;
+}
+const char* getClientServerURL() {
+    return setting.serverURL;
+}
+
+
+// _v: not safe after config destroyed
+const char* getClientCertFile_v() {
     const char *lfile;
     if (!config_lookup_string(&config, "clientCertFile", &lfile)) {
         syslog(LOG_ERR, "Can't lookup Client Cert\n");
@@ -99,7 +115,7 @@ const char* getClientCertFile() {
     return lfile;
 }
 
-const char* getServerCertFile() {
+const char* getServerCertFile_v() {
     const char *lfile;
     if (!config_lookup_string(&config, "ServerCertFile", &lfile)) {
         syslog(LOG_ERR, "Can't lookup Server Cert\n");
@@ -107,40 +123,42 @@ const char* getServerCertFile() {
     }
     return lfile;
 }
-
-void getServerPort() {
-    const char* port;
-    if (!config_lookup_string(&config, "ServerPort", &port)) {
-        syslog(LOG_ERR, "Can't lookup Server Port\n");
+int getServerIPv6_v() {
+    int v6;
+    if (!config_lookup_bool(&config, "ipv6", &v6)) {
+        syslog(LOG_ERR, "Can't find ipv6");
         exit(1);
     }
-    serverPort = strdup(port);
+    return v6;
 }
 
 
-void getClientServerURL() {
-    const char *url;
-    if (!config_lookup_string(&config, "serverURL", &url)) {
-        syslog(LOG_ERR, "Can't lookup name\n");
+// Functions needed for building Status
+//-------------------------------------
+
+config_setting_t* getSetting(int id) {
+    config_setting_t *setting = config_setting_get_elem(config_lookup(&config, "settings"), id);
+    if (setting == NULL) {
+        syslog(LOG_ERR, "Can't find %d\n", id);
         exit(1);
     }
-    serverURL = strdup(url);
+    return setting;
 }
-
-//get number of Stats
-int getStatNum () {
-    return config_setting_length(getSetting("list"));
-}
-
 
 //Set name of *stat to the ith item of config list
 void setConfName(Status *stat, int i) {
-    stat->name = strdup(config_setting_get_string_elem(getSetting("list"), i));
+    stat->id = i;
+    const char *lname;
+    if (!config_setting_lookup_string(getSetting(stat->id), "name", &lname)) {
+        syslog(LOG_ERR, "Can't lookup Name of %s\n", stat->name);
+        exit(1);
+    }
+    stat->name = strdup(lname);
 }
 
 //Check if *stat is enabled 
 void setConfEnable(Status *stat) {
-    if (!config_setting_lookup_bool(getSetting(stat->name), "enabled", &stat->enabled)) {
+    if (!config_setting_lookup_bool(getSetting(stat->id), "enabled", &stat->enabled)) {
         syslog(LOG_ERR, "Can't lookup enabled of %s\n", stat->name);
         exit(1);
     }
@@ -149,16 +167,22 @@ void setConfEnable(Status *stat) {
 //Get Command of *stat
 void setConfCmmd(Status *stat) {
     const char *lcmmd;
-    if (!config_setting_lookup_string(getSetting(stat->name), "cmmd", &lcmmd)) {
+    if (!config_setting_lookup_string(getSetting(stat->id), "cmmd", &lcmmd)) {
         syslog(LOG_ERR, "Can't lookup Command of %s\n", stat->name);
         exit(1);
     }
     stat->cmmd = strdup(lcmmd);
 }
+
+void setConfNum(Status *stat) {
+    char path[25];
+    sprintf(path, "settings.[%d].sequencetitles" , stat->id);
+    stat->num = config_setting_length(getLookup(path));
+}
  
 void setCSVtitle(Status *stat) {
     const char* title;
-    config_setting_t *setting = config_lookup(&config, stat->name);
+    config_setting_t *setting = getSetting(stat->id);
     if (!config_setting_lookup_string(config_setting_get_member(setting, "display"), "title", &title)) {
         syslog(LOG_ERR, "Can't lookup Title of %s\n", stat->name);
         exit(1);
@@ -169,7 +193,7 @@ void setCSVtitle(Status *stat) {
 //Get Type of *stat
 void setConfType(Status *stat) {
     const char* type;
-    config_setting_t *setting = config_lookup(&config, stat->name);
+    config_setting_t *setting = getSetting(stat->id);
     if (!config_setting_lookup_string(config_setting_get_member(setting, "display"), "type", &type)) {
         syslog(LOG_ERR, "Can't lookup Config Type of %s\n", stat->name);
         exit(1);
@@ -188,6 +212,14 @@ void setConfType(Status *stat) {
             }
         }
     }
+}
+
+config_setting_t* getLookup(const char *path) {
+    return config_lookup(&config, path);
+}
+
+void setLocation(char *loc) {
+    cfgLocation = loc;
 }
 
 //Destroy Config

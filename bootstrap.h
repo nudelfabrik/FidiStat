@@ -4,17 +4,16 @@
 #include "main.h"
 #include <jansson.h>
 
+// check if local file needs bootstrapping
 void bootstrap(Status* status);
-void createFile(Status* status);
+
+// create full JSON object and write/send
+void createFile(Status* status, int type);
 int checkForBootstrap(const char* name);
 
-json_t* getDisplaySettings(const char* name, const char* subSetting);
-void addNewSubSetting(json_t* graph, const char* subObj);
-void addNewString(json_t* graph, const char* key, const char* value, const char* subObj);
-void addNewInt(json_t* graph, const char* key, int value, const char* subObj);
-
-json_t* getSequences(const char* name);
-
-void getBarTitles(json_t* sequences_j, const char* name);
+// Extract options from the config file
+json_t* getDisplaySettings(int id, const char* subSetting);
+json_t* getSequences(int id);
+void getBarTitles(int id,json_t* sequences_j);
 
 #endif

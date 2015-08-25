@@ -1,35 +1,38 @@
 .\" The following commands are required for all man pages.
-.Dd April 22, 2015
+.Dd August 26, 2015
 .Os 
 .Dt FIDISTAT 1
 .Sh NAME
 .Nm FidiStat
-.Nd system statistics to JSON
+.Nd system statistics to JSON for StatusBoard
 .Sh SYNOPSIS
 .Nm
-.Op Fl cdnvx
+.Op Fl nv 
+.Op Fl C -client Oo start|stop|restart|update|delete Oc
+.Op Fl S -server Oo start|stop|restart Oc
 .Op Fl f Ar config.cfg
 .Sh DESCRIPTION
 Executes commands specified in the config files which output system statistics and
 parses these to a JSON file readable by StatusBoard (panic.com/statusboard)
 .Sh OPTIONS
 .Bl -tag -width indent 
-.It Fl c
-Delete all jsons not enabled.
-.It Fl n
-Execute Client once without delay
-.It Fl d
-Dry run, nothing is written to disk.
-.It Fl v
+.It Fl "C --client [start|stop|restart|update|delete]"
+Control the Client. 
+update updates the Graph Settings.
+delete removes all graphs.
+.It Fl "S --server [start|stop|restart]"
+Control the Server. 
+.It Fl v -verbose
 echoes every value to stdout.
-.It Fl x
-Delete ALL jsons listed in "list".
-.It Fl "f CFG_FILE"
+.It Fl "f --file CFG_FILE"
 expects path to config file.
 .El
 .Sh IMPLEMENTATION NOTES
 Which commands work depend on the OS and installed programs.
 some basic config files are provided.
+.Pp
+The server part uses TLS to communicate and has very basic authentication.
+Opening the server to the Internet should be avoided.
 .Sh FILES
 .Pa /usr/local/etc/fidistat/config 
 Default configuration file

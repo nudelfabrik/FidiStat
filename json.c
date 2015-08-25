@@ -1,17 +1,14 @@
-#include <jansson.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <syslog.h>
 #include "client.h"
+#include "config.h"
 #include "json.h"
 
+// Create a payload with new values
 json_t* makeJansson(Status *stat) {
     json_t *newval, *values;
     values = json_array();
 
     int j;
-    for (j = 0; j < 5/* TODO Sizeof Results */; j++) {
+    for (j = 0; j < stat->num; j++) {
         if (stat->type == 0) {
             newval = json_pack("{sssf}", "title", zeit, "value", stat->result[j]);
 
@@ -24,6 +21,9 @@ json_t* makeJansson(Status *stat) {
         }
         json_array_append_new(values, newval);
     }
+    if (stat->type != 2) {
+        free(stat->result);
+    }
     json_t *payload = json_object();
     json_object_set(payload, "name", json_string(stat->name));
     json_object_set(payload, "type", json_integer(stat->type));
@@ -32,18 +32,18 @@ json_t* makeJansson(Status *stat) {
         
 }
 
+
+// paste payload into existing .json
 int pasteJSON(json_t *payload, const char *clientName) {
     // Extract data from payload
     const char * name = json_string_value(json_object_get(payload, "name"));
     int type = json_integer_value(json_object_get(payload, "type"));
     
-    char file[strlen(path)+ strlen(clientName)+strlen(name)+6];
-
-    sprintf(file, "%s%s-%s.json",path, clientName, name);
-
+    
+    // Type 2: CSV
     if (type == 2) {
         FILE *fp;
-        sprintf(file, "%s%s-%s.csv",path, clientName, name);
+        char* file = composeFileName(clientName, name, "csv");
         const char * output = json_string_value(json_object_get(payload, "payload"));
         fp = fopen(file, "w");
         fprintf(fp, "%s",output); 
@@ -57,8 +57,10 @@ int pasteJSON(json_t *payload, const char *clientName) {
     json_error_t error;
 
     // Load *.json
+    const char* file = composeFileName(clientName, name, "json");
+
     root = json_load_file(file, 0, &error);
-    // CHeck for Errors
+    // Check for Errors
     if (!root) {
         syslog(LOG_ERR, "Unable to load json File! error: on line %d: %s\n", error.line, error.text); 
         exit(1);
@@ -75,7 +77,7 @@ int pasteJSON(json_t *payload, const char *clientName) {
         // If Type is 0 /Line (standard case) append new value at the bottom 
         arry = getSingleSeqeunce(dataseq, j);
         if (strncmp(getType(root), "line", 2) == 0) {
-            if (json_array_size(arry) >= maxCount) {
+            if (json_array_size(arry) >= getMaxCount()) {
                  if (json_array_remove(arry,0)) {
                      syslog(LOG_ERR, "error in processing %s.json\n", name);
                      return 0;
@@ -101,11 +103,27 @@ int pasteJSON(json_t *payload, const char *clientName) {
 
 }
 
+// get file.json, migrate datapoints to new and write that back to disk.
+void mergeJSON(json_t *new, const char *file) {
+    json_t *root;
+    json_error_t error;
+    root = json_load_file(file, 0, &error);
+    json_t *sequences = json_object_get(json_object_get(root, "graph"), "datasequences");
+    json_t *newSequences = json_object_get(json_object_get(new, "graph"), "datasequences");
+    size_t numOfDatapoints = json_array_size(sequences);
+
+    for (int i = 0; i < numOfDatapoints; i++) {
+        json_t *points = json_object_get(json_array_get(sequences, i), "datapoints");
+        json_object_set(json_array_get(newSequences, i), "datapoints", points);
+    }
+    dumpJSON(new, file);
+}
+
+// Write json_t to file
 void dumpJSON(json_t *root, const char *file) {
-    if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2))) {
+    if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2) | JSON_REAL_PRECISION(5))) {
         syslog(LOG_ERR, "error in writing back to %s", file);
     }
-    syslog(LOG_DEBUG, "written to %s", file);
 }
 
 json_t* getDataSequences(json_t* graph) {
@@ -132,6 +150,7 @@ int check(json_t* object) {
     }
 }
 
+// makeCSV or makeJansson
 json_t* makeStat(Status *stat) {
     if (stat->type == 2) {
         if (verbose_flag) {
@@ -149,9 +168,9 @@ json_t* makeStat(Status *stat) {
 void printError(const char* name) {
     syslog(LOG_ERR, "Can't get data from %s.json\n", name);
 }
+
 // If type is 2, create a new .csv evertime the command runs
 json_t * makeCSV(Status *stat) {
-    char file[OUTPUT_SIZE];
     char output[OUTPUT_SIZE] = "";
     strcat(output, stat->csv);
     strcat(output, "\n");
