@@ -26,7 +26,10 @@ void initConf (const char * path) {
     setting.path = strdup(local);
     if (local[strlen(local)-1] != '/') {
         syslog(LOG_ERR, "Path does not end with /\n");
-        exit(1);
+        char* fixed = "";
+        sprintf(fixed, "%s/", local);
+        setting.path = strdup(fixed);
+
     }
  
     // Number of Stats
