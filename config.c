@@ -76,6 +76,12 @@ void initConf () {
     }
     setting.serverURL = strdup(local);
 
+    if (!config_lookup_string(&config, "clientAuth", &local)) {
+        syslog(LOG_ERR, "Can't lookup name\n");
+        exit(1);
+    }
+    setting.clientAuth = strdup(local);
+
 }
 
 // getter of Setting struct
@@ -96,6 +102,9 @@ int getLocal() {
 }
 int getInterval() {
     return setting.interval;
+}
+const char* getClientAuth() {
+    return setting.clientAuth;
 }
 const char* getClientServerPort() {
     return setting.serverPort;

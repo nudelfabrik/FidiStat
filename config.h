@@ -10,6 +10,7 @@ struct settingsStruct {
     int local;
     int interval;
     const char *clientName;
+    const char *clientAuth;
     const char *serverURL;
     const char *serverPort;
 };
@@ -27,6 +28,7 @@ void destroyConf();
 int getStatNum();
 const char* getPath();
 const char* getClientName();
+const char* getClientAuth();
 int getMaxCount();
 int getLocal();
 int getInterval();
