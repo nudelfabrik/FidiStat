@@ -115,7 +115,7 @@ void mergeJSON(json_t *new, const char *file) {
 }
 
 void dumpJSON(json_t *root, const char *file) {
-    if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2))) {
+    if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2) | JSON_REAL_PRECISION(5))) {
         syslog(LOG_ERR, "error in writing back to %s", file);
     }
 }
