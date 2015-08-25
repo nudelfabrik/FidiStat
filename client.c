@@ -146,7 +146,7 @@ void sendStat(Status *stats, int statNum) {
             }
         }
 
-        struct tls* ctx = initCon(UPDATE, statActive);
+        struct tls* ctx = initCon(NEWDATA, statActive);
 
         for (int i = 0; i < statNum; i++) {
             if (stats[i].enabled) {

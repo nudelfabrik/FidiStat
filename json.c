@@ -99,6 +99,24 @@ int pasteJSON(json_t *payload, const char *clientName) {
 
 }
 
+void mergeJSON(json_t *new, const char *file) {
+    json_t *root;
+    json_error_t error;
+    root = json_load_file(file, 0, &error);
+    json_t *sequences = json_object_get(json_object_get(root, "graph"), "datasequences");
+    json_t *newSsequences = json_object_get(json_object_get(new, "graph"), "datasequences");
+    size_t numOfDatapoints = json_array_size(sequences);
+
+    for (int i = 0; i < numOfDatapoints; i++) {
+        json_t *points = json_object_get(json_array_get(sequences, i), "datapoints");
+        json_object_set(json_array_get(newSequences, i), "datapoints", points);
+    }
+    dumpJSON(new, file);
+
+
+    }
+}
+
 void dumpJSON(json_t *root, const char *file) {
     if (json_dump_file(root, file, JSON_PRESERVE_ORDER | JSON_INDENT(2))) {
         syslog(LOG_ERR, "error in writing back to %s", file);

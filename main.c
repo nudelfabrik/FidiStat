@@ -30,7 +30,6 @@
 
 volatile sig_atomic_t term = 0;
 
-
 int main(int argc, const char *argv[])
 {
     // Set Flags if some are set
@@ -171,6 +170,10 @@ void handleFlags(int argc, const char *argv[]) {
             if (!strcmp(argv[i+1], "restart")) {
                 daemon_stop('c');
                 client(START);
+                exit(0);
+            }
+            if (!strcmp(argv[i+1], "update")) {
+                client(UPDT);
                 exit(0);
             }
         } else if (!strcmp(argv[i], "server")) {

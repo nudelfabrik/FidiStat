@@ -9,6 +9,7 @@ json_t* makeStat(Status *Stat);
 void sendJSON(json_t *array, const char *name);
 int  pasteJSON(json_t *array, const char *clientName);
 void dumpJSON(json_t *root, const char *name);
+void mergeJSON(json_t *root, const char *name);
 json_t* getDataSequences(json_t* graph);
 json_t* getSingleSeqeunce(json_t* sequences, int i);
 const char* getTitle(json_t* root);

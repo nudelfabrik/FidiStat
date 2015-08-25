@@ -89,23 +89,33 @@ void worker(int connfd, struct tls* ctx) {
     }
     connType type = json_integer_value(json_object_get(header, "type"));
     int size = json_integer_value(json_object_get(header, "size"));
-    if (type == UPDATE) {
+
+    // new Values for graphs
+    if (type == NEWDATA) {
 
         for (int i = 0; i < size; i++) {
             json_t* payload = recvOverTLS(cctx);
             pasteJSON(payload, clientName);
         }
     } 
-    if (type == CREATE) {
+
+    // create .json or update displaysettings
+    if (type == CREATE || type == UPDATE) {
         for (int i = 0; i < size; i++) {
             json_t* payload = recvOverTLS(cctx);
             const char * name = json_string_value(json_object_get(payload, "name"));
             json_t *root = json_object_get(payload, "payload");
 
             char* file = composeFileName(clientName, name, "json");
-            dumpJSON(root, file);
+            if (type == CREATE) {
+                dumpJSON(root, file);
+            } else {
+                mergeJSON(root,file);
+            }
         }
     }
+
+    // Look, which files are not available
     if (type == HELLO) {
         json_t *relist = json_array();
 
@@ -121,8 +131,8 @@ void worker(int connfd, struct tls* ctx) {
         char * relistStr = json_dumps(relist, JSON_COMPACT);
         sendOverTLS(cctx, relistStr);
         free(relistStr);
-
     }
+
     tls_close(cctx);
     tls_free(cctx);
 
