@@ -295,14 +295,17 @@ int processCommand(Status *stat) {
     }
     stat->result = (float *) malloc(stat->num * sizeof(float));
 
-    char raw[OUTPUT_SIZE] = "";
+    // Size for each datasequence:
+    // 9 (up to (10^10)-1) Digits, 1 for (,/.)
+    // PRECISION for float precision, 1 for \n
+    char raw[stat->num * (11 + PRECISION) ];
     FILE *fp;
 
     fp = popen(stat->cmmd, "r");  
-    int i = 0;
-    while (fgets(raw, sizeof(raw)-1, fp) != NULL) {
-        stat->result[i] = strtof(raw, NULL);
-        i++;
+    for (int i = 0; i < stat->num, i++) {
+        if (fgets(raw, sizeof(raw), fp) != NULL) {
+            stat->result[i] = strtof(raw, NULL);
+        }
     }
     if (pclose(fp) != 0) {
         syslog(LOG_ERR, "Command of %s exits != 0\n", stat->name);
