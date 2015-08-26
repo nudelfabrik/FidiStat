@@ -69,6 +69,7 @@ void client(commandType type) {
         pfh = daemon_start('c');
     }
 
+    signal(SIGTERM, handleSigterm);
     // flags
     if (now_flag) {
         syslog(LOG_INFO, "Running once");
@@ -78,7 +79,6 @@ void client(commandType type) {
     }
 
 // MAIN LOOP
-    signal(SIGTERM, handleSigterm);
     while(!term) {
         // Set zeit to current time    
         timeSet();
@@ -107,6 +107,7 @@ void client(commandType type) {
         }
     }
 // MAIN LOOP
+    syslog(LOG_INFO, "shutting down client");
     if (!getLocal()) {
         deinitTLS();
     }
@@ -267,6 +268,9 @@ void fixtime(void) {
     // 20 Seconds should be enough to execute all commands
     if (tm_p->tm_sec > 40) {
         sleep(22);
+        if (term) {
+            return;
+        }
     }
     // If 60 minutes dividable by interval
     if ((60 % getInterval()) == 0) {
@@ -295,14 +299,17 @@ int processCommand(Status *stat) {
     }
     stat->result = (float *) malloc(stat->num * sizeof(float));
 
-    char raw[OUTPUT_SIZE] = "";
+    // Size for each datasequence:
+    // 9 (up to (10^10)-1) Digits, 1 for (,/.)
+    // PRECISION for float precision, 1 for \n
+    char raw[stat->num * (11 + PRECISION) ];
     FILE *fp;
 
     fp = popen(stat->cmmd, "r");  
-    int i = 0;
-    while (fgets(raw, sizeof(raw)-1, fp) != NULL) {
-        stat->result[i] = strtof(raw, NULL);
-        i++;
+    for (int i = 0; i < stat->num; i++) {
+        if (fgets(raw, sizeof(raw), fp) != NULL) {
+            stat->result[i] = strtof(raw, NULL);
+        }
     }
     if (pclose(fp) != 0) {
         syslog(LOG_ERR, "Command of %s exits != 0\n", stat->name);

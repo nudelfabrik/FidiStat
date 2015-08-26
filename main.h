@@ -16,6 +16,7 @@
 #include <tls.h>
 
 #define OUTPUT_SIZE 1024
+#define PRECISION 5
 int verbose_flag, now_flag;
 
 struct statStruct {
