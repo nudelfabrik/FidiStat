@@ -1,16 +1,16 @@
 #!/bin/sh
 #
-# PROVIDE: fidistat
+# PROVIDE: fidistat-server
 # REQUIRE: LOGIN
 # KEYWORD: shutdown
 #
 # rc.conf variables:
-# fidistat_enable (Default: NO)
+# fidistat_server_enable (Default: NO)
 . /etc/rc.subr
 
-name=fidistat
-rcvar=fidistat_enable
-desc="Daemon to monitor system stats for StatusBoard"
+name=fidistatserver
+rcvar=fidistat_server_enable
+desc="Daemon to receive stats for StatusBoard"
 
 command="/usr/local/bin/fidistat"
 load_rc_config $name
@@ -21,16 +21,16 @@ sig_reload="SIGHUP"
 start_cmd="${name}_start"
 stop_cmd="${name}_stop"
 
-fidistat_start() {
+fidistatserver_start() {
     if [ $# -gt 0 ]; then
-        ${command} -C start $*
+        ${command} -S start $*
     else
-        ${command} -C start 
+        ${command} -S start 
     fi
 }
 
-fidistat_stop() {
-    ${command} -C stop 
+fidistatserver_stop() {
+    ${command} -S stop 
 }
 
 run_rc_command "$@"
