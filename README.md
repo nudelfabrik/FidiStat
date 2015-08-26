@@ -1,14 +1,7 @@
-FidiStat 2.0-BETA
+FidiStat 2.0
 ============
 
 FreeBSD/FreeNAS monitoring for [Status Board](http://www.panic.com/statusboard/)
-
-Beta
-----
-Version 2.0 is feature complete and has nearly all issues fixed.
-The release version will happen after some time of testing in production.
-
-The Last "stable" version is currently v1.3.1
 
 Install
 ------
@@ -25,6 +18,11 @@ Per default, with setting "local = true", the JSON files are generated on the lo
 
     fidistat --client start
 starts the daemon.  
+alternatively:
+
+    service fidistat start
+on BSD starts via rc.d.    
+
 To provide "clean" Timestamps, the daemon will wait until the next full<code>60min modulo interval x</code> minutes and then wakes every x minutes to update the jsons with new values.    
 
 SSL/TLS
@@ -56,6 +54,8 @@ Additionally there is the clientName with identifies the fidistat for each machi
 The local boolean value indicates wether to keep the data local or send it over TLS. (this hase some new settings as well).     
 
 In general see the provided configFiles and update your old configs acordingly.
+
+The Last release of version 1.x is v1.3.1
 
 config.cfg
 ----------
