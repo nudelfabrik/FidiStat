@@ -64,6 +64,8 @@ install: all
 	gzip -k fidistat.man
 	mkdir -p /usr/local/share/man1 || :
 	mv fidistat.man.gz /usr/local/share/man1/fidistat.1.gz
+	install -m 0755 fidistat.rc /usr/local/etc/rc.d/fidistat
+	install -m 0755 fidistat-server.rc /usr/local/etc/rc.d/fidistat-server
 
 clean: 
 	-rm *.o
