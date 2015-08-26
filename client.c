@@ -69,6 +69,7 @@ void client(commandType type) {
         pfh = daemon_start('c');
     }
 
+    signal(SIGTERM, handleSigterm);
     // flags
     if (now_flag) {
         syslog(LOG_INFO, "Running once");
@@ -78,7 +79,6 @@ void client(commandType type) {
     }
 
 // MAIN LOOP
-    signal(SIGTERM, handleSigterm);
     while(!term) {
         // Set zeit to current time    
         timeSet();
@@ -107,6 +107,7 @@ void client(commandType type) {
         }
     }
 // MAIN LOOP
+    syslog(LOG_INFO, "shutting down client");
     if (!getLocal()) {
         deinitTLS();
     }
@@ -267,6 +268,9 @@ void fixtime(void) {
     // 20 Seconds should be enough to execute all commands
     if (tm_p->tm_sec > 40) {
         sleep(22);
+        if (term) {
+            return;
+        }
     }
     // If 60 minutes dividable by interval
     if ((60 % getInterval()) == 0) {

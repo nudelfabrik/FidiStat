@@ -12,10 +12,11 @@ name=fidistat
 rcvar=fidistat_enable
 desc="Daemon to monitor system stats for StatusBoard"
 
-command="/usr/local/etc/fidistat"
+command="/usr/local/bin/fidistat"
 load_rc_config $name
 
-# sig_reload="SIGHUP"
+sig_reload="SIGHUP"
+sig_stop="SIGTERM"
 # extra_commands="reload"
 
 start_cmd="${name}_start"
@@ -28,3 +29,5 @@ fidistat_start() {
 fidistat_stop() {
     ${command} -C stop 
 }
+
+run_rc_command "$@"
