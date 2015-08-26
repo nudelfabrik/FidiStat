@@ -302,7 +302,7 @@ int processCommand(Status *stat) {
     FILE *fp;
 
     fp = popen(stat->cmmd, "r");  
-    for (int i = 0; i < stat->num, i++) {
+    for (int i = 0; i < stat->num; i++) {
         if (fgets(raw, sizeof(raw), fp) != NULL) {
             stat->result[i] = strtof(raw, NULL);
         }
