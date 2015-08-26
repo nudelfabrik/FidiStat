@@ -39,7 +39,6 @@ Run <code>fidistat server start</code> on the server side and <code>fidistat cli
 if the *local* setting clientside is set to false, the client will attempt to send the updates to the server.
 
 **WARNING**    
-Do **NOT** run the server on an open port to the internet.   
 I strongly advice **NOT** to run the sever on an port acessible form the internet, at least not without firewall, or only in an own jail.   
 The server expects a certain JSON format, but with a setting of type CSV, a client (or attacker) could write arbitrary code to disk.   
 There is very basic authentification via a string in the config, which has to be the same on client an server.   
