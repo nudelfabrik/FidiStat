@@ -182,16 +182,20 @@ void sendStat(Status *stats, int statNum) {
 
         struct tls* ctx = initCon(NEWDATA, statActive);
 
-        for (int i = 0; i < statNum; i++) {
-            if (stats[i].enabled) {
-                char * payloadStr = json_dumps(arrays[i], JSON_COMPACT);
-                sendOverTLS(ctx, payloadStr);
-                free(payloadStr);
+        // Check if connection failed
+        if (ctx != NULL) {
+            for (int i = 0; i < statNum; i++) {
+                if (stats[i].enabled) {
+                    char * payloadStr = json_dumps(arrays[i], JSON_COMPACT);
+                    sendOverTLS(ctx, payloadStr);
+                    free(payloadStr);
+                }
             }
+            tls_close(ctx);
+            tls_free(ctx);
+        } else {
+            syslog(LOG_ERR, "Connection failed, skipping this time");
         }
-
-        tls_close(ctx);
-        tls_free(ctx);
     }
 }
 
