@@ -3,13 +3,13 @@
 #include "main.h"
 #include <jansson.h>
 
-// create payloads
-json_t* makeStat(Status *Stat);
+// create payloads, JSON/CSV
+json_t* makePayload(Status *Stat);
 json_t* makeJansson(Status *Stat);
 json_t* makeCSV(Status *Stat);
 
 // paste payload into existing .json
-int  pasteJSON(json_t *array, const char *clientName);
+int pasteJSON(json_t *array, const char *clientName);
 
 // get file.json, migrate datapoints to new and write that back to disk.
 void mergeJSON(json_t *root, const char *name);

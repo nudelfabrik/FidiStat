@@ -122,14 +122,16 @@ void worker(int connfd, struct tls* ctx) {
 
             char* file = composeFileName(clientName, name, "json");
             if (type == CREATE) {
+                // Create/Replace file
                 dumpJSON(root, file);
             } else {
+                // Update old file with new settings
                 mergeJSON(root,file);
             }
         }
     }
 
-    // Look, which files are not available
+    // Look which files are not available
     if (type == HELLO) {
         json_t *relist = json_array();
 
@@ -142,6 +144,7 @@ void worker(int connfd, struct tls* ctx) {
                 json_array_append_new(relist, json_string(name)); 
             }
         }
+        // Send answer
         char * relistStr = json_dumps(relist, JSON_COMPACT);
         sendOverTLS(cctx, relistStr);
         free(relistStr);
