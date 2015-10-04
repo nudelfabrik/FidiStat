@@ -36,6 +36,7 @@ int main(int argc, const char *argv[])
     return -1;
 }
 
+// Get CLI flags and start appropiate function
 void handleFlags(int argc, const char *argv[]) {
 
     // Handle CLI flags
@@ -56,6 +57,7 @@ void handleFlags(int argc, const char *argv[]) {
     --client -C: [start|stop|restart|update|delete] : control client\n\
     --server -S: [start|stop|restart] : control server\n";
 
+    // Determine Type of command requested
     cliType opt;
     while ((c = getopt_long(argc, argv, "C:f:hnS:v", long_options, NULL)) != -1) {
         switch (c) {
@@ -124,6 +126,8 @@ void handleFlags(int argc, const char *argv[]) {
             break;
         }
     }
+
+    // Execute requested function
     switch (opt) {
     case CSTART:
         client(START);
@@ -164,6 +168,7 @@ void handleFlags(int argc, const char *argv[]) {
     }
 }
 
+// Start Daemon (who = c or s for client/server)
 struct pidfh* daemon_start(char who) {
     char pidp[28];
     sprintf(pidp, "/var/run/fidistat-%c.pid", who);
@@ -189,6 +194,7 @@ struct pidfh* daemon_start(char who) {
     return pfh;
 }
 
+// Stop Daemon (who = c or s for client/server)
 void daemon_stop(char who) {
     char pidp[28];
     sprintf(pidp, "/var/run/fidistat-%c.pid", who);

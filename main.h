@@ -30,6 +30,7 @@ struct statStruct {
     float *result;
 };
 
+// Types of Connections
 enum connectionEnum {
     HELLO,
     NEWDATA,
@@ -38,21 +39,23 @@ enum connectionEnum {
     DELETE
 };
 
+// Type of functions for CLient and Server
 enum commandEnum {
     START,
     UPDT,
     DEL
 };
 
+// Types of requests from CLI flags
 enum cliEnum {
-    CSTART,
-    CSTOP,
-    CRESTART,
-    CDELETE,
-    CUPDATE,
-    SSTART,
-    SSTOP,
-    SRESTART
+    CSTART,     // Start Client
+    CSTOP,      // Stop Client 
+    CRESTART,   // Restart Client
+    CDELETE,    // Delete old Stats
+    CUPDATE,    // singe update
+    SSTART,     // Start Server
+    SSTOP,      // Stop Server
+    SRESTART    // Restart Server
 };
 
 typedef struct statStruct Status;

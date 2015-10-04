@@ -9,6 +9,7 @@ void handleSigterm(int sig) {
     term = 1;
 }
 
+// Main Client function
 void client(commandType type) {
     // open Log
     fprintf(stdout, "Starting fidistat...\n");
@@ -26,7 +27,7 @@ void client(commandType type) {
     Status *statsPtr;
     confSetup(stats);
 
-    // manual resend the displaysettings
+    // Create new bare JSON and send it to the server
     if (type == UPDT) {
         for (int i = 0; i < getStatNum(); i++) {
             createFile(&stats[i], UPDATE);
@@ -106,7 +107,7 @@ void client(commandType type) {
             sleep(getInterval() * 60);
         }
     }
-// MAIN LOOP
+// END MAIN LOOP
     syslog(LOG_INFO, "shutting down client");
     if (!getLocal()) {
         deinitTLS();
@@ -162,16 +163,18 @@ void sendStat(Status *stats, int statNum) {
 
         if (statsPtr != NULL) {
             if (statsPtr->enabled) {
-                arrays[i] = makeStat(statsPtr);
+                arrays[i] = makePayload(statsPtr);
             }
         }
     }
+    // Local
     if (getLocal()) {
         for (int i = 0; i < statNum; i++) {
             if (stats[i].enabled) {
                 pasteJSON(arrays[i], getClientName());
             }
         }
+    // Send to Server
     } else {
         int statActive = 0;
         for (int i = 0; i < statNum; i++) {

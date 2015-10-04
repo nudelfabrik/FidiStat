@@ -151,7 +151,7 @@ int check(json_t* object) {
 }
 
 // makeCSV or makeJansson
-json_t* makeStat(Status *stat) {
+json_t* makePayload(Status *stat) {
     if (stat->type == 2) {
         if (verbose_flag) {
             debug(stat);
