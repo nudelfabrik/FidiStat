@@ -42,11 +42,15 @@ void client(commandType type) {
                 json_array_append_new(list, json_string(stats[i].name));
             }
             struct tls* ctx = initCon(DELETE, getStatNum());
-            char * payloadStr = json_dumps(list, JSON_COMPACT);
-            sendOverTLS(ctx, payloadStr);
-            free(payloadStr);
-            tls_close(ctx);
-            tls_free(ctx);
+            if (ctx != NULL) {
+                char * payloadStr = json_dumps(list, JSON_COMPACT);
+                sendOverTLS(ctx, payloadStr);
+                free(payloadStr);
+                tls_close(ctx);
+                tls_free(ctx);
+            } else {
+                syslog(LOG_ERR, "Connection Failed");
+            }
         } else {
             for (int i = 0; i < getStatNum(); i++) {
                 delete(getClientName(), stats[i].name);
