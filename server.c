@@ -1,5 +1,6 @@
 #include <sys/types.h> 
 #include <sys/socket.h>
+#include <sys/event.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -12,11 +13,12 @@
 #include "tls.h"
 #include "main.h"
 
+
+#define MAXSOCK 5
+
 // signal Handler
-int sckt;
 void handleSigterm_S(int sig) {
     term = 1;
-    shutdown(sckt,SHUT_RDWR);
 }
 
 void handleChild(int sig) {
@@ -35,15 +37,48 @@ void server() {
     signal(SIGTERM, handleSigterm_S);
     signal(SIGCHLD, handleChild);
 
-    // Open Socket
+    // Initialize TLS structs
     initConf();
     tls_init();
     struct tls* ctx = tls_server();
-    int sock = initTLS_S(ctx);
-    sckt = sock;
+    initTLS_S(ctx);
+
+    // Create and bind sockets
+    int sock[MAXSOCK] = { 0 };
+    int nsock = 0;
+
+    struct addrinfo *servinfo, *p;
+    servinfo = getAddrInfo();
+
+    for(p = servinfo; p != NULL && nsock < MAXSOCK; p = p->ai_next) {
+        if ((sock[nsock] = socket(p->ai_family, p->ai_socktype,
+                p->ai_protocol)) == -1) {
+            syslog(LOG_ERR, "socket error");
+            continue;
+        }
+
+        if (bind(sock[nsock], p->ai_addr, p->ai_addrlen) == -1) {
+            close(sock[nsock]);
+            syslog(LOG_ERR, "bind error");
+            continue;
+        }
+        listen(sock[nsock], 5);
+        nsock++;
+    }
+    freeaddrinfo(servinfo);
+
+    // Build kqueue
+    int kq;
+    struct kevent evSet;
+
+    kq = kqueue();
+    for (int i = 0; i < nsock; i++) {
+        EV_SET(&evSet, s[i], EVFILT_READ, EV_ADD, 0, 0, (void *)ai0);
+        kevent(kq, &evSet, 1, (void *)0, 0, (struct timespec*)0);
+    }
+                                                             
 
     int connfd, pid;
-    listen(sock, 10);
 
     // Destroy Config
     destroyConf(); 
@@ -165,48 +200,20 @@ void worker(int connfd, struct tls* ctx) {
 
 }
 
-int initTLS_S(struct tls* ctx) {
+void initTLS_S(struct tls* ctx) {
     tlsServer_conf = tls_config_new();
     tls_config_set_cert_file(tlsServer_conf, getServerCertFile_v());
     tls_config_set_key_file(tlsServer_conf, getServerCertFile_v());
 
     tls_configure(ctx, tlsServer_conf);
-
-    int sock;
-
-    struct addrinfo *servinfo, *p;
-    servinfo = getAddrInfo();
-
-    for(p = servinfo; p != NULL; p = p->ai_next) {
-        if ((sock = socket(p->ai_family, p->ai_socktype,
-                p->ai_protocol)) == -1) {
-            syslog(LOG_ERR, "socket error");
-            continue;
-        }
-
-        if (bind(sock, p->ai_addr, p->ai_addrlen) == -1) {
-            close(sock);
-            syslog(LOG_ERR, "bind error");
-            continue;
-        }
-        break; // if we get here, we must have connected successfully
-    }
-
-    freeaddrinfo(servinfo);
-    syslog(LOG_DEBUG, "start socket\n");
-    return sock;
 }
 
 struct addrinfo* getAddrInfo() {
-    struct addrinfo hints, *servinfo, *p;
+    struct addrinfo hints, *servinfo;
 
     memset(&hints, 0, sizeof hints);
-    if(getServerIPv6_v()) {
-        hints.ai_family =  AF_INET6;
-    } else {
-        hints.ai_family =  AF_INET;
-    }
 
+    hints.ai_family =  PF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE; // use my IP address
 
