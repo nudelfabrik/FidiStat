@@ -53,7 +53,7 @@ int pasteJSON(json_t *payload, const char *clientName) {
 
     json_t *array = json_object_get(payload, "payload");
     
-    json_t *root, *dataseq, *graph, *arry, *newval;
+    json_t *root, *dataseq, *graph, *arry;
     json_error_t error;
 
     // Load *.json
@@ -72,12 +72,12 @@ int pasteJSON(json_t *payload, const char *clientName) {
         printError(name);
     }
     // Process Every Datasequence
-    int j;
+    size_t j;
     for (j = 0; j < json_array_size(dataseq); j++) {
         // If Type is 0 /Line (standard case) append new value at the bottom 
         arry = getSingleSeqeunce(dataseq, j);
         if (strncmp(getType(root), "line", 2) == 0) {
-            if (json_array_size(arry) >= getMaxCount()) {
+            if (json_array_size(arry) >= (size_t) getMaxCount()) {
                  if (json_array_remove(arry,0)) {
                      syslog(LOG_ERR, "error in processing %s.json\n", name);
                      return 0;
@@ -89,7 +89,7 @@ int pasteJSON(json_t *payload, const char *clientName) {
             }
         // When Type is Bar, every Entry has its own name and you change the value
         } else {
-            int k;
+            size_t k;
             for (k = 0; k < json_array_size(arry); k++) {
                 if (json_real_set(json_object_get(json_array_get(arry, k), "value"), json_real_value(json_array_get(array, k))) ) {
                     return 0;
@@ -112,7 +112,7 @@ void mergeJSON(json_t *new, const char *file) {
     json_t *newSequences = json_object_get(json_object_get(new, "graph"), "datasequences");
     size_t numOfDatapoints = json_array_size(sequences);
 
-    for (int i = 0; i < numOfDatapoints; i++) {
+    for (size_t i = 0; i < numOfDatapoints; i++) {
         json_t *points = json_object_get(json_array_get(sequences, i), "datapoints");
         json_object_set(json_array_get(newSequences, i), "datapoints", points);
     }

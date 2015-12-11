@@ -6,7 +6,9 @@
 #include "main.h"
 
 void handleSigterm(int sig) {
-    term = 1;
+    if (sig == SIGTERM) {
+        term = 1;
+    }
 }
 
 void client(commandType type) {
@@ -128,7 +130,7 @@ void client(commandType type) {
 void sendHello(Status stat[]) {
 
     // Compose list
-    json_error_t error;
+    //json_error_t error;
     json_t *list = json_array();
     for (int i = 0; i < getStatNum(); i++) {
         json_array_append_new(list, json_string(stat[i].name));
@@ -142,7 +144,7 @@ void sendHello(Status stat[]) {
 
     // check answer and bootstrap necessary files
     json_t* relist = recvOverTLS(ctx);
-    for (int i = 0; i < json_array_size(relist); i++) {
+    for (size_t i = 0; i < json_array_size(relist); i++) {
         const char *name = json_string_value(json_array_get(relist, i));
         for (int j = 0; j < getStatNum(); j++) {
             if (strcmp(stat[j].name, name) == 0) {
