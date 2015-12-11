@@ -122,6 +122,11 @@ void worker(int connfd, struct tls* ctx) {
         for (int i = 0; i < size; i++) {
             json_t* payload = recvOverTLS(cctx);
             const char * name = json_string_value(json_object_get(payload, "name"));
+            if (name == NULL) {
+                syslog(LOG_ERR, "Error in Message from Client");
+                return;
+            }
+
             json_t *root = json_object_get(payload, "payload");
 
             char* file = composeFileName(clientName, name, "json");
@@ -141,6 +146,10 @@ void worker(int connfd, struct tls* ctx) {
 
         for (int i = 0; i < size; i++) {
             const char * name = json_string_value(json_array_get(list, i));
+            if (name == NULL) {
+                syslog(LOG_ERR, "Error in Message from Client");
+                return;
+            }
             char* file = composeFileName(clientName, name, "json");
             if (access( file, F_OK ) == -1) {
                 json_array_append_new(relist, json_string(name)); 
