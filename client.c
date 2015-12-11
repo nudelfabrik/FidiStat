@@ -94,7 +94,7 @@ void client(commandType type) {
     }
 
 // MAIN LOOP
-    while(!term) {
+    while (!term) {
         // Set zeit to current time    
         timeSet();
         // Main Loop, go over every Status
@@ -118,7 +118,10 @@ void client(commandType type) {
         }
 
         if (!term) {
-            sleep(getInterval() * 60);
+            int tosleep = sleep(getInterval() * 60);
+            while (tosleep > 0 && !term) {
+                tosleep = sleep(tosleep);
+            }
         }
     }
 // MAIN LOOP
