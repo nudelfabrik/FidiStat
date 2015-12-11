@@ -53,7 +53,8 @@ void createFile(Status* status, int type) {
         dumpJSON(root, file);
     } else {
         // Type either CREATE or UPDATE
-        struct tls* ctx = initCon(type, 1);
+        struct tls* ctx = NULL;
+        initCon(ctx, type, 1);
         json_t* payload = json_object();
         json_object_set(payload, "name", json_string(status->name));
         json_object_set(payload, "payload", root);

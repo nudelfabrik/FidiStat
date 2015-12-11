@@ -15,12 +15,16 @@
 // signal Handler
 int sckt;
 void handleSigterm_S(int sig) {
-    term = 1;
-    shutdown(sckt,SHUT_RDWR);
+    if (sig == SIGTERM) {
+        term = 1;
+        shutdown(sckt,SHUT_RDWR);
+    }
 }
 
 void handleChild(int sig) {
-    wait(NULL);
+    if (sig == SIGCHLD) {
+        wait(NULL);
+    }
 }
 
 void server() {
@@ -87,7 +91,7 @@ void worker(int connfd, struct tls* ctx) {
     tls_accept_socket(ctx, &cctx, connfd);
     json_t *header = recvOverTLS(cctx);
     const char* clientName = json_string_value(json_object_get(header, "from"));
-    for (int i = 0; i < sizeof(clientName); i++) {
+    for (size_t i = 0; i < sizeof(clientName); i++) {
         if (clientName[i] == '/' || clientName[i] == '\\') {
             syslog(LOG_ERR, "ERROR in clientName!, aborting");
             return;
@@ -195,7 +199,7 @@ int initTLS_S(struct tls* ctx) {
 }
 
 struct addrinfo* getAddrInfo() {
-    struct addrinfo hints, *servinfo, *p;
+    struct addrinfo hints, *servinfo;
 
     memset(&hints, 0, sizeof hints);
     if(getServerIPv6_v()) {
