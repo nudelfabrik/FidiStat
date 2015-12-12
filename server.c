@@ -76,8 +76,9 @@ void server() {
     struct kevent evSet;
 
     kq = kqueue();
+    // Add all sockets to kq
     for (int i = 0; i < nsock; i++) {
-        EV_SET(&evSet, sock[i], EVFILT_READ, EV_ADD, 0, 0, (void *)servinfo);
+        EV_SET(&evSet, sock[i], EVFILT_READ, EV_ADD, 0, 5, (void *)servinfo);
         if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1) {
             syslog(LOG_ERR, "kevent set error:\n%m\n");
         }
@@ -90,7 +91,7 @@ void server() {
     destroyConf(); 
 
     struct kevent evList[32];
-        int nev;
+    int nev;
 
     while(!term) {
         nev = kevent(kq, NULL, 0, evList, 32, NULL);
@@ -102,8 +103,13 @@ void server() {
             break;
         }
         for (int i=0; i<nev; i++) {
+            if (evList[i].flags & EV_EOF) {
+                syslog(LOG_DEBUG, "Connection closed with EOF");
+                close(evList[i].ident);
+
+            }
             if (evList[i].udata == servinfo) {
-                connfd = accept(evList.ident, (struct sockaddr*) NULL, NULL); 
+                connfd = accept(evList[i].ident, (struct sockaddr*) NULL, NULL); 
                 worker(connfd, ctx);
             }
         }
@@ -133,7 +139,9 @@ void server() {
 
 
     syslog(LOG_INFO, "Shutting down Server");
-    close(sock);
+    for (int i = 0; i < nsock; i++) {
+        close(sock[i]);
+    }
     tls_close(ctx);
     tls_free(ctx);
     tls_config_free(tlsServer_conf);
@@ -165,6 +173,7 @@ void worker(int connfd, struct tls* ctx) {
     }
     connType type = json_integer_value(json_object_get(header, "type"));
     int size = json_integer_value(json_object_get(header, "size"));
+    syslog(LOG_DEBUG, "Payload received");
 
     // Process Payload
     //----------------
