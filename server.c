@@ -18,11 +18,15 @@
 
 // signal Handler
 void handleSigterm_S(int sig) {
-    term = 1;
+    if (sig == SIGTERM) {
+        term = 1;
+    }
 }
 
 void handleChild(int sig) {
-    wait(NULL);
+    if (sig == SIGCHLD) {
+        wait(NULL);
+    }
 }
 
 void server() {
@@ -122,7 +126,7 @@ void worker(int connfd, struct tls* ctx) {
     tls_accept_socket(ctx, &cctx, connfd);
     json_t *header = recvOverTLS(cctx);
     const char* clientName = json_string_value(json_object_get(header, "from"));
-    for (int i = 0; i < sizeof(clientName); i++) {
+    for (size_t i = 0; i < sizeof(clientName); i++) {
         if (clientName[i] == '/' || clientName[i] == '\\') {
             syslog(LOG_ERR, "ERROR in clientName!, aborting");
             return;
@@ -153,6 +157,11 @@ void worker(int connfd, struct tls* ctx) {
         for (int i = 0; i < size; i++) {
             json_t* payload = recvOverTLS(cctx);
             const char * name = json_string_value(json_object_get(payload, "name"));
+            if (name == NULL) {
+                syslog(LOG_ERR, "Error in Message from Client");
+                return;
+            }
+
             json_t *root = json_object_get(payload, "payload");
 
             char* file = composeFileName(clientName, name, "json");
@@ -174,6 +183,10 @@ void worker(int connfd, struct tls* ctx) {
 
         for (int i = 0; i < size; i++) {
             const char * name = json_string_value(json_array_get(list, i));
+            if (name == NULL) {
+                syslog(LOG_ERR, "Error in Message from Client");
+                return;
+            }
             char* file = composeFileName(clientName, name, "json");
             if (access( file, F_OK ) == -1) {
                 json_array_append_new(relist, json_string(name)); 
