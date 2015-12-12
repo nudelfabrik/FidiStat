@@ -69,7 +69,7 @@ void server() {
         listen(sock[nsock], 5);
         nsock++;
     }
-    freeaddrinfo(servinfo);
+    //freeaddrinfo(servinfo);
 
     // Build kqueue
     int kq;
@@ -77,8 +77,10 @@ void server() {
 
     kq = kqueue();
     for (int i = 0; i < nsock; i++) {
-        EV_SET(&evSet, s[i], EVFILT_READ, EV_ADD, 0, 0, (void *)ai0);
-        kevent(kq, &evSet, 1, (void *)0, 0, (struct timespec*)0);
+        EV_SET(&evSet, sock[i], EVFILT_READ, EV_ADD, 0, 0, (void *)servinfo);
+        if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1) {
+            syslog(LOG_ERR, "kevent set error:\n%m\n");
+        }
     }
                                                              
 
@@ -87,7 +89,27 @@ void server() {
     // Destroy Config
     destroyConf(); 
 
+    struct kevent evList[32];
+        int nev;
+
     while(!term) {
+        nev = kevent(kq, NULL, 0, evList, 32, NULL);
+        if (term) {
+            break;
+        }
+        if (nev < 0) {
+            syslog(LOG_ERR, "kevent error:\n%m\n");
+            break;
+        }
+        for (int i=0; i<nev; i++) {
+            if (evList[i].udata == servinfo) {
+                connfd = accept(evList.ident, (struct sockaddr*) NULL, NULL); 
+                worker(connfd, ctx);
+            }
+        }
+
+
+        /*
         connfd = accept(sock, (struct sockaddr*) NULL, NULL); 
 
         if (term) {
@@ -105,7 +127,11 @@ void server() {
         } else {
             close(connfd);
         }
+        */
     }
+
+
+
     syslog(LOG_INFO, "Shutting down Server");
     close(sock);
     tls_close(ctx);
