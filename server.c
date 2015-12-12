@@ -16,19 +16,6 @@
 
 #define MAXSOCK 5
 
-// signal Handler
-void handleSigterm_S(int sig) {
-    if (sig == SIGTERM) {
-        term = 1;
-    }
-}
-
-void handleChild(int sig) {
-    if (sig == SIGCHLD) {
-        wait(NULL);
-    }
-}
-
 void server() {
     // load Config File and Settings
     fprintf(stdout, "Starting fidistat Server...\n");
@@ -36,10 +23,6 @@ void server() {
     syslog(LOG_INFO, "Started Fidistat Server");
 
     struct pidfh *pfh = daemon_start('s');
-
-    // Handle Signals
-    signal(SIGTERM, handleSigterm_S);
-    signal(SIGCHLD, handleChild);
 
     // Initialize TLS structs
     initConf();
@@ -83,6 +66,11 @@ void server() {
             syslog(LOG_ERR, "kevent set error:\n%m\n");
         }
     }
+    // fire kevent when SIGTERM
+    EV_SET(&evSet, SIGTERM, EVFILT_SIGNAL, EV_ADD, 0, 0, NULL);
+    if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1) {
+        syslog(LOG_ERR, "kevent set error:\n%m\n");
+    }
                                                              
 
     int connfd, pid;
@@ -93,16 +81,17 @@ void server() {
     struct kevent evList[32];
     int nev;
 
-    while(!term) {
+    while(1) {
         nev = kevent(kq, NULL, 0, evList, 32, NULL);
-        if (term) {
-            break;
-        }
+        syslog(LOG_INFO, "New incoming connection");
         if (nev < 0) {
             syslog(LOG_ERR, "kevent error:\n%m\n");
             break;
         }
         for (int i=0; i<nev; i++) {
+            if (evList[i].filter == EVFILT_SIGNAL && evList[i].ident == SIGTERM) {
+                break;
+            }
             if (evList[i].flags & EV_EOF) {
                 syslog(LOG_DEBUG, "Connection closed with EOF");
                 close(evList[i].ident);
