@@ -60,6 +60,7 @@ void server() {
 
     kq = kqueue();
     // Add all sockets to kq
+    syslog(LOG_DEBUG, "Setting %i kqueue triggers", nsock);
     for (int i = 0; i < nsock; i++) {
         EV_SET(&evSet, sock[i], EVFILT_READ, EV_ADD, 0, 5, (void *)servinfo);
         if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1) {
@@ -83,21 +84,22 @@ void server() {
 
     while(1) {
         nev = kevent(kq, NULL, 0, evList, 32, NULL);
-        syslog(LOG_INFO, "New incoming connection");
+        syslog(LOG_INFO, "New event");
         if (nev < 0) {
             syslog(LOG_ERR, "kevent error:\n%m\n");
             break;
         }
         for (int i=0; i<nev; i++) {
             if (evList[i].filter == EVFILT_SIGNAL && evList[i].ident == SIGTERM) {
+                syslog(LOG_INFO, "SIGTERM received");
                 break;
             }
-            if (evList[i].flags & EV_EOF) {
+            else if (evList[i].flags & EV_EOF) {
                 syslog(LOG_DEBUG, "Connection closed with EOF");
                 close(evList[i].ident);
-
             }
-            if (evList[i].udata == servinfo) {
+            else if (evList[i].udata == servinfo) {
+                syslog(LOG_DEBUG, "Connection closed with EOF");
                 connfd = accept(evList[i].ident, (struct sockaddr*) NULL, NULL); 
                 worker(connfd, ctx);
             }
@@ -124,8 +126,6 @@ void server() {
         }
         */
     }
-
-
 
     syslog(LOG_INFO, "Shutting down Server");
     for (int i = 0; i < nsock; i++) {
