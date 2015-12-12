@@ -6,7 +6,9 @@
 #include "main.h"
 
 void handleSigterm(int sig) {
-    term = 1;
+    if (sig == SIGTERM) {
+        term = 1;
+    }
 }
 
 // Main Client function
@@ -42,7 +44,11 @@ void client(commandType type) {
             for (int i = 0; i < getStatNum(); i++) {
                 json_array_append_new(list, json_string(stats[i].name));
             }
-            struct tls* ctx = initCon(DELETE, getStatNum());
+            struct tls* ctx = tls_client(); 
+            if (initCon(ctx, DELETE, getStatNum()) == -1)  {
+                fprintf(stderr, "Failed Connecting to server\n");
+            }
+
             char * payloadStr = json_dumps(list, JSON_COMPACT);
             sendOverTLS(ctx, payloadStr);
             free(payloadStr);
@@ -58,7 +64,16 @@ void client(commandType type) {
 
     // Check server if he needs a new .json
     if (!getLocal()) {
-        sendHello(stats);
+        if ( sendHello(stats) == -1) {
+            fprintf(stderr, "Cannot connect to server. Retrying...\n");
+            sleep(5);
+            if ( sendHello(stats) == -1) {
+                fprintf(stderr, "No connection possible.\n");
+                destroyConf(); 
+                closelog();
+                exit(-1);
+           }
+        }
     }
 
     // Destroy Config
@@ -80,7 +95,7 @@ void client(commandType type) {
     }
 
 // MAIN LOOP
-    while(!term) {
+    while (!term) {
         // Set zeit to current time    
         timeSet();
         // Main Loop, go over every Status
@@ -104,7 +119,10 @@ void client(commandType type) {
         }
 
         if (!term) {
-            sleep(getInterval() * 60);
+            int tosleep = sleep(getInterval() * 60);
+            while (tosleep > 0 && !term) {
+                tosleep = sleep(tosleep);
+            }
         }
     }
 // END MAIN LOOP
@@ -122,24 +140,29 @@ void client(commandType type) {
 }
 
 // Send all available settings, bootstrap if necessary
-void sendHello(Status stat[]) {
+int sendHello(Status stat[]) {
 
     // Compose list
-    json_error_t error;
+    //json_error_t error;
     json_t *list = json_array();
     for (int i = 0; i < getStatNum(); i++) {
         json_array_append_new(list, json_string(stat[i].name));
     }
 
+    // Init Connection
+    struct tls* ctx = tls_client(); 
+    if (initCon(ctx, HELLO, getStatNum()) == -1) {
+        return -1;
+    }
+
     // Send header
-    struct tls* ctx = initCon(HELLO, getStatNum());
     char * payloadStr = json_dumps(list, JSON_COMPACT);
     sendOverTLS(ctx, payloadStr);
     free(payloadStr);
 
     // check answer and bootstrap necessary files
     json_t* relist = recvOverTLS(ctx);
-    for (int i = 0; i < json_array_size(relist); i++) {
+    for (size_t i = 0; i < json_array_size(relist); i++) {
         const char *name = json_string_value(json_array_get(relist, i));
         for (int j = 0; j < getStatNum(); j++) {
             if (strcmp(stat[j].name, name) == 0) {
@@ -151,6 +174,7 @@ void sendHello(Status stat[]) {
 
     tls_close(ctx);
     tls_free(ctx);
+    return 0;
 
 }
 
@@ -183,27 +207,33 @@ void sendStat(Status *stats, int statNum) {
             }
         }
 
-        struct tls* ctx = initCon(NEWDATA, statActive);
-
-        // Check if connection failed
-        if (ctx != NULL) {
-            for (int i = 0; i < statNum; i++) {
-                if (stats[i].enabled) {
-                    char * payloadStr = json_dumps(arrays[i], JSON_COMPACT);
-                    sendOverTLS(ctx, payloadStr);
-                    free(payloadStr);
-                }
+        // Try to connect for 2 minutes
+        struct tls* ctx = tls_client();
+        int connRetry = 0;
+        while (initCon(ctx, NEWDATA, statActive) == -1) {
+            connRetry++;
+            syslog(LOG_ERR, "Connection failed, retrying\n");
+            if (connRetry >= 12) {
+                syslog(LOG_ERR, "Connection failed, skipping this time");
+                return;
             }
-            tls_close(ctx);
-            tls_free(ctx);
-        } else {
-            syslog(LOG_ERR, "Connection failed, skipping this time");
+            sleep(10);
         }
+        // Check if connection failed
+        for (int i = 0; i < statNum; i++) {
+            if (stats[i].enabled) {
+                char * payloadStr = json_dumps(arrays[i], JSON_COMPACT);
+                sendOverTLS(ctx, payloadStr);
+                free(payloadStr);
+            }
+        }
+        tls_close(ctx);
+        tls_free(ctx);
     }
 }
 
 // Send header over TCP
-struct tls* initCon(connType type, int size) {
+int initCon(struct tls* ctx, connType type, int size) {
     // Create Header object
     json_t *header = json_object();
     json_object_set(header, "from", json_string(getClientName()));
@@ -213,17 +243,20 @@ struct tls* initCon(connType type, int size) {
     char * headerStr = json_dumps(header, JSON_COMPACT | JSON_REAL_PRECISION(5));
 
     // Initiate TLS Session
-    struct tls* ctx = tls_client();
+    //ctx = tls_client();
     tls_configure(ctx, tlsClient_conf);
 
     if (tls_connect(ctx, getClientServerURL(), getClientServerPort()) == -1) {
+        syslog(LOG_ERR, "Error connecting:\n");
         syslog(LOG_ERR, "%s\n", tls_error(ctx));
-        return NULL;
+        syslog(LOG_ERR, "No communication with server possible\n");
+        free(headerStr);
+        return -1;
     }
     // Send Header
     sendOverTLS(ctx, headerStr);
     free(headerStr);
-    return ctx;
+    return 0;
 
 }
 
