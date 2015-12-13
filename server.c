@@ -103,7 +103,12 @@ void server() {
                 if (connfd == -1) {
                     syslog(LOG_ERR, "accept failed:\n%m\n");
                 }
-                addEvent(kq, connfd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+                Cinfo* cid = (Cinfo*)malloc(sizeof(cid));
+                addEvent(kq, connfd, EVFILT_READ, EV_ADD, 0, 0, cid);
+                cid->c_fd = connfd;
+                cid->cctx = NULL;
+                tls_accept_socket(ctx, &cid->cctx, connfd);
+
                 //worker(evList[i].ident, ctx);
             }
             else if (evList[i].flags & EV_ERROR) {
