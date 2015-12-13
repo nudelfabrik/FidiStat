@@ -16,6 +16,7 @@
 
 
 #define MAXSOCK 5
+#define MAXCONCUR 16
 // signal Handler
 void handleSigterm_S(int sig) {
     if (sig == SIGTERM) {
@@ -61,15 +62,12 @@ void server() {
             continue;
         }
         listen(sock[nsock], 5);
-        syslog(LOG_DEBUG, "Opened Socket: %i", sock[nsock]);
         nsock++;
     }
     // Build kqueue
     int kq = kqueue();
 
     // Add all sockets to kq
-    syslog(LOG_DEBUG, "Setting %i kqueue triggers", nsock);
-    syslog(LOG_DEBUG, "void servinfo: %p", (void*)servinfo);
     for (int i = 0; i < nsock; i++) {
         addEvent(kq, sock[i], EVFILT_READ, EV_ADD, 0, 5, (void*)servinfo);
     }
@@ -80,17 +78,17 @@ void server() {
     destroyConf(); 
     //freeaddrinfo(servinfo);
 
-    struct kevent evList[32];
+    struct kevent evList[MAXCONCUR];
     int nev;
 
     while(!term) {
-        nev = kevent(kq, NULL, 0, evList, 32, NULL);
-        syslog(LOG_INFO, "New events: %i", nev);
+        nev = kevent(kq, NULL, 0, evList, MAXCONCUR, NULL);
         if (nev < 0) {
             syslog(LOG_ERR, "kevent error:\n%m\n");
             break;
         }
         for (int i=0; i<nev; i++) {
+            //syslog(LOG_DEBUG, "ident: %lu, filter:%i flags: %x, fflags: %u data: %ld", evList[i].ident, evList[i].filter, evList[i].flags,evList[i].fflags, evList[i].data);
             if (evList[i].filter == EVFILT_SIGNAL && evList[i].ident == SIGTERM) {
                 syslog(LOG_INFO, "SIGTERM received");
                 break;
@@ -109,55 +107,15 @@ void server() {
                     syslog(LOG_ERR, "accept failed:\n%m\n");
                 }
                 addEvent(kq, connfd, EVFILT_READ, EV_ADD, 0, 0, NULL);
-    //tls_accept_socket(ctx, &cctx, connfd);
-    //            char buf[evList[i].data -29];
-    //            size_t size;
-    //            int ret = tls_read(cctx, buf, evList[i].data -30, &size); 
-    //            syslog(LOG_DEBUG, "Output: %s", buf);
-    //            char buf[10] = "Test\n";
-    //            send(connfd, buf, sizeof(buf), 0);
-            }
-            else if (evList[i].flags & EVFILT_READ) {
-                syslog(LOG_DEBUG, "New data on connection");
-                worker(evList[i].ident, ctx);
+                //worker(evList[i].ident, ctx);
             }
             else if (evList[i].flags & EV_ERROR) {
                 syslog(LOG_DEBUG, "EV_ERROR:\n%m\n");
             }
             else {
-                syslog(LOG_DEBUG, "other case");
-                syslog(LOG_DEBUG, "ident: %lu, filter:%i flags: %x, fflags: %u bytes: %ld", evList[i].ident, evList[i].filter, evList[i].flags,evList[i].fflags, evList[i].data);
                 worker(evList[i].ident, ctx);
-                //char buf[evList[i].data];
-                //recv(evList[i].ident, buf, evList[i].data -1, 0);
-                //char buf[1024] = {0};
-                //size_t size;
-                //int ret = tls_read(cctx, buf, evList[i].data -30, &size); 
-                //syslog(LOG_DEBUG, "Output: %s", buf);
-                //term = 1;
-                
             }
         }
-
-        /*
-        connfd = accept(sock, (struct sockaddr*) NULL, NULL); 
-
-        if (term) {
-            break;
-        }
-        pid = fork();
-        if (pid < 0) {
-            syslog(LOG_ERR, "forking new Worker failed");
-        } else if (pid == 0) {
-            close(sock);
-            syslog(LOG_INFO, "New incoming connection");
-            worker(connfd, ctx);
-            syslog(LOG_INFO, "Closing connection");
-            exit(0);
-        } else {
-            close(connfd);
-        }
-        */
     }
 
     syslog(LOG_INFO, "Shutting down Server");
