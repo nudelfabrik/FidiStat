@@ -10,7 +10,7 @@ CC   = clang
 CC   = clang
 .endif
 LIB_DIR=/usr/local
-CFLAGS=-Wall -Wextra -pedantic -I $(LIB_DIR)/include
+CFLAGS=-g -Wall -Wextra -pedantic -I $(LIB_DIR)/include
 INS_DIR=/usr/local/etc
 
 all: fidistat
