@@ -31,8 +31,14 @@ void server() {
     syslog(LOG_INFO, "-----------------------");
     syslog(LOG_INFO, "Started Fidistat Server");
 
+    // Daemonize
     struct pidfh *pfh = daemon_start('s');
+
+    int kq = kqueue();
+
+    // Set SIGTERM
     signal(SIGTERM, handleSigterm_S);
+    addEvent(kq, SIGTERM, EVFILT_SIGNAL, EV_ADD, 0, 0, NULL);
 
     // Initialize TLS structs
     initConf();
@@ -64,19 +70,15 @@ void server() {
         listen(sock[nsock], 5);
         nsock++;
     }
-    // Build kqueue
-    int kq = kqueue();
 
     // Add all sockets to kq
     for (int i = 0; i < nsock; i++) {
         addEvent(kq, sock[i], EVFILT_READ, EV_ADD, 0, 5, (void*)servinfo);
     }
-    // fire kevent when SIGTERM
-    addEvent(kq, SIGTERM, EVFILT_SIGNAL, EV_ADD, 0, 0, NULL);
 
     // Destroy Config
     destroyConf(); 
-    //freeaddrinfo(servinfo);
+    freeaddrinfo(servinfo);
 
     struct kevent evList[MAXCONCUR];
     int nev;
@@ -90,19 +92,14 @@ void server() {
         for (int i=0; i<nev; i++) {
             //syslog(LOG_DEBUG, "ident: %lu, filter:%i flags: %x, fflags: %u data: %ld", evList[i].ident, evList[i].filter, evList[i].flags,evList[i].fflags, evList[i].data);
             if (evList[i].filter == EVFILT_SIGNAL && evList[i].ident == SIGTERM) {
-                syslog(LOG_INFO, "SIGTERM received");
                 break;
             }
             else if (evList[i].flags & EV_EOF && evList[i].udata != (void*) servinfo) {
-                syslog(LOG_DEBUG, "Received EOF");
                 addEvent(kq, evList[i].ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-                syslog(LOG_DEBUG, "Connection closed with EOF");
                 close(evList[i].ident);
             }
             else if (evList[i].udata == servinfo) {
-                syslog(LOG_DEBUG, "Accepting new connection on socket %lu", evList[i].ident);
                 int connfd = accept(evList[i].ident, (struct sockaddr*) NULL, NULL); 
-                syslog(LOG_DEBUG, "Connection accepted, fd: %i", connfd);
                 if (connfd == -1) {
                     syslog(LOG_ERR, "accept failed:\n%m\n");
                 }
@@ -189,7 +186,6 @@ void worker(int connfd, struct tls* ctx) {
             }
 
             json_t *root = json_object_get(payload, "payload");
-
             char* file = composeFileName(clientName, name, "json");
             if (type == CREATE) {
                 // Create/Replace file
@@ -204,7 +200,6 @@ void worker(int connfd, struct tls* ctx) {
     // Look which files are not available
     if (type == HELLO) {
         json_t *relist = json_array();
-
         json_t *list = recvOverTLS(cctx);
 
         for (int i = 0; i < size; i++) {
