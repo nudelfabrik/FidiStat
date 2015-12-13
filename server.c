@@ -3,6 +3,7 @@
 #include <sys/event.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <jansson.h>
@@ -15,14 +16,22 @@
 
 
 #define MAXSOCK 5
+// signal Handler
+void handleSigterm_S(int sig) {
+    if (sig == SIGTERM) {
+        term = 1;
+    }
+}
 
 void server() {
     // load Config File and Settings
     fprintf(stdout, "Starting fidistat Server...\n");
     openlog("fidistat-server", LOG_PID, LOG_DAEMON);
+    syslog(LOG_INFO, "-----------------------");
     syslog(LOG_INFO, "Started Fidistat Server");
 
     struct pidfh *pfh = daemon_start('s');
+    signal(SIGTERM, handleSigterm_S);
 
     // Initialize TLS structs
     initConf();
@@ -43,6 +52,8 @@ void server() {
             syslog(LOG_ERR, "socket error");
             continue;
         }
+        //int flags = fcntl(sock[nsock],F_GETFL,0);
+        //fcntl(sock[nsock], F_SETFL, flags | O_NONBLOCK);
 
         if (bind(sock[nsock], p->ai_addr, p->ai_addrlen) == -1) {
             close(sock[nsock]);
@@ -50,41 +61,31 @@ void server() {
             continue;
         }
         listen(sock[nsock], 5);
+        syslog(LOG_DEBUG, "Opened Socket: %i", sock[nsock]);
         nsock++;
     }
-    //freeaddrinfo(servinfo);
-
     // Build kqueue
-    int kq;
-    struct kevent evSet;
+    int kq = kqueue();
 
-    kq = kqueue();
     // Add all sockets to kq
     syslog(LOG_DEBUG, "Setting %i kqueue triggers", nsock);
+    syslog(LOG_DEBUG, "void servinfo: %p", (void*)servinfo);
     for (int i = 0; i < nsock; i++) {
-        EV_SET(&evSet, sock[i], EVFILT_READ, EV_ADD, 0, 5, (void *)servinfo);
-        if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1) {
-            syslog(LOG_ERR, "kevent set error:\n%m\n");
-        }
+        addEvent(kq, sock[i], EVFILT_READ, EV_ADD, 0, 5, (void*)servinfo);
     }
     // fire kevent when SIGTERM
-    EV_SET(&evSet, SIGTERM, EVFILT_SIGNAL, EV_ADD, 0, 0, NULL);
-    if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1) {
-        syslog(LOG_ERR, "kevent set error:\n%m\n");
-    }
-                                                             
-
-    int connfd, pid;
+    addEvent(kq, SIGTERM, EVFILT_SIGNAL, EV_ADD, 0, 0, NULL);
 
     // Destroy Config
     destroyConf(); 
+    //freeaddrinfo(servinfo);
 
     struct kevent evList[32];
-    int nev;
+    int nev, connfd;
 
-    while(1) {
+    while(!term) {
         nev = kevent(kq, NULL, 0, evList, 32, NULL);
-        syslog(LOG_INFO, "New event");
+        syslog(LOG_INFO, "New events: %i", nev);
         if (nev < 0) {
             syslog(LOG_ERR, "kevent error:\n%m\n");
             break;
@@ -94,17 +95,38 @@ void server() {
                 syslog(LOG_INFO, "SIGTERM received");
                 break;
             }
-            else if (evList[i].flags & EV_EOF) {
+            else if (evList[i].flags & EV_EOF && evList[i].udata != (void*) servinfo) {
+                syslog(LOG_DEBUG, "Received EOF");
+                addEvent(kq, evList[i].ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
                 syslog(LOG_DEBUG, "Connection closed with EOF");
                 close(evList[i].ident);
             }
             else if (evList[i].udata == servinfo) {
-                syslog(LOG_DEBUG, "Connection closed with EOF");
+                syslog(LOG_DEBUG, "Accepting new connection on socket %lu", evList[i].ident);
                 connfd = accept(evList[i].ident, (struct sockaddr*) NULL, NULL); 
-                worker(connfd, ctx);
+                syslog(LOG_DEBUG, "Connection accepted, fd: %i", connfd);
+                if (connfd == -1) {
+                    syslog(LOG_ERR, "accept failed:\n%m\n");
+                }
+                addEvent(kq, connfd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+                char buf[10] = "HELLO";
+                send(connfd, buf, sizeof(buf), 0);
+                //worker(connfd, ctx);
+            }
+            else if (evList[i].flags & EVFILT_READ) {
+                syslog(LOG_DEBUG, "New data on connection");
+                worker(evList[i].ident, ctx);
+            }
+            else if (evList[i].flags & EV_ERROR) {
+                syslog(LOG_DEBUG, "EV_ERROR:\n%m\n");
+            }
+            else {
+                syslog(LOG_DEBUG, "other case");
+                syslog(LOG_DEBUG, "ident: %lu, filter:%i flags: %x, fflags: %u bytes: %ld", evList[i].ident, evList[i].filter, evList[i].flags,evList[i].fflags, evList[i].data);
+                term = 1;
+                
             }
         }
-
 
         /*
         connfd = accept(sock, (struct sockaddr*) NULL, NULL); 
@@ -141,13 +163,24 @@ void server() {
     exit(0);
 }
 
+void addEvent(int kq, uintptr_t ident, short filter, u_short flags, u_int fflags, intptr_t data, void *udata) {
+    struct kevent evSet;
+
+    EV_SET(&evSet, ident, filter, flags, fflags, data, udata);
+    if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1) {
+        syslog(LOG_ERR, "kevent set error:\n%m\n");
+    }
+}
+
 void worker(int connfd, struct tls* ctx) {
 
     // Process HEADER
     //--------------
     struct tls* cctx = NULL;
     tls_accept_socket(ctx, &cctx, connfd);
+    syslog(LOG_DEBUG, "processing sent data");
     json_t *header = recvOverTLS(cctx);
+    syslog(LOG_DEBUG, "received processed");
     const char* clientName = json_string_value(json_object_get(header, "from"));
     for (size_t i = 0; i < sizeof(clientName); i++) {
         if (clientName[i] == '/' || clientName[i] == '\\') {
