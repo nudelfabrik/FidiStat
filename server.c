@@ -144,31 +144,34 @@ void worker(int connfd, struct tls* ctx) {
     //--------------
     struct tls* cctx = NULL;
     tls_accept_socket(ctx, &cctx, connfd);
-    syslog(LOG_DEBUG, "processing sent data");
     json_t *header = recvOverTLS(cctx);
-    syslog(LOG_DEBUG, "received processed");
+
+    // Check client auth
+    const char* clientAuth = json_string_value(json_object_get(header, "auth"));
+    if (clientAuth == NULL || strcmp(clientAuth, getClientAuth()) != 0) {
+        syslog(LOG_ERR, "Authentication failed");
+        return;
+    }
+
     const char* clientName = json_string_value(json_object_get(header, "from"));
+    if (clientName == NULL) {
+        syslog(LOG_ERR, "Header invalid");
+    }
     for (size_t i = 0; i < sizeof(clientName); i++) {
         if (clientName[i] == '/' || clientName[i] == '\\') {
             syslog(LOG_ERR, "ERROR in clientName!, aborting");
             return;
         }
     }
-    const char* clientAuth = json_string_value(json_object_get(header, "auth"));
-    if (strcmp(clientAuth, getClientAuth()) != 0) {
-        syslog(LOG_ERR, "Authentication failed");
-        return;
-    }
     connType type = json_integer_value(json_object_get(header, "type"));
     int size = json_integer_value(json_object_get(header, "size"));
-    syslog(LOG_DEBUG, "Payload received");
+    syslog(LOG_DEBUG, "New Message from %s", clientName);
 
     // Process Payload
     //----------------
 
     // new Values for graphs
     if (type == NEWDATA) {
-
         for (int i = 0; i < size; i++) {
             json_t* payload = recvOverTLS(cctx);
             pasteJSON(payload, clientName);
