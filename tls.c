@@ -10,7 +10,9 @@ void sendOverTLS(struct tls* ctx, const char *buf) {
     size_t sent;
 
     // send Length of buf
+    syslog(LOG_DEBUG, "Send: Size: %i", length);
     uint16_t length = htons(strlen(buf));
+    syslog(LOG_DEBUG, "Send: Size after: %i", length);
 
     size_t len = sizeof(length);
     while (len > 0) {
@@ -62,9 +64,11 @@ json_t* recvOverTLS(struct tls*ctx) {
             len -= size; 
         } 
     }
+    syslog(LOG_DEBUG, "Size: %i", length);
 
     // Change length to Hardware Byte Order
     length = ntohs(length);
+    syslog(LOG_DEBUG, "Size after: %i", length);
     // create buffer
     char* buffer = (char*)malloc((length +1) *sizeof(char));
     char* buf = buffer;
@@ -82,6 +86,7 @@ json_t* recvOverTLS(struct tls*ctx) {
             length -= size; 
         } 
     }
+    syslog(LOG_DEBUG, "buffer: %s", buf);
 
     // Process buffer to json
     json_t *json = json_loads(buffer, JSON_DISABLE_EOF_CHECK, &error);
