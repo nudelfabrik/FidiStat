@@ -81,7 +81,7 @@ void server() {
     //freeaddrinfo(servinfo);
 
     struct kevent evList[32];
-    int nev, connfd;
+    int nev;
 
     while(!term) {
         nev = kevent(kq, NULL, 0, evList, 32, NULL);
@@ -103,15 +103,19 @@ void server() {
             }
             else if (evList[i].udata == servinfo) {
                 syslog(LOG_DEBUG, "Accepting new connection on socket %lu", evList[i].ident);
-                connfd = accept(evList[i].ident, (struct sockaddr*) NULL, NULL); 
+                int connfd = accept(evList[i].ident, (struct sockaddr*) NULL, NULL); 
                 syslog(LOG_DEBUG, "Connection accepted, fd: %i", connfd);
                 if (connfd == -1) {
                     syslog(LOG_ERR, "accept failed:\n%m\n");
                 }
                 addEvent(kq, connfd, EVFILT_READ, EV_ADD, 0, 0, NULL);
-                char buf[10] = "HELLO";
-                send(connfd, buf, sizeof(buf), 0);
-                //worker(connfd, ctx);
+    //tls_accept_socket(ctx, &cctx, connfd);
+    //            char buf[evList[i].data -29];
+    //            size_t size;
+    //            int ret = tls_read(cctx, buf, evList[i].data -30, &size); 
+    //            syslog(LOG_DEBUG, "Output: %s", buf);
+    //            char buf[10] = "Test\n";
+    //            send(connfd, buf, sizeof(buf), 0);
             }
             else if (evList[i].flags & EVFILT_READ) {
                 syslog(LOG_DEBUG, "New data on connection");
@@ -123,7 +127,14 @@ void server() {
             else {
                 syslog(LOG_DEBUG, "other case");
                 syslog(LOG_DEBUG, "ident: %lu, filter:%i flags: %x, fflags: %u bytes: %ld", evList[i].ident, evList[i].filter, evList[i].flags,evList[i].fflags, evList[i].data);
-                term = 1;
+                worker(evList[i].ident, ctx);
+                //char buf[evList[i].data];
+                //recv(evList[i].ident, buf, evList[i].data -1, 0);
+                //char buf[1024] = {0};
+                //size_t size;
+                //int ret = tls_read(cctx, buf, evList[i].data -30, &size); 
+                //syslog(LOG_DEBUG, "Output: %s", buf);
+                //term = 1;
                 
             }
         }
@@ -267,6 +278,7 @@ void worker(int connfd, struct tls* ctx) {
 
     tls_close(cctx);
     tls_free(cctx);
+    close(connfd);
 
 }
 
