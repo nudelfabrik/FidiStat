@@ -59,8 +59,8 @@ void server() {
             syslog(LOG_ERR, "socket error");
             continue;
         }
-        //int flags = fcntl(sock[nsock],F_GETFL,0);
-        //fcntl(sock[nsock], F_SETFL, flags | O_NONBLOCK);
+        int flags = fcntl(sock[nsock],F_GETFL,0);
+        fcntl(sock[nsock], F_SETFL, flags | O_NONBLOCK);
 
         if (bind(sock[nsock], p->ai_addr, p->ai_addrlen) == -1) {
             close(sock[nsock]);
@@ -96,6 +96,7 @@ void server() {
             }
             else if (evList[i].flags & EV_EOF && evList[i].udata != (void*) servinfo) {
                 addEvent(kq, evList[i].ident, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+                free(evList[i].udata);
                 close(evList[i].ident);
             }
             else if (evList[i].udata == servinfo) {
@@ -106,8 +107,12 @@ void server() {
                 Cinfo* cid = (Cinfo*)malloc(sizeof(cid));
                 addEvent(kq, connfd, EVFILT_READ, EV_ADD, 0, 0, cid);
                 cid->c_fd = connfd;
+                cid->header = 1;
+                cid->expect = 2;
                 cid->cctx = NULL;
-                tls_accept_socket(ctx, &cid->cctx, connfd);
+                if (tls_accept_socket(ctx, &(cid->cctx), connfd) == -1) {
+                    syslog(LOG_DEBUG, "accept failed");
+                }
 
                 //worker(evList[i].ident, ctx);
             }
@@ -115,7 +120,9 @@ void server() {
                 syslog(LOG_DEBUG, "EV_ERROR:\n%m\n");
             }
             else {
-                worker(evList[i].ident, ctx);
+                syslog(LOG_DEBUG, "new work");
+                work(evList[i].udata, evList[i].data);
+                //worker(evList[i].ident, ctx);
             }
         }
     }
@@ -140,6 +147,56 @@ void addEvent(int kq, uintptr_t ident, short filter, u_short flags, u_int fflags
     EV_SET(&evSet, ident, filter, flags, fflags, data, udata);
     if (kevent(kq, &evSet, 1, NULL, 0, NULL) == -1) {
         syslog(LOG_ERR, "kevent set error:\n%m\n");
+    }
+}
+
+void work(Cinfo* cid, size_t backlog) { 
+    size_t retSize;
+    syslog(LOG_DEBUG, "Backlog: %zu", backlog);
+    while (backlog > 0) {
+        if (cid->header == 1 && (backlog == 1)) { 
+            syslog(LOG_DEBUG, "header and only one byte");
+            return;
+        } else if (cid->header == 1) {
+            syslog(LOG_DEBUG, "header");
+            char buf[3];
+            int ret = tls_read(cid->cctx, &(buf), 2, &retSize); 
+            syslog(LOG_DEBUG, "toread: %s", buf);
+
+            if (ret == TLS_READ_AGAIN || ret == TLS_WRITE_AGAIN) { 
+                syslog(LOG_DEBUG, "READ/WRITE AGAIN");
+                continue;
+                /* retry.  May use select to wait for nonblocking */ 
+            } else if (ret < 0) { 
+                syslog(LOG_ERR, "%s\n", tls_error(cid->cctx));
+                break;
+            } else { 
+                cid->header = 0;
+                cid->buffer = (char*)malloc((cid->expect +1) *sizeof(char));
+                backlog -= retSize;
+                syslog(LOG_DEBUG, "rest Backlog: %zu", backlog);
+            } 
+        } else {
+            int ret = tls_read(cid->cctx, &(cid->buffer) + cid->read, cid->expect, &retSize); 
+
+            if (ret == TLS_READ_AGAIN || ret == TLS_WRITE_AGAIN) { 
+                return;
+            } else if (ret < 0) { 
+                syslog(LOG_ERR, "%s\n", tls_error(cid->cctx));
+                break;
+            } else { 
+                backlog -= retSize;
+                cid->expect -= retSize;
+                cid->read += retSize;
+                syslog(LOG_DEBUG, "rest Backlog: %zu", backlog);
+            } 
+        }
+        if (cid->expect == 0) {
+            syslog(LOG_DEBUG, "all data read");
+            syslog(LOG_DEBUG, "Output: %s", cid->buffer);
+            free(cid->buffer);
+            cid->header = 1;
+        }
     }
 }
 
