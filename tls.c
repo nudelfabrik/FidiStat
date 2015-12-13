@@ -10,7 +10,7 @@ void sendOverTLS(struct tls* ctx, const char *buf) {
     size_t sent;
 
     // send Length of buf
-    syslog(LOG_DEBUG, "Send: Size: %i", length);
+    syslog(LOG_DEBUG, "Send: Size: %zu", strlen(buf));
     uint16_t length = htons(strlen(buf));
     syslog(LOG_DEBUG, "Send: Size after: %i", length);
 
