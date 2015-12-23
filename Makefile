@@ -60,7 +60,7 @@ install: all
 	install -m 0755 fidistat $(LIB_DIR)/bin
 	test -d $(INS_DIR)/fidistat || mkdir $(INS_DIR)/fidistat
 	test -d $(INS_DIR)/fidistat/json || mkdir $(INS_DIR)/fidistat/json
-	cp -n configFiles/* $(INS_DIR)/fidistat || :
+	cp -n configFiles/config.cfg $(INS_DIR)/fidistat/config.cfg.sample || :
 	gzip -k fidistat.man
 	mkdir -p /usr/local/share/man1 || :
 	mv fidistat.man.gz /usr/local/share/man1/fidistat.1.gz
