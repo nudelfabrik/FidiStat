@@ -151,7 +151,7 @@ void addEvent(int kq, uintptr_t ident, short filter, u_short flags, u_int fflags
 }
 
 void work(Cinfo* cid, size_t backlog) { 
-    size_t retSize;
+    ssize_t ret;
     syslog(LOG_DEBUG, "Backlog: %zu", backlog);
     while (backlog > 0) {
         if (cid->header == 1 && (backlog == 1)) { 
@@ -160,10 +160,10 @@ void work(Cinfo* cid, size_t backlog) {
         } else if (cid->header == 1) {
             syslog(LOG_DEBUG, "header");
             char buf[3];
-            int ret = tls_read(cid->cctx, &(buf), 2, &retSize); 
+            ret = tls_read(cid->cctx, &(buf), 2); 
             syslog(LOG_DEBUG, "toread: %s", buf);
 
-            if (ret == TLS_READ_AGAIN || ret == TLS_WRITE_AGAIN) { 
+            if (ret == TLS_WANT_POLLIN || ret == TLS_WANT_POLLOUT) { 
                 syslog(LOG_DEBUG, "READ/WRITE AGAIN");
                 continue;
                 /* retry.  May use select to wait for nonblocking */ 
@@ -173,21 +173,21 @@ void work(Cinfo* cid, size_t backlog) {
             } else { 
                 cid->header = 0;
                 cid->buffer = (char*)malloc((cid->expect +1) *sizeof(char));
-                backlog -= retSize;
+                backlog -= ret;
                 syslog(LOG_DEBUG, "rest Backlog: %zu", backlog);
             } 
         } else {
-            int ret = tls_read(cid->cctx, &(cid->buffer) + cid->read, cid->expect, &retSize); 
+            ret = tls_read(cid->cctx, &(cid->buffer) + cid->read, cid->expect); 
 
-            if (ret == TLS_READ_AGAIN || ret == TLS_WRITE_AGAIN) { 
+            if (ret == TLS_WANT_POLLIN || ret == TLS_WANT_POLLOUT) { 
                 return;
             } else if (ret < 0) { 
                 syslog(LOG_ERR, "%s\n", tls_error(cid->cctx));
                 break;
             } else { 
-                backlog -= retSize;
-                cid->expect -= retSize;
-                cid->read += retSize;
+                backlog -= ret;
+                cid->expect -= ret;
+                cid->read += ret;
                 syslog(LOG_DEBUG, "rest Backlog: %zu", backlog);
             } 
         }
