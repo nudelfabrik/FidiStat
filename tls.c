@@ -7,59 +7,59 @@
 #include "tls.h"
 
 void sendOverTLS(struct tls* ctx, const char *buf) {
-    size_t sent;
+    ssize_t ret;
 
     // send Length of buf
     uint16_t length = htons(strlen(buf));
 
     size_t len = sizeof(length);
     while (len > 0) {
-        int ret = tls_write(ctx, &length, len, &sent); 
+        ret = tls_write(ctx, &length, len); 
  
-        if (ret == TLS_READ_AGAIN || ret == TLS_WRITE_AGAIN) { 
+        if (ret == TLS_WANT_POLLIN || ret == TLS_WANT_POLLOUT) { 
             syslog(LOG_DEBUG, "READ/WRITE AGAIN\n");
         } else if (ret < 0) { 
             syslog(LOG_ERR, "%s\n", tls_error(ctx));
             break;
         } else { 
-            len -= sent;
+            len -= ret;
         }
     }
 
     // send actual buf
     size_t toSend = strlen(buf);
     while (toSend > 0) {
-        int ret = tls_write(ctx, buf, toSend, &sent); 
+        ret = tls_write(ctx, buf, toSend); 
  
-        if (ret == TLS_READ_AGAIN || ret == TLS_WRITE_AGAIN) { 
+        if (ret == TLS_WANT_POLLIN || ret == TLS_WANT_POLLOUT) { 
             syslog(LOG_DEBUG, "READ/WRITE AGAIN\n");
         } else if (ret < 0) { 
             syslog(LOG_ERR, "%s\n", tls_error(ctx));
             break;
         } else { 
-            buf += sent;
-            toSend -= sent;
+            buf += ret;
+            toSend -= ret;
         }
     }
 }
 
 json_t* recvOverTLS(struct tls*ctx) {
     json_error_t error;
-    size_t size;
+    ssize_t ret;
     uint16_t length;
     size_t len = sizeof(length);
 
     // read length
     while (len > 0) {
-        int ret = tls_read(ctx, &length, len, &size); 
+        ret = tls_read(ctx, &length, len); 
  
-        if (ret == TLS_READ_AGAIN || ret == TLS_WRITE_AGAIN) { 
+        if (ret == TLS_WANT_POLLIN || ret == TLS_WANT_POLLOUT) { 
             /* retry.  May use select to wait for nonblocking */ 
         } else if (ret < 0) { 
             syslog(LOG_ERR, "%s\n", tls_error(ctx));
             break;
         } else { 
-            len -= size; 
+            len -= ret; 
         } 
     }
 
@@ -71,16 +71,16 @@ json_t* recvOverTLS(struct tls*ctx) {
     char* buf = buffer;
 
     while (length > 0) {
-        int ret = tls_read(ctx, buf, length, &size); 
+        ret = tls_read(ctx, buf, length); 
  
-        if (ret == TLS_READ_AGAIN || ret == TLS_WRITE_AGAIN) { 
+        if (ret == TLS_WANT_POLLIN || ret == TLS_WANT_POLLOUT) { 
             /* retry.  May use select to wait for nonblocking */ 
         } else if (ret < 0) { 
             syslog(LOG_ERR, "%s\n", tls_error(ctx));
             break;
         } else { 
-            buf += size; 
-            length -= size; 
+            buf += ret; 
+            length -= ret; 
         } 
     }
 
