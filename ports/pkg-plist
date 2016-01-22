@@ -1,0 +1,7 @@
+bin/fidistat
+@sample etc/fidistat/config.cfg.sample
+share/man1/fidistat.1.gz
+etc/rc.d/fidistat-server
+etc/rc.d/fidistat
+@dir /etc/fidistat/json
+@dir /etc/fidistat
