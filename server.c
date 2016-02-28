@@ -302,9 +302,12 @@ void worker(int connfd, struct tls* ctx) {
 
 void initTLS_S(struct tls* ctx) {
     tlsServer_conf = tls_config_new();
-    tls_config_set_cert_file(tlsServer_conf, getServerCertFile_v());
-    tls_config_set_key_file(tlsServer_conf, getServerCertFile_v());
-
+    if (tls_config_set_cert_file(tlsServer_conf, getClientCertFile_v()) == -1) {
+        syslog(LOG_ERR, "Set cert file failed");
+    }
+    if (tls_config_set_key_file(tlsServer_conf, getServerCertFile_v()) == -1) {
+        syslog(LOG_ERR, "Set key file failed");
+    }
     tls_configure(ctx, tlsServer_conf);
 }
 
