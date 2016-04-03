@@ -291,14 +291,13 @@ void confSetup(Status stats[]) {
 void initTLS(void) {
     tls_init();
     tlsClient_conf = tls_config_new();
+    /*
     if (tls_config_set_cert_file(tlsClient_conf, getClientCertFile_v()) == -1) {
         syslog(LOG_ERR, "Set cert file failed");
+    }*/
+    if (tls_config_set_ca_file(tlsClient_conf, getClientCertFile_v()) == -1) {
+        syslog(LOG_ERR, "Set cert file failed");
     }
-    //if (tls_config_set_ca_file(tlsClient_conf, getClientCertFile_v()) == -1) {
-    //    syslog(LOG_ERR, "Set cert file failed");
-    //}
-    tls_config_insecure_noverifyname(tlsClient_conf);
-    tls_config_insecure_noverifycert(tlsClient_conf);
 }
 void deinitTLS(void) {
     tls_config_free(tlsClient_conf);
